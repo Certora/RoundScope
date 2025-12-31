@@ -139,9 +139,7 @@ private:
     }
     
     jobject record(jobject castNode, const solidity::frontend::ASTNode::SourceLocation& loc) {
-        jclass type = jniEnv->GetObjectClass(xlator);
-        jmethodID mp = jniEnv->GetMethodID(type, "record", "(Lcom/ibm/wala/cast/tree/CAstNode;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;)V");
-        jniEnv->CallVoidMethod(xlator, mp, castNode, makePosition(loc));
+        cast.setAstNodeLocation(context->entity(), castNode, makePosition(loc));
         return castNode;
     }
     
