@@ -363,7 +363,7 @@ void Translator::endVisit(const FunctionDefinition &_node) {
          t != retps.end();
          ++t, i++)
     {
-        if (t->get()->name().c_str() != NULL) {
+        if (t->get()->name().c_str() != NULL && strlen(t->get()->name().c_str()) > 0) {
             jobject type = getType(t->get()->type());
             jobject symbol = cast.makeSymbol(t->get()->name().c_str(), type, false);
             ast = cast.makeNode(cast.BLOCK_STMT,
