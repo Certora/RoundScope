@@ -31,7 +31,8 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected String composeEntityName(WalkContext parent, CAstEntity f) {
-		return parent.top().getName() + "/" + f.getName();
+		String myName = parent.top().getName();
+		return (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
 	}
 
 	@Override
