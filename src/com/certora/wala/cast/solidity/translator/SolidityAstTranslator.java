@@ -1,8 +1,11 @@
 package com.certora.wala.cast.solidity.translator;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -11,13 +14,17 @@ import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
+import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
 
 public class SolidityAstTranslator extends AstTranslator {
-
+	private final Map<CAstType,IClass> types = HashMapFactory.make();
+	
 	public SolidityAstTranslator(IClassLoader loader) {
 		super(loader);
 	}
@@ -29,7 +36,7 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void declareFunction(CAstEntity N, WalkContext context) {
-		// TODO Auto-generated method stub
+		// noop
 
 	}
 
@@ -41,8 +48,7 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void defineField(CAstEntity topEntity, WalkContext context, CAstEntity fieldEntity) {
-		// TODO Auto-generated method stub
-
+		// noop
 	}
 
 	@Override
@@ -56,7 +62,16 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected boolean defineType(CAstEntity type, WalkContext wc) {
-		// TODO Auto-generated method stub
+		String typeNameStr = composeEntityName(wc, type);
+		TypeName typeName = TypeName.findOrCreate("L" + typeNameStr);
+		IClass cls;
+		if (! type.getType().getSupertypes().isEmpty()) {
+			Set<IClass> supers = type.getType().getSupertypes().stream().map(ct -> types.get(ct)).collect(Collectors.toSet());
+			cls = ((SolidityLoader)loader).defineType(type, typeName, supers);
+		} else {
+			cls = ((SolidityLoader)loader).defineType(type, typeName, Collections.emptySet());
+		}
+		types.put(type.getType(), cls);
 		return true;
 	}
 

@@ -3,7 +3,9 @@ package com.certora.wala.cast.solidity.tree;
 import java.util.Collection;
 import java.util.Map;
 
+import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 
 public class SolidityCAstType implements CAstType.Primitive {
@@ -30,19 +32,32 @@ public class SolidityCAstType implements CAstType.Primitive {
 	}
 	
 	public static final Map<String,CAstType> types = HashMapFactory.make();
+	public static final Map<String,TypeReference> irTypes = HashMapFactory.make();
 	
 	static {
-		for(String nm : new String[] {"uint8", "uint256", "address", "string", "bool", "void", "mapping"}) {
-			types.put(nm, new SolidityCAstType(nm));
+		for(Object[] nm : new Object[][] {
+				{"uint8", SolidityTypes.uint8},
+				{"uint256", SolidityTypes.uint256},
+				{"address", SolidityTypes.address},
+				{"string", SolidityTypes.string},
+				{"bool", SolidityTypes.bool},
+				{"void", TypeReference.Void}}) {
+			types.put((String)nm[0], new SolidityCAstType((String)nm[0]));
+			irTypes.put((String)nm[0], (TypeReference)nm[1]);
 		}
 	}
 	
-	public static void record(String name, CAstType type) {
+	public static void record(String name, CAstType type, TypeReference irType) {
 		assert !types.containsKey(name);
 		types.put(name, type);
+		irTypes.put(name, irType);
 	}
 	
 	public static CAstType get(String name) {
 		return types.get(name);
+	}
+
+	public static TypeReference getIRType(String name) {
+		return irTypes.get(name);
 	}
 }

@@ -5,8 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Function;
+import com.ibm.wala.core.util.strings.Atom;
+import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 
@@ -57,7 +60,10 @@ public class SolidityMappingType implements Function {
 			return types.get(typeKey);
 		} else {
 			SolidityMappingType type = new SolidityMappingType(key, value);
-			SolidityCAstType.record(type.getName(), type);
+			
+			TypeReference irType = TypeReference.findOrCreate(SolidityTypes.solidity, "mapping<" + key.getName() + "#" + value.getName() + ">");
+			
+			SolidityCAstType.record(type.getName(), type, irType);
 			types.put(typeKey, type);
 			return type;
 		}
