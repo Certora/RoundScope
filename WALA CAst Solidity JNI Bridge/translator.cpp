@@ -25,7 +25,8 @@ jobject Translator::getType(Type const* type) {
         jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "(Lcom/ibm/wala/cast/tree/CAstType;Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
         return jniEnv->CallStaticObjectMethod(smt, gt, keyType, valueType);
     } else {
-        std::string tn = type->toString();
+        std::string tn = type->toString(true);
+        std:cout << tn << std::endl;
         return getType(tn);
     }
 }
@@ -101,9 +102,9 @@ void Translator::endVisit(const ContractDefinition &_node) {
     jclass ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
     jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
     jstring entityName = jniEnv->NewStringUTF(_node.name().c_str());
-    jobject type = jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet);
 
-    types[_node.name()] = type;
+    jobject contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet);
+    types[_node.name()] = contractType;
     
     jobject entitiesSet = jniEnv->NewObject(sCls, sCtor);
     std::map<jstring, jobject>& functions = context->functions();
@@ -123,7 +124,7 @@ void Translator::endVisit(const ContractDefinition &_node) {
 
     jclass ceCls = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/ContractEntity");
     jmethodID ceCtor = jniEnv->GetMethodID(ceCls, "<init>", "(Lcom/ibm/wala/cast/tree/CAstType$Class;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Ljava/util/Set;)V");
-    jobject contractEntity = jniEnv->NewObject(ceCls, ceCtor, type, makePosition(_node.location()), makePosition(_node.nameLocation()), entitiesSet);
+    jobject contractEntity = jniEnv->NewObject(ceCls, ceCtor, contractType, makePosition(_node.location()), makePosition(_node.nameLocation()), entitiesSet);
     
     context = context->parent();
     
@@ -193,7 +194,7 @@ bool Translator::visit(const Block &_node) {
  }
 
 bool Translator::visit(const ElementaryTypeName &_node) {
-    ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(_node.typeName().toString().c_str())), _node.location()));
+    ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(_node.typeName().toString(true).c_str())), _node.location()));
     return false;
 }
 

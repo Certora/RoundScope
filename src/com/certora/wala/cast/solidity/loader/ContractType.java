@@ -4,9 +4,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
+import com.certora.wala.cast.solidity.tree.SolidityCAstType;
+import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstQualifier;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Class;
+import com.ibm.wala.types.TypeReference;
 
 public class ContractType implements Class {
 	private final String name;
@@ -20,11 +23,13 @@ public class ContractType implements Class {
 		super();
 		this.name = name;
 		this.superTypes = superTypes;
+		
+		SolidityCAstType.record("contract " + name, this, TypeReference.findOrCreate(SolidityTypes.solidity, name));;
 	}
 
 	@Override
 	public String getName() {
-		return name;
+		return "contract " + name;
 	}
 
 	@Override

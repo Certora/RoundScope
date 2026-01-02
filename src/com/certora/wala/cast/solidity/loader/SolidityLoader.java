@@ -9,10 +9,12 @@ import java.util.Set;
 
 import com.certora.wala.cast.solidity.jni.SolidityJNIBridge;
 import com.certora.wala.cast.solidity.translator.SolidityAstTranslator;
+import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
+import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.AstField;
 import com.ibm.wala.cast.loader.CAstAbstractModuleLoader;
 import com.ibm.wala.cast.tree.CAst;
@@ -45,7 +47,9 @@ import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.types.ClassLoaderReference;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
@@ -297,16 +301,19 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		return true;
 	}
 	
-	class SolidityClass extends CoreClass {
+	class SolidityClass extends AstClass {
+
+		protected SolidityClass(Position sourcePosition, TypeName typeName,
+				Map<Atom, IField> declaredFields, Map<Selector, IMethod> declaredMethods, 
+				Collection<IClass> supers, TypeName superClass) {
+			super(sourcePosition, typeName, SolidityLoader.this, (short)0, declaredFields, declaredMethods);
+			this.supers = supers;
+			this.superClass = superClass;
+		}
 
 		private Collection<IClass> supers;
 		private TypeName superClass;
 
-		public SolidityClass(TypeName arg0, TypeName arg1, IClassLoader arg2, Position arg3, Collection<IClass> supers) {
-			super(arg0, arg1, arg2, arg3);
-			this.supers = supers;
-			this.superClass = arg1;
-		}
 
 		@Override
 		public Collection<Annotation> getAnnotations() {
@@ -329,21 +336,29 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			return lookupClass(superClass);
 		}
 		
+		@Override
+		public String toString() {
+			return getReference().toString();
+		}
+		
 	}
 	
 	private void makeFields(CAstEntity type, IClass newClass, Map<Atom, IField> fields) {
 		type.getScopedEntities(null).forEachRemaining(ce -> { 
-			if (ce.getKind() == CAstEntity.FIELD_ENTITY) {
+			if (ce.getKind() == CAstEntity.FIELD_ENTITY || ce.getKind() == CAstEntity.FUNCTION_ENTITY) {
+				TypeReference fieldType = SolidityCAstType.getIRType(ce.getType().getName());
 				Atom fieldName = Atom.findOrCreateUnicodeAtom(ce.getName());
-				IField field = new AstField(null, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
+				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, fieldType);
+				fields.put(fieldName, new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
 					
-				};
+				});
 			}
 		});
 	}
 	
 	public IClass defineType(CAstEntity type, TypeName typeName, Set<IClass> supers) {
 		Map<Atom, IField> fields = HashMapFactory.make();
+		Map<Selector, IMethod> methods = HashMapFactory.make();
 		TypeName superClass;
 		Collection<IClass> si;
 		if (supers.size() == 1) {
@@ -353,9 +368,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			superClass = root.getName();
 			si = supers;
 		}
-		IClass newClass = new SolidityClass(typeName, superClass, this, type.getPosition(), si);
+		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass);
+		types.put(typeName, newClass);
 		makeFields(type, newClass, fields);
-		//Map<Selector, IMethod> methods = makeMethods(type);
 		return newClass;
 		
 	}
