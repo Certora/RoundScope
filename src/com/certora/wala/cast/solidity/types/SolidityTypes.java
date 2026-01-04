@@ -12,6 +12,12 @@ public class SolidityTypes {
 	
 	public static TypeReference root = TypeReference.findOrCreate(solidity, "Lroot");
 
+	public static TypeReference codeBody = TypeReference.findOrCreate(solidity, "LCodeBode");
+
+	public static TypeReference function = TypeReference.findOrCreate(solidity, "Lfunction");
+
+	public static TypeReference event = TypeReference.findOrCreate(solidity, "Levent");
+
 	public static TypeReference uint8 = TypeReference.findOrCreate(solidity, "Puint8");
 
 	public static TypeReference uint256 = TypeReference.findOrCreate(solidity, "Puint256");

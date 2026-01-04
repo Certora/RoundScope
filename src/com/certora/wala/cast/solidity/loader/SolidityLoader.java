@@ -9,17 +9,24 @@ import java.util.Set;
 
 import com.certora.wala.cast.solidity.jni.SolidityJNIBridge;
 import com.certora.wala.cast.solidity.translator.SolidityAstTranslator;
+import com.certora.wala.cast.solidity.tree.EventEntity;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
+import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
+import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.AstField;
+import com.ibm.wala.cast.loader.AstFunctionClass;
+import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.CAstAbstractModuleLoader;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cfg.AbstractCFG;
+import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.cfg.InducedCFG;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
@@ -46,6 +53,7 @@ import com.ibm.wala.ipa.modref.ModRef.RefVisitor;
 import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
+import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
@@ -58,35 +66,44 @@ import com.ibm.wala.util.collections.Pair;
 
 public class SolidityLoader extends CAstAbstractModuleLoader {
 	SolidityJNIBridge solidityCode = new SolidityJNIBridge();
-	
+
 	private final IClass root = new CoreClass(SolidityTypes.root.getName(), null, this, null);
-	
+
+	private final IClass codeBody = new CoreClass(SolidityTypes.codeBody.getName(), root.getName(), this,
+			null);
+
+	private final IClass function = new CoreClass(SolidityTypes.function.getName(), codeBody.getName(), this,
+			null);
+
+	private final IClass event = new CoreClass(SolidityTypes.event.getName(), codeBody.getName(), this,
+			null);
+
 	@Override
 	public void init(List<Module> modules) {
-		
-		for(Module m : modules) {
+
+		for (Module m : modules) {
 			assert m instanceof SourceFileModule;
 		}
-		
+
 		int i = 0;
-		String[] files = new String[ modules.size()*2 ];
-		for(Module m : modules) {
+		String[] files = new String[modules.size() * 2];
+		for (Module m : modules) {
 			SourceFileModule f = (SourceFileModule) m;
 			files[i++] = f.getAbsolutePath();
 			files[i++] = f.getName();
 		}
-		
+
 		solidityCode.loadFiles(files);
-		
+
 		super.init(modules);
-		
+
 	}
 
 	public SolidityLoader(IClassHierarchy cha, IClassLoader parent) {
 		super(cha, parent);
 	}
 
-	@Override	
+	@Override
 	public SSAInstructionFactory getInstructionFactory() {
 		return getLanguage().instructionFactory();
 	}
@@ -272,9 +289,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		public void registerDerivedLanguage(Language l) {
 			assert false;
 		}
-		
+
 	};
-	
+
 	@Override
 	public Language getLanguage() {
 		return solidity;
@@ -287,10 +304,10 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M, List<Module> modules) throws IOException {
-		SourceFileModule f = (SourceFileModule)M;
+		SourceFileModule f = (SourceFileModule) M;
 		return solidityCode.new SolidityFileTranslator(f.getAbsolutePath());
 	}
-	
+
 	@Override
 	protected TranslatorToIR initTranslator(Set<Pair<CAstEntity, ModuleEntry>> topLevelEntities) {
 		return new SolidityAstTranslator(this);
@@ -300,20 +317,18 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	protected boolean shouldTranslate(CAstEntity entity) {
 		return true;
 	}
-	
+
 	class SolidityClass extends AstClass {
 
-		protected SolidityClass(Position sourcePosition, TypeName typeName,
-				Map<Atom, IField> declaredFields, Map<Selector, IMethod> declaredMethods, 
-				Collection<IClass> supers, TypeName superClass) {
-			super(sourcePosition, typeName, SolidityLoader.this, (short)0, declaredFields, declaredMethods);
+		protected SolidityClass(Position sourcePosition, TypeName typeName, Map<Atom, IField> declaredFields,
+				Map<Selector, IMethod> declaredMethods, Collection<IClass> supers, TypeName superClass) {
+			super(sourcePosition, typeName, SolidityLoader.this, (short) 0, declaredFields, declaredMethods);
 			this.supers = supers;
 			this.superClass = superClass;
 		}
 
 		private Collection<IClass> supers;
 		private TypeName superClass;
-
 
 		@Override
 		public Collection<Annotation> getAnnotations() {
@@ -335,27 +350,28 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		public IClass getSuperclass() {
 			return lookupClass(superClass);
 		}
-		
+
 		@Override
 		public String toString() {
 			return getReference().toString();
 		}
-		
+
 	}
-	
+
 	private void makeFields(CAstEntity type, IClass newClass, Map<Atom, IField> fields) {
-		type.getScopedEntities(null).forEachRemaining(ce -> { 
+		type.getScopedEntities(null).forEachRemaining(ce -> {
 			if (ce.getKind() == CAstEntity.FIELD_ENTITY || ce.getKind() == CAstEntity.FUNCTION_ENTITY) {
 				TypeReference fieldType = SolidityCAstType.getIRType(ce.getType().getName());
 				Atom fieldName = Atom.findOrCreateUnicodeAtom(ce.getName());
 				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, fieldType);
-				fields.put(fieldName, new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
-					
-				});
+				fields.put(fieldName,
+						new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
+
+						});
 			}
 		});
 	}
-	
+
 	public IClass defineType(CAstEntity type, TypeName typeName, Set<IClass> supers) {
 		Map<Atom, IField> fields = HashMapFactory.make();
 		Map<Selector, IMethod> methods = HashMapFactory.make();
@@ -372,7 +388,60 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		types.put(typeName, newClass);
 		makeFields(type, newClass, fields);
 		return newClass;
-		
+	}
+
+	public IClass defineFunctionType(CAstEntity n, String name, WalkContext c) {
+		TypeReference fn = TypeReference.findOrCreate(getReference(), 'L' + name);
+		if (n instanceof EventEntity) {
+			return new AstFunctionClass(fn, this, n.getPosition()) {
+
+				{
+					types.put(fn.getName(), this);
+				}
+				
+				@Override
+				public Collection<Annotation> getAnnotations() {
+					return Collections.emptySet();
+				}
+
+				@Override
+				public IClassHierarchy getClassHierarchy() {
+					return cha;
+				}
+				
+				@Override
+				public IClass getSuperclass() {
+					return event;
+				}
+
+				@Override
+				public String toString() {
+					return "event " + name;
+				}
+			};
+		} else {
+			return new DynamicCodeBody(fn, 
+				function.getReference(), this,
+				n.getPosition(), n, c);
+		}
+	}
+
+	public DynamicMethodObject makeCodeBodyCode(AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
+			Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> caughtTypes, boolean hasMonitorOp,
+			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo, IClass C) {
+		return new DynamicMethodObject(C, Collections.emptySet(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp,
+				lexicalInfo, debugInfo);
+	}
+
+	public IMethod defineFunctionBody(String clsName, CAstEntity n, WalkContext definingContext,
+			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
+			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> caughtTypes,
+			boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
+		DynamicCodeBody C = (DynamicCodeBody) lookupClass('L' + clsName, cha);
+		assert C != null : clsName;
+		return C.setCodeBody(
+				makeCodeBodyCode(cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
+
 	}
 
 }

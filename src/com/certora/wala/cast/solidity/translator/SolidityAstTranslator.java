@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
+import com.certora.wala.cast.solidity.tree.EventEntity;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -37,8 +38,8 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void declareFunction(CAstEntity N, WalkContext context) {
-		// noop
-
+		assert N.getKind() == CAstEntity.FUNCTION_ENTITY;
+		((SolidityLoader)loader).defineFunctionType(N, composeEntityName(context, N), context);
 	}
 
 	@Override
@@ -49,7 +50,7 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void defineField(CAstEntity topEntity, WalkContext context, CAstEntity fieldEntity) {
-		// noop
+		// noop, handled by defineType
 	}
 
 	@Override
@@ -57,8 +58,8 @@ public class SolidityAstTranslator extends AstTranslator {
 			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
 			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> catchTypes,
 			boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
-		// TODO Auto-generated method stub
-
+		String clsName = composeEntityName(definingContext, N);
+		((SolidityLoader)loader).defineFunctionBody(clsName, N, definingContext, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo, debugInfo);
 	}
 
 	@Override
