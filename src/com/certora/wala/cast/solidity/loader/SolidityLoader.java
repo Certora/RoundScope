@@ -440,8 +440,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		DynamicCodeBody C = (DynamicCodeBody) lookupClass('L' + clsName, cha);
 		assert C != null : clsName;
 		return C.setCodeBody(
-				makeCodeBodyCode(cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
-
+			makeCodeBodyCode(cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
 	}
-
 }

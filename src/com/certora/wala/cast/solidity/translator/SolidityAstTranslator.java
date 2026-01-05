@@ -6,7 +6,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
-import com.certora.wala.cast.solidity.tree.EventEntity;
+import com.certora.wala.cast.solidity.tree.SolidityCAstType;
+import com.certora.wala.cast.solidity.tree.SolidityMappingType;
+import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
@@ -17,17 +19,23 @@ import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
 
 public class SolidityAstTranslator extends AstTranslator {
 	private final Map<CAstType,IClass> types = HashMapFactory.make();
+
+	private final SSAInstructionFactory insts; 
 	
 	public SolidityAstTranslator(IClassLoader loader) {
 		super(loader);
+		this.insts = loader.getLanguage().instructionFactory();
 	}
 
 	@Override
@@ -44,8 +52,7 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected TypeReference defaultCatchType() {
-		// TODO Auto-generated method stub
-		return null;
+		return SolidityTypes.root;
 	}
 
 	@Override
@@ -79,14 +86,20 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	public void doArrayRead(WalkContext context, int result, int arrayValue, CAstNode arrayRef, int[] dimValues) {
-		// TODO Auto-generated method stub
-
+		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef);
+		assert t instanceof SolidityMappingType;
+		CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
+		TypeReference eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+		context.cfg().addInstruction(insts.ArrayLoadInstruction(context.cfg().getCurrentInstruction(), result, arrayValue, dimValues[0], eltType));
 	}
 
 	@Override
 	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
-		// TODO Auto-generated method stub
-
+		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef.getChild(0));
+		assert t instanceof SolidityMappingType;
+		CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
+		TypeReference eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+		context.cfg().addInstruction(insts.ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, eltType));
 	}
 
 	@Override
@@ -98,20 +111,18 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
-		// TODO Auto-generated method stub
-
+		CAstEntity contract = getParent(context.top());
+		CAstType objCAstType = contract.getType();
+		TypeReference objType = SolidityCAstType.getIRType(objCAstType.getName());
+		context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), objType)));
 	}
 
 	@Override
 	protected void doFieldWrite(WalkContext context, int receiver, CAstNode elt, CAstNode parent, int rval) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	protected void doMaterializeFunction(CAstNode node, WalkContext context, int result, int exception, CAstEntity fn) {
-		// TODO Auto-generated method stub
-
+		CAstEntity contract = getParent(context.top());
+		CAstType objCAstType = contract.getType();
+		TypeReference objType = SolidityCAstType.getIRType(objCAstType.getName());
+		context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), objType)));
 	}
 
 	@Override
@@ -133,27 +144,33 @@ public class SolidityAstTranslator extends AstTranslator {
 	}
 
 	@Override
+	protected void doMaterializeFunction(CAstNode node, WalkContext context, int result, int exception, CAstEntity fn) {
+		assert false;
+	}
+
+	@Override
 	protected CAstType exceptionType() {
-		// TODO Auto-generated method stub
-		return null;
+		return SolidityCAstType.get("root");
 	}
 
 	@Override
 	protected Position[] getParameterPositions(CAstEntity e) {
-		// TODO Auto-generated method stub
-		return null;
+		int nargs = e.getArgumentCount();
+		Position[] args = new Position[nargs];
+		for(int i = 0; i < nargs; i++) {
+			args[i] = e.getPosition(i);
+		}
+		return args;
 	}
 
 	@Override
 	protected TypeReference makeType(CAstType type) {
-		// TODO Auto-generated method stub
-		return null;
+		return SolidityCAstType.getIRType(type.getName());
 	}
 
 	@Override
 	protected CAstType topType() {
-		// TODO Auto-generated method stub
-		return null;
+		return SolidityCAstType.get("root");
 	}
 
 	@Override

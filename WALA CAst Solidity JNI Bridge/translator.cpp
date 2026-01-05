@@ -26,7 +26,6 @@ jobject Translator::getType(Type const* type) {
         return jniEnv->CallStaticObjectMethod(smt, gt, keyType, valueType);
     } else {
         std::string tn = type->toString(true);
-        std:cout << tn << std::endl;
         return getType(tn);
     }
 }
@@ -138,7 +137,7 @@ bool Translator::visit(const Assignment &_node) {
     _node.rightHandSide().accept(*this);
     jobject rhs = last();
 
-    ret(record(cast.makeNode(cast.ASSIGN, lhs, rhs), _node.location()));
+    ret(record(cast.makeNode(cast.ASSIGN, lhs, rhs), _node.location(), _node.annotation().type));
     return false;
 }
 
@@ -169,7 +168,7 @@ bool Translator::visit(const BinaryOperation &_node) {
     jobject op = translateOpcode(cast, _node.getOperator());
     
     jobject expr = cast.makeNode(cast.BINARY_EXPR, op, left, right);
-    ret(record(expr, _node.location()));
+    ret(record(expr, _node.location(), _node.annotation().type));
     
     return false;
 }
@@ -263,7 +262,7 @@ bool Translator::visit(const ExpressionStatement &_node) {
     _node.expression().accept(*this);
     jobject expr = last();
     
-    ret(record(cast.makeNode(cast.EXPR_STMT, expr), _node.location()));
+    ret(record(cast.makeNode(cast.EXPR_STMT, expr), _node.location(), _node.expression().annotation().type));
     
     return false;
 }
@@ -285,7 +284,7 @@ bool Translator::visit(const FunctionCall &_node) {
         jniEnv->SetObjectArrayElement(children, i, last());
     }
 
-    ret(record(cast.makeNode(cast.CALL, fun, children), _node.location()));
+    ret(record(cast.makeNode(cast.CALL, fun, children), _node.location(), _node.annotation().type));
     return false;
 }
 
@@ -405,37 +404,30 @@ jobject Translator::getSolidityFunctionType(const char *name, jobjectArray param
 
 jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool event) {
     jobjectArray ps = getCAstTypes(var->parameters());
-    std::cout << ps << std::endl;
     jobjectArray rs = var->returnParameters().size() > 0? getCAstTypes(var->returnParameters()): NULL;
-    std::cout << rs << std::endl;
     const char *nm = var->name().c_str();
-    std::cout << nm << std::endl;
     return getSolidityFunctionType(nm, ps, rs, event);
 }
 
 bool Translator::visit(const Identifier &_node) {
-    std::cout << _node.annotation().referencedDeclaration->name() << std::endl;
-    std::cout << _node.annotation().referencedDeclaration->type()->toString() << std::endl;
-    std::cout << typeid(_node.annotation().referencedDeclaration->type()).name() << std::endl;
-
     if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
         if (var->isStateVariable()) {
-            ret(record(cast.makeNode(cast.OBJECT_REF, cast.makeNode(cast.THIS), cast.makeConstant(_node.name().c_str())),   _node.location()));
+            ret(record(cast.makeNode(cast.OBJECT_REF, cast.makeNode(cast.THIS), cast.makeConstant(_node.name().c_str())),   _node.location(), _node.annotation().type));
             return false;
         } else if (var->isLocalVariable()) {
-            ret(record(cast.makeNode(cast.VAR, cast.makeConstant(_node.name().c_str())), _node.location()));
+            ret(record(cast.makeNode(cast.VAR, cast.makeConstant(_node.name().c_str())), _node.location(), _node.annotation().type));
             return false;
         }
     } else if (EventDefinition const* var = dynamic_cast<EventDefinition const*>(_node.annotation().referencedDeclaration)) {
         jobject fun = getSolidityFunctionType(var->name().c_str(), getCAstTypes(var->parameters()), NULL, true);
-        ret(record(cast.makeConstant(fun), _node.location()));
+        ret(record(cast.makeConstant(fun), _node.location(), _node.annotation().type));
         return false;
     } else if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
         jobject fun = getSolidityFunctionType(var, false);
-        ret(record(cast.makeConstant(fun), _node.location()));
+        ret(record(cast.makeConstant(fun), _node.location(), _node.annotation().type));
         return false;
     } else if (MagicVariableDeclaration const* var = dynamic_cast<MagicVariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
-        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(_node.name().c_str())), _node.location()));
+        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(_node.name().c_str())), _node.location(), _node.annotation().type));
         return false;
     }
     
@@ -475,12 +467,14 @@ bool Translator::visit(const IndexAccess &_node) {
     _node.baseExpression().accept(*this);
     jobject obj = last();
     
+    jobject eltType = getType(_node.annotation().type);
+    
     _node.indexExpression()->accept(*this);
     jobject idx = last();
 
-    jobject ref = cast.makeNode(cast.ARRAY_REF, obj, idx);
+    jobject ref = cast.makeNode(cast.ARRAY_REF, obj, cast.makeConstant(eltType), idx);
     
-    ret(record(ref, _node.location()));
+    ret(record(ref, _node.location(), _node.annotation().type));
     return false;
 }
 
@@ -529,7 +523,7 @@ bool Translator::visit(const MemberAccess &_node) {
     
     jobject ref = cast.makeNode(cast.OBJECT_REF, obj, var);
     
-    ret(record(ref, _node.location()));
+    ret(record(ref, _node.location(), _node.annotation().type));
     return false;
 }
 
@@ -590,9 +584,9 @@ bool Translator::visit(const VariableDeclaration &_node) {
     } else {
         jobject symbol = cast.makeSymbol(name, type, isFinal);
         if (value != NULL) {
-            ret(record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol), value), _node.location()));
+            ret(record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol), value), _node.location(), _node.type()));
         } else {
-            ret(record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), _node.location()));
+            ret(record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), _node.location(), _node.type()));
         }
     }
      

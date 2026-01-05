@@ -138,6 +138,11 @@ private:
         return jniEnv->CallObjectMethod(xlator, mp, jniEnv->NewStringUTF(fileName), loc.start, loc.end);
     }
     
+    jobject record(jobject castNode, const solidity::frontend::ASTNode::SourceLocation& loc, Type const* type) {
+        cast.setAstNodeType(context->entity(), castNode, getType(type));
+        return record(castNode, loc);
+    }
+    
     jobject record(jobject castNode, const solidity::frontend::ASTNode::SourceLocation& loc) {
         cast.setAstNodeLocation(context->entity(), castNode, makePosition(loc));
         return castNode;
