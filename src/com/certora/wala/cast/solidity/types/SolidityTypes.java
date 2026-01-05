@@ -12,6 +12,8 @@ public class SolidityTypes {
 	
 	public static TypeReference root = TypeReference.findOrCreate(solidity, "Lroot");
 
+	public static TypeReference msg = TypeReference.findOrCreate(solidity, "Lmsg");
+
 	public static TypeReference codeBody = TypeReference.findOrCreate(solidity, "LCodeBode");
 
 	public static TypeReference function = TypeReference.findOrCreate(solidity, "Lfunction");

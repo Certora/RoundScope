@@ -13,10 +13,12 @@ import com.certora.wala.cast.solidity.tree.EventEntity;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
+import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
 import com.ibm.wala.cast.ir.translator.AstTranslator.WalkContext;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
 import com.ibm.wala.cast.ir.translator.TranslatorToIR;
+import com.ibm.wala.cast.java.loader.JavaSourceLoaderImpl;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.AstField;
 import com.ibm.wala.cast.loader.AstFunctionClass;
@@ -70,6 +72,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass root = new CoreClass(SolidityTypes.root.getName(), null, this, null);
 
 	private final IClass codeBody = new CoreClass(SolidityTypes.codeBody.getName(), root.getName(), this,
+			null);
+
+	private final IClass msg = new CoreClass(SolidityTypes.msg.getName(), root.getName(), this,
 			null);
 
 	private final IClass function = new CoreClass(SolidityTypes.function.getName(), codeBody.getName(), this,
@@ -184,10 +189,10 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			return null;
 		}
 
-		private final SSAInstructionFactory insts = new JavaInstructionFactory();
+		private final AstInstructionFactory insts = new JavaSourceLoaderImpl.InstructionFactory();
 
 		@Override
-		public SSAInstructionFactory instructionFactory() {
+		public AstInstructionFactory instructionFactory() {
 			return insts;
 		}
 

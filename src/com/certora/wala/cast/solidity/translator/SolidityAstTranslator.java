@@ -9,21 +9,24 @@ import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.tree.SolidityMappingType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
+import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ssa.SSAInstruction;
-import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
@@ -31,17 +34,30 @@ import com.ibm.wala.util.collections.HashMapFactory;
 public class SolidityAstTranslator extends AstTranslator {
 	private final Map<CAstType,IClass> types = HashMapFactory.make();
 
-	private final SSAInstructionFactory insts; 
+	private final AstInstructionFactory insts; 
 	
 	public SolidityAstTranslator(IClassLoader loader) {
 		super(loader);
-		this.insts = loader.getLanguage().instructionFactory();
+		this.insts = (AstInstructionFactory) loader.getLanguage().instructionFactory();
 	}
 
 	@Override
 	protected String composeEntityName(WalkContext parent, CAstEntity f) {
 		String myName = parent.top().getName();
 		return (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
+	}
+
+	@Override
+	protected void doPrologue(WalkContext context) {
+		int v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.msg)));
+		context.currentScope().declare(new CAstSymbolImpl("msg", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.LoadMetadataInstruction(context.cfg().getCurrentInstruction(), v, SolidityTypes.codeBody, MethodReference.findOrCreate(SolidityTypes.root, "getType", "(Lroot;)LCodeBody;")));
+		context.currentScope().declare(new CAstSymbolImpl("type", CAstType.DYNAMIC), v);
+
+		context.currentScope().declare(new CAstSymbolImpl("this", CAstType.DYNAMIC), 1);
 	}
 
 	@Override
@@ -133,8 +149,10 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void doPrimitive(int resultVal, WalkContext context, CAstNode primitiveCall) {
-		// TODO Auto-generated method stub
-
+		context.cfg().addInstruction(
+			insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
+				resultVal, 
+				context.currentScope().lookup((String)primitiveCall.getChild(0).getValue()).valueNumber()));
 	}
 
 	@Override

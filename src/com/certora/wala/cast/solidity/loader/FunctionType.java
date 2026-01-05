@@ -10,8 +10,6 @@ import com.certora.wala.cast.solidity.tree.SolidityFunctionType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Function;
-import com.ibm.wala.types.Descriptor;
-import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 
 public class FunctionType implements Function {
