@@ -24,6 +24,10 @@ protected:
 public:
     virtual DelegatingContext *parent() { return _parent; }
     
+    virtual jobject type() {
+        return parent()->type();
+    }
+    
     virtual jobject entity() {
         return parent()->entity();
     }
@@ -31,7 +35,7 @@ public:
         parent()->addSuperclass(superType);
     }
     
-    virtual std::vector<jobject>& superClasses() {
+    virtual jobject& superClasses() {
         return parent()->superClasses();
     }
     

@@ -56,8 +56,6 @@ public class SolidityAstTranslator extends AstTranslator {
 		v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.LoadMetadataInstruction(context.cfg().getCurrentInstruction(), v, SolidityTypes.codeBody, MethodReference.findOrCreate(SolidityTypes.root, "getType", "(Lroot;)LCodeBody;")));
 		context.currentScope().declare(new CAstSymbolImpl("type", CAstType.DYNAMIC), v);
-
-		context.currentScope().declare(new CAstSymbolImpl("this", CAstType.DYNAMIC), 1);
 	}
 
 	@Override
@@ -149,10 +147,11 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void doPrimitive(int resultVal, WalkContext context, CAstNode primitiveCall) {
+		String name = (String)primitiveCall.getChild(0).getValue();
 		context.cfg().addInstruction(
 			insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
 				resultVal, 
-				context.currentScope().lookup((String)primitiveCall.getChild(0).getValue()).valueNumber()));
+				"this".equals(name)? 1:  context.currentScope().lookup(name).valueNumber()));
 	}
 
 	@Override

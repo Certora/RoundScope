@@ -34,6 +34,7 @@ import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
+import com.ibm.wala.classLoader.IMethod.SourcePosition;
 import com.ibm.wala.classLoader.JavaLanguage;
 import com.ibm.wala.classLoader.Language;
 import com.ibm.wala.classLoader.Module;
@@ -435,7 +436,31 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> caughtTypes, boolean hasMonitorOp,
 			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo, IClass C) {
 		return new DynamicMethodObject(C, Collections.emptySet(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp,
-				lexicalInfo, debugInfo);
+				lexicalInfo, debugInfo) {
+
+					@Override
+					public int getNumberOfParameters() {
+						return super.getNumberOfParameters() + 1;
+					}
+
+					@Override
+					public SourcePosition getParameterSourcePosition(int paramNum) throws InvalidClassFileException {
+						if (paramNum == 0) {
+							return null;
+						} else {
+							return super.getParameterSourcePosition(paramNum-1);
+						}
+					}
+
+					@Override
+					public Position getParameterPosition(int paramIndex) {
+						if (paramIndex == 0) {
+							return null;
+						} else {
+							return super.getParameterPosition(paramIndex-1);
+						}
+					}	
+		};
 	}
 
 	public IMethod defineFunctionBody(String clsName, CAstEntity n, WalkContext definingContext,

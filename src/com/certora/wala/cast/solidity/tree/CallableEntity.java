@@ -1,11 +1,15 @@
 package com.certora.wala.cast.solidity.tree;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import com.ibm.wala.cast.ir.translator.AbstractCodeEntity;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
-import com.ibm.wala.cast.tree.CAstType.Function;
+import com.ibm.wala.cast.tree.CAstType.Method;
 
 public abstract class CallableEntity extends AbstractCodeEntity {
 
@@ -32,7 +36,7 @@ public abstract class CallableEntity extends AbstractCodeEntity {
 
 	@Override
 	public int getArgumentCount() {
-		return ((Function)type).getArgumentCount();
+		return ((Method)type).getArgumentCount() + 1;
 	}
 
 	@Override
@@ -42,7 +46,9 @@ public abstract class CallableEntity extends AbstractCodeEntity {
 
 	@Override
 	public String[] getArgumentNames() {
-		return argumentNames;
+		List<String> names = new ArrayList<>(Arrays.asList(argumentNames));
+		names.add(0, "this");
+		return names.toArray(new String[ names.size() ]);
 	}
 
 	@Override
@@ -67,7 +73,11 @@ public abstract class CallableEntity extends AbstractCodeEntity {
 
 	@Override
 	public Position getPosition(int arg) {
-		return argLocations[arg];
+		if (arg == 0) {
+			return null;
+		} else {
+			return argLocations[arg-1];
+		}
 	}
 
 }

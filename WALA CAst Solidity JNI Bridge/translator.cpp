@@ -64,47 +64,59 @@ bool Translator::visit(const SourceUnit &_node) {
 
 class ContractContext : public virtual VariableContainerContext, public virtual FunctionContainerContext {
 private:
-    std::vector<jobject> supers;
+    jobject supersSet;
+    jobject _type;
+    JNIEnv *jniEnv;
     
 public:
-    ContractContext(DelegatingContext *parent) : DelegatingContext(parent), FunctionContainerContext(parent), VariableContainerContext(parent){
+    ContractContext(DelegatingContext *parent, JNIEnv *jniEnv, jobject supersSet, jobject type) : DelegatingContext(parent), FunctionContainerContext(parent), VariableContainerContext(parent), jniEnv(jniEnv), supersSet(supersSet), _type(type){
         
     }
     
-    virtual void addSuperclass(std::string name) override {
-        supers.push_back(types[name]);
+    virtual jobject type() override {
+        return _type;
     }
     
-    virtual std::vector<jobject>& superClasses() override {
-        return supers;
+    virtual void addSuperclass(std::string name) override {
+        std::cout << "adding " << name << std::endl;
+        jclass sCls = jniEnv->FindClass("java/util/HashSet");
+        jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
+        jniEnv->CallBooleanMethod(supersSet, add, types[name]);
+    }
+    
+    virtual jobject& superClasses() override {
+        return supersSet;
     }
 };
 
 bool Translator::visit(const ContractDefinition &_node) {
-    context = new ContractContext(context);
-    jobject n = cast.makeConstant( _node.name().c_str() );
-    return true;
-}
-
-void Translator::endVisit(const ContractDefinition &_node) {
-    std::vector<jobject>& supers = context->superClasses();
     jclass sCls = jniEnv->FindClass("java/util/HashSet");
     jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
-    jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
     jobject supersSet = jniEnv->NewObject(sCls, sCtor);
-    for (std::vector<jobject>::iterator t=supers.begin();
-         t != supers.end();
-         ++t)
-    {
-        jniEnv->CallBooleanMethod(supersSet, add, *t);
-    }
     jclass ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
     jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
     jstring entityName = jniEnv->NewStringUTF(_node.name().c_str());
 
     jobject contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet);
     types[_node.name()] = contractType;
+
+    context = new ContractContext(context, jniEnv, supersSet, contractType);
+    return true;
+}
+
+void Translator::endVisit(const ContractDefinition &_node) {
+    jobject& supers = context->superClasses();
+ 
+    jclass ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
+    jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
+    jstring entityName = jniEnv->NewStringUTF(_node.name().c_str());
+
+    jobject contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supers);
+    types[_node.name()] = contractType;
     
+    jclass sCls = jniEnv->FindClass("java/util/HashSet");
+    jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
+    jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
     jobject entitiesSet = jniEnv->NewObject(sCls, sCtor);
     std::map<jstring, jobject>& functions = context->functions();
     for (std::map<jstring,jobject>::iterator t=functions.begin();
@@ -227,9 +239,14 @@ void Translator::endVisit(const EventDefinition &_node) {
             jniEnv->SetObjectArrayElement(children, i, type);
         }
 
+    jobject cls = context->entity();
+    jclass cet = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstEntity");
+    jmethodID egt = jniEnv->GetMethodID(cet, "getType", "()Lcom/ibm/wala/cast/tree/CAstType;");
+    jobject selfType = jniEnv->CallObjectMethod(cls, egt);
+
         jclass sft = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
-        jmethodID sfCtor = jniEnv->GetMethodID(sft, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)V");
-        jobject funType = jniEnv->NewObject(sft, sfCtor, funName, NULL, children);
+        jmethodID sfCtor = jniEnv->GetMethodID(sft, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)V");
+        jobject funType = jniEnv->NewObject(sft, sfCtor, funName, selfType, NULL, children);
         
         jobject loc = makePosition(_node.location());
         
@@ -318,9 +335,11 @@ bool Translator::visit(const FunctionDefinition &_node) {
         // todo
     }
     
+    jobject selfType = context->type();
+    
     jclass sft = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
-    jmethodID sfCtor = jniEnv->GetMethodID(sft, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)V");
-    jobject funType = jniEnv->NewObject(sft, sfCtor, funName, retType, children);
+    jmethodID sfCtor = jniEnv->GetMethodID(sft, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)V");
+    jobject funType = jniEnv->NewObject(sft, sfCtor, funName, selfType, retType, children);
     
     jobject loc = makePosition(_node.location());
     

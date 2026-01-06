@@ -1,5 +1,6 @@
 package com.certora.wala.cast.solidity.loader;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -9,18 +10,20 @@ import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.tree.SolidityFunctionType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
-import com.ibm.wala.cast.tree.CAstType.Function;
+import com.ibm.wala.cast.tree.CAstType.Method;
 import com.ibm.wala.types.TypeReference;
 
-public class FunctionType implements Function {
+public class FunctionType implements Method {
 
 	private final String name;
 	private final CAstType returnType;
-	private CAstType[] args;
+	private final CAstType[] args;
+	private final CAstType self;
 
-	public FunctionType(String name, CAstType returnType, CAstType... args) {
+	public FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
 		this.returnType = returnType==null? SolidityCAstType.get("void"): returnType;
 		this.args = args;
+		this.self = self;
 		
 		String sig = name + " " + SolidityFunctionType.arrayToString(args);
 		if (returnType != null) {
@@ -61,6 +64,16 @@ public class FunctionType implements Function {
 	@Override
 	public CAstType getReturnType() {
 		return returnType;
+	}
+
+	@Override
+	public CAstType getDeclaringType() {
+		return self;
+	}
+
+	@Override
+	public boolean isStatic() {
+		return false;
 	}
 
 }
