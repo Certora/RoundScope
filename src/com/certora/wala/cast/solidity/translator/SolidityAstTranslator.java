@@ -128,11 +128,12 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	public void doArrayRead(WalkContext context, int result, int arrayValue, CAstNode arrayRef, int[] dimValues) {
-		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef);
+		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef.getChild(0));
 		assert t instanceof SolidityMappingType;
 		CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
 		TypeReference eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
-		context.cfg().addInstruction(insts.ArrayLoadInstruction(context.cfg().getCurrentInstruction(), result, arrayValue, dimValues[0], eltType));
+		int instNum = context.cfg().getCurrentInstruction();
+		context.cfg().addInstruction(insts.ArrayLoadInstruction(instNum, result, arrayValue, dimValues[0], eltType));
 	}
 
 	@Override

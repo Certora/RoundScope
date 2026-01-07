@@ -142,24 +142,13 @@ void Translator::endVisit(const ContractDefinition &_node) {
     cast.addChildEntity(context->entity(), NULL, contractEntity);
 }
 
-bool Translator::visit(const Assignment &_node) {
-    _node.leftHandSide().accept(*this);
-    jobject lhs = last();
-
-    _node.rightHandSide().accept(*this);
-    jobject rhs = last();
-
-    ret(record(cast.makeNode(cast.ASSIGN, lhs, rhs), _node.location(), _node.annotation().type));
-    return false;
-}
-
 jobject translateOpcode(CAstWrapper& cast, Token t) {
     switch(t) {
-        case Token::Add: return cast.OP_ADD;
-        case Token::Sub: return cast.OP_SUB;
-        case Token::Mul: return cast.OP_MUL;
-        case Token::Div: return cast.OP_DIV;
-        case Token::Mod: return cast.OP_MOD;
+        case Token::Add: case Token::AssignAdd: return cast.OP_ADD;
+        case Token::Sub: case Token::AssignSub: return cast.OP_SUB;
+        case Token::Mul: case Token::AssignMul: return cast.OP_MUL;
+        case Token::Div: case Token::AssignDiv: return cast.OP_DIV;
+        case Token::Mod: case Token::AssignMod: return cast.OP_MOD;
         case Token::Equal: return cast.OP_EQ;
         case Token::NotEqual: return cast.OP_NE;
         case Token::LessThan: return cast.OP_LT;
@@ -169,6 +158,22 @@ jobject translateOpcode(CAstWrapper& cast, Token t) {
         default: return NULL;
     }
  }
+
+bool Translator::visit(const Assignment &_node) {
+    _node.leftHandSide().accept(*this);
+    jobject lhs = last();
+
+    _node.rightHandSide().accept(*this);
+    jobject rhs = last();
+
+    Token op = _node.assignmentOperator();
+    
+    ret(record((op == Token::Assign?
+               cast.makeNode(cast.ASSIGN, lhs, rhs):
+               cast.makeNode(cast.ASSIGN_POST_OP, lhs, rhs, translateOpcode(cast, op))),
+            _node.location(), _node.annotation().type));
+    return false;
+}
 
 bool Translator::visit(const BinaryOperation &_node) {
     _node.leftExpression().accept(*this);
@@ -503,7 +508,8 @@ bool Translator::visit(const IndexAccess &_node) {
     _node.baseExpression().accept(*this);
     jobject obj = last();
     
-    jobject eltType = getType(_node.annotation().type);
+    MappingType const*mt = dynamic_cast<MappingType const*>(_node.baseExpression().annotation().type);
+    jobject eltType = getType(mt->valueType());
     
     _node.indexExpression()->accept(*this);
     jobject idx = last();

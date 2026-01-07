@@ -88,7 +88,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 	@Override
 	public void init(List<Module> modules) {
-
 		for (Module m : modules) {
 			assert m instanceof SourceFileModule;
 		}
@@ -104,7 +103,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		solidityCode.loadFiles(files);
 
 		super.init(modules);
-
 	}
 
 	public SolidityLoader(IClassHierarchy cha, IClassLoader parent) {
