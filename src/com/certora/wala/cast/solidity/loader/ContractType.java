@@ -24,12 +24,13 @@ public class ContractType implements Class {
 		this.name = name;
 		this.superTypes = superTypes;
 		
-		SolidityCAstType.record("contract " + name, this, TypeReference.findOrCreate(SolidityTypes.solidity, name));;
+		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
+		SolidityCAstType.record("contract "+name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 	}
 
 	@Override
 	public String getName() {
-		return "contract " + name;
+		return name;
 	}
 
 	@Override

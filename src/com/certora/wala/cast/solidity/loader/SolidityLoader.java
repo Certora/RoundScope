@@ -27,6 +27,7 @@ import com.ibm.wala.cast.loader.CAstAbstractModuleLoader;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.cfg.InducedCFG;
@@ -58,6 +59,7 @@ import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
+import com.ibm.wala.types.Descriptor;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.Selector;
@@ -366,7 +368,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 	private void makeFields(CAstEntity type, IClass newClass, Map<Atom, IField> fields) {
 		type.getScopedEntities(null).forEachRemaining(ce -> {
-			if (ce.getKind() == CAstEntity.FIELD_ENTITY || ce.getKind() == CAstEntity.FUNCTION_ENTITY) {
+			if (ce.getKind() == CAstEntity.FIELD_ENTITY) {
 				TypeReference fieldType = SolidityCAstType.getIRType(ce.getType().getName());
 				Atom fieldName = Atom.findOrCreateUnicodeAtom(ce.getName());
 				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, fieldType);
@@ -374,6 +376,26 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 						new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
 
 						});
+			} else if (ce.getKind() == CAstEntity.FUNCTION_ENTITY) {
+				CAstType.Function ft = (CAstType.Function) ce.getType();
+				TypeName[] params = new TypeName[ ft.getArgumentCount() ];
+				for(int i = 0; i < ft.getArgumentCount() ; i++) {
+					params[i] = SolidityCAstType.getIRType(ft.getArgumentTypes().get(i).getName()).getName();
+				}
+				TypeName ret = 
+					ft.getReturnType() == null? 
+						TypeReference.Void.getName(): 
+							SolidityCAstType.getIRType(ft.getReturnType().getName()).getName();
+
+				Descriptor d = Descriptor.findOrCreate(params, ret);
+				Selector s = new Selector(Atom.findOrCreateUnicodeAtom(ft.getName()), d);
+			
+				Atom fieldName = Atom.findOrCreateUnicodeAtom(s.toString());
+				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, SolidityTypes.function);
+				fields.put(fieldName,
+						new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
+				
+				});
 			}
 		});
 	}

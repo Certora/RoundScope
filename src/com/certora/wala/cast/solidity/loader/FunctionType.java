@@ -1,6 +1,5 @@
 package com.certora.wala.cast.solidity.loader;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,20 +19,39 @@ public class FunctionType implements Method {
 	private final CAstType[] args;
 	private final CAstType self;
 
+	public static String arrayToString(CAstType[] parameters) {
+		if (parameters != null && parameters.length > 0) {
+			String s = "(" + parameters[0].getName();
+			if (parameters.length > 1) {
+				for(int i = 1; i < parameters.length; i++) {
+					s += "," + parameters[i].getName();
+				}
+			}
+			s += ")";
+			return s;
+		} else {
+			return "";
+		}
+	}
+
+	public static String signature(String name, CAstType[] args, CAstType returnType) {
+		String sig = name + " " + arrayToString(args);
+		if (returnType != null) {
+			sig += " --> " + returnType.getName();
+		}
+		return sig;
+	}
+	
 	public FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
+		this.name = name;
 		this.returnType = returnType==null? SolidityCAstType.get("void"): returnType;
 		this.args = args;
 		this.self = self;
 		
-		String sig = name + " " + SolidityFunctionType.arrayToString(args);
-		if (returnType != null) {
-			sig += " --> " + returnType.getName();
-		}
+		String sig = signature(name, args, returnType);
 		
 		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, sig);
 		SolidityCAstType.record(sig, this, tr);
-		
-		this.name = sig;
 	}
 	
 	@Override

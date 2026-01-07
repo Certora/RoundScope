@@ -5,8 +5,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.certora.wala.cast.solidity.loader.FunctionType;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
+import com.certora.wala.cast.solidity.tree.SolidityFunctionType;
 import com.certora.wala.cast.solidity.tree.SolidityMappingType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
@@ -16,17 +18,23 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.CAstType.Function;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
+import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
+import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.types.Descriptor;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.Selector;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
@@ -43,8 +51,25 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected String composeEntityName(WalkContext parent, CAstEntity f) {
-		String myName = parent.top().getName();
-		return (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
+		if (parent.top().getKind() == CAstEntity.FILE_ENTITY) {
+			return f.getName();
+		} else {
+			String myName = parent.top().getName();
+			String stem = (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
+			if (f.getKind() == CAstEntity.FUNCTION_ENTITY) {
+				stem += "(";
+				boolean first = true;
+				for(CAstType at : ((Function)f.getType()).getArgumentTypes()) {
+					if (!first) { 
+						stem += ",";
+					}
+					stem += at.getName();
+					first = false;
+				}
+				stem += ")";
+			}
+			return stem;
+		}
 	}
 
 	@Override
@@ -119,8 +144,35 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	protected void doCall(WalkContext context, CAstNode call, int result, int exception, CAstNode name, int receiver,
 			int[] arguments) {
-		// TODO Auto-generated method stub
+		if (call.getChild(0).getKind() == CAstNode.TYPE_LITERAL_EXPR) {
+			String typeName = (String) call.getChild(0).getChild(0).getValue();
+			TypeReference type = SolidityCAstType.getIRType(typeName);
+			context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, receiver, type, false));
+		} else if (call.getChild(0).getValue() instanceof SolidityFunctionType){
+			CAstType selfCAstType = ((FunctionType)context.top().getType()).getDeclaringType();
+			TypeReference selfRef = SolidityCAstType.getIRType(selfCAstType.getName());
+			IClass selfCls = ((SolidityLoader)loader).lookupClass(selfRef.getName());
+			
+			SolidityFunctionType ft = (SolidityFunctionType) call.getChild(0).getValue();
+			TypeName[] params = new TypeName[ ft.parameters().length ];
+			for(int i = 0; i < ft.parameters().length ; i++) {
+				params[i] = SolidityCAstType.getIRType(ft.parameters()[i].getName()).getName();
+			}
+			TypeName ret = 
+				ft.returns() == null? 
+					TypeReference.Void.getName(): 
+					SolidityCAstType.getIRType(ft.returns()[0].getName()).getName();
+			
+			Descriptor d = Descriptor.findOrCreate(params, ret);
+			Selector s = new Selector(Atom.findOrCreateUnicodeAtom(ft.getName()), d);
+			IField mf = selfCls.getField(Atom.findOrCreateUnicodeAtom(s.toString()));
+			
+			int f = context.currentScope().allocateTempValue();
+			context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), f, 1, mf.getReference()));
 
+			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), MethodReference.findOrCreate(selfRef, s), Dispatch.VIRTUAL);
+			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, arguments, context.currentScope().allocateTempValue(), csr, null));
+		}
 	}
 
 	@Override
@@ -128,7 +180,7 @@ public class SolidityAstTranslator extends AstTranslator {
 		CAstEntity contract = getParent(context.top());
 		CAstType objCAstType = contract.getType();
 		TypeReference objType = SolidityCAstType.getIRType(objCAstType.getName());
-		context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), objType)));
+		context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom(elt.getValue().toString()), objType)));
 	}
 
 	@Override
