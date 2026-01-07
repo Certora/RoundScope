@@ -1,6 +1,8 @@
 package com.certora.wala.cast.solidity.translator;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -20,6 +22,7 @@ import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Function;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
+import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
@@ -170,8 +173,19 @@ public class SolidityAstTranslator extends AstTranslator {
 			int f = context.currentScope().allocateTempValue();
 			context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), f, 1, mf.getReference()));
 
-			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), MethodReference.findOrCreate(selfRef, s), Dispatch.VIRTUAL);
-			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, arguments, context.currentScope().allocateTempValue(), csr, null));
+			int argsAndSelf[] = new int[ arguments.length + 1 ];
+			argsAndSelf[0] = f;
+			System.arraycopy(arguments, 0, argsAndSelf, 1, arguments.length);
+			
+			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), AstMethodReference.fnReference(selfRef), Dispatch.VIRTUAL);
+			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));
+		} else {
+			int argsAndSelf[] = new int[ arguments.length + 1 ];
+			argsAndSelf[0] = receiver;
+			System.arraycopy(arguments, 0, argsAndSelf, 1, arguments.length);
+
+			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), AstMethodReference.fnReference(SolidityTypes.root), Dispatch.VIRTUAL);
+			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
 		}
 	}
 
