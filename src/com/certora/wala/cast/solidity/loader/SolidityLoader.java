@@ -26,27 +26,29 @@ import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.CAstAbstractModuleLoader;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstEntity;
+import com.ibm.wala.cast.tree.CAstQualifier;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.CAstType.Function;
+import com.ibm.wala.cast.tree.CAstType.Method;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
-import com.ibm.wala.cfg.InducedCFG;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
-import com.ibm.wala.classLoader.IMethod.SourcePosition;
-import com.ibm.wala.classLoader.JavaLanguage;
 import com.ibm.wala.classLoader.Language;
+import com.ibm.wala.classLoader.LanguageImpl;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.SourceFileModule;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
-import com.ibm.wala.ipa.callgraph.Context;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.AbstractRootMethod;
+import com.ibm.wala.ipa.callgraph.impl.FakeRootClass;
+import com.ibm.wala.ipa.callgraph.impl.FakeRootMethod;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
@@ -54,6 +56,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.modref.ExtendedHeapModel;
 import com.ibm.wala.ipa.modref.ModRef.ModVisitor;
 import com.ibm.wala.ipa.modref.ModRef.RefVisitor;
+import com.ibm.wala.shrike.shrikeBT.Constants;
 import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
@@ -77,7 +80,13 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass codeBody = new CoreClass(SolidityTypes.codeBody.getName(), root.getName(), this,
 			null);
 
+	private final IClass contract = new CoreClass(SolidityTypes.contract.getName(), root.getName(), this,
+			null);
+
 	private final IClass msg = new CoreClass(SolidityTypes.msg.getName(), root.getName(), this,
+			null);
+
+	private final IClass exception = new CoreClass(SolidityTypes.exception.getName(), root.getName(), this,
 			null);
 
 	private final IClass function = new CoreClass(SolidityTypes.function.getName(), codeBody.getName(), this,
@@ -114,7 +123,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		return getLanguage().instructionFactory();
 	}
 
-	static final Language solidity = new JavaLanguage() {
+	static final Language solidity = new LanguageImpl() {
 
 		@Override
 		public TypeReference[] getArrayInterfaces() {
@@ -129,8 +138,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public TypeReference getConstantType(Object o) {
-			// TODO Auto-generated method stub
-			return null;
+			return SolidityTypes.root;
 		}
 
 		@Override
@@ -138,17 +146,16 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			return Collections.emptySet();
 		}
 
-		@Override
-		public AbstractRootMethod getFakeRootMethod(IClassHierarchy cha, AnalysisOptions options,
-				IAnalysisCacheView cache) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		  @Override
+		  public AbstractRootMethod getFakeRootMethod(
+		      IClassHierarchy cha, AnalysisOptions options, IAnalysisCacheView cache) {
+		    return new FakeRootMethod(
+		        new FakeRootClass(SolidityTypes.solidity, cha), options, cache);
+		  }
 
 		@Override
 		public Object getMetadataToken(Object value) {
-			// TODO Auto-generated method stub
-			return null;
+			return value;
 		}
 
 		@Override
@@ -180,7 +187,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public TypeReference getThrowableType() {
-			return TypeReference.JavaLangThrowable;
+			return SolidityTypes.exception;
 		}
 
 		@Override
@@ -255,12 +262,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public TypeName lookupPrimitiveType(String name) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
-		@Override
-		public InducedCFG makeInducedCFG(SSAInstruction[] instructions, IMethod method, Context context) {
 			// TODO Auto-generated method stub
 			return null;
 		}
@@ -389,10 +390,10 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				Selector s = new Selector(Atom.findOrCreateUnicodeAtom(ft.getName()), d);
 			
 				Atom fieldName = Atom.findOrCreateUnicodeAtom(s.toString());
-				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, SolidityTypes.function);
+				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, SolidityCAstType.getIRType(ft.getName()));
 				fields.put(fieldName,
-						new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
-				
+					new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
+					
 				});
 			}
 		});
@@ -407,7 +408,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			si = Collections.emptyList();
 			superClass = supers.iterator().next().getName();
 		} else {
-			superClass = root.getName();
+			superClass = contract.getName();
 			si = supers;
 		}
 		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass);
@@ -416,15 +417,56 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		return newClass;
 	}
 
+	public interface TypedCodeBody {
+
+		public TypeReference getSelf();
+
+		public TypeReference[] getArgumentTypes();
+	}
+	
+	private abstract class TypedFunctionClass extends AstFunctionClass implements TypedCodeBody {
+		protected TypedFunctionClass(TypeReference reference, IClassLoader loader, Position sourcePosition) {
+			super(reference, loader, sourcePosition);
+		}		
+	}
+	
+	private abstract class TypedFunctionBody extends DynamicCodeBody implements TypedCodeBody {
+
+		public TypedFunctionBody(TypeReference codeName, TypeReference parent, IClassLoader loader, Position sourcePosition,
+				CAstEntity entity, WalkContext context) {
+			super(codeName, parent, loader, sourcePosition, entity, context);
+		}
+		
+		
+	}
+	
 	public IClass defineFunctionType(CAstEntity n, String name, WalkContext c) {
 		TypeReference fn = TypeReference.findOrCreate(getReference(), 'L' + name);
+		Function f = (Function) n.getType();
+		TypeReference args[] = new TypeReference[ f.getArgumentCount() ];
+		for(int i = 0; i < f.getArgumentCount(); i++) {
+			args[i] = SolidityCAstType.getIRType(f.getArgumentTypes().get(i).getName());
+		}
+
+		TypeReference self;
+		if (f instanceof Method) {
+			self = SolidityCAstType.getIRType(((Method)f).getDeclaringType().getName());
+		} else {
+			self = null;
+		}
+
 		if (n instanceof EventEntity) {
-			return new AstFunctionClass(fn, this, n.getPosition()) {
+			return new TypedFunctionClass(fn, this, n.getPosition()) {
 
 				{
 					types.put(fn.getName(), this);
 				}
-				
+
+				@Override
+				public boolean isAbstract() {
+					return true;
+				}
+
 				@Override
 				public Collection<Annotation> getAnnotations() {
 					return Collections.emptySet();
@@ -444,24 +486,59 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				public String toString() {
 					return "event " + name;
 				}
+
+				@Override
+				public TypeReference getSelf() {
+					return self;
+				}
+
+				@Override
+				public TypeReference[] getArgumentTypes() {
+					return args;
+				}
 			};
 		} else {
-			return new DynamicCodeBody(fn, 
+			boolean pblc = n.getQualifiers().contains(CAstQualifier.PUBLIC);
+			boolean prvt = n.getQualifiers().contains(CAstQualifier.PRIVATE);
+			int modifiers = pblc? Constants.ACC_PUBLIC: prvt? Constants.ACC_PRIVATE: 0;
+			return new TypedFunctionBody(fn, 
 				function.getReference(), this,
-				n.getPosition(), n, c);
+				n.getPosition(), n, c) {
+
+					@Override
+					public boolean isPublic() {
+						return pblc;
+					}
+
+					@Override
+					public boolean isPrivate() {
+						return prvt;
+					}
+
+					@Override
+					public int getModifiers() {
+						return modifiers;
+					}
+
+					@Override
+					public TypeReference getSelf() {
+						return self;
+					}
+
+					@Override
+					public TypeReference[] getArgumentTypes() {
+						return args;
+					}
+				
+			};
 		}
 	}
 
-	public DynamicMethodObject makeCodeBodyCode(AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
+	public DynamicMethodObject makeCodeBodyCode(CAstType t, AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
 			Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> caughtTypes, boolean hasMonitorOp,
 			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo, IClass C) {
 		return new DynamicMethodObject(C, Collections.emptySet(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp,
 				lexicalInfo, debugInfo) {
-
-					@Override
-					public int getNumberOfParameters() {
-						return super.getNumberOfParameters() + 1;
-					}
 
 					@Override
 					public SourcePosition getParameterSourcePosition(int paramNum) throws InvalidClassFileException {
@@ -479,7 +556,18 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 						} else {
 							return super.getParameterPosition(paramIndex-1);
 						}
+					}
+
+					@Override
+					public TypeReference getParameterType(int i) {
+						if (i == 0) {
+							return SolidityCAstType.getIRType(t.getName());
+						} else {
+							return SolidityCAstType.getIRType(((Function)t).getArgumentTypes().get(i-1).getName());
+						}
 					}	
+					
+					
 		};
 	}
 
@@ -490,6 +578,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		DynamicCodeBody C = (DynamicCodeBody) lookupClass('L' + clsName, cha);
 		assert C != null : clsName;
 		return C.setCodeBody(
-			makeCodeBodyCode(cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
+			makeCodeBodyCode(n.getType(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
 	}
 }

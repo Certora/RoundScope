@@ -158,6 +158,7 @@ private:
     jobjectArray getCAstTypes(const std::vector<ASTPointer<VariableDeclaration>>&);
     jobject getSolidityFunctionType(const char *, jobjectArray, jobjectArray, bool);
     jobject getSolidityFunctionType(const CallableDeclaration*, bool);
+    jobject visitCall(const CallableDeclaration &, jobject, bool);
     
 public:
     jobject last() {
@@ -179,7 +180,6 @@ public:
     virtual bool visit(const ElementaryTypeNameExpression &_node) override;
     virtual bool visit(const EmitStatement &_node) override;
     virtual bool visit(const EventDefinition &_node) override;
-    virtual void endVisit(const EventDefinition &_node) override;
     virtual bool visit(const ExpressionStatement &_node) override;
     virtual bool visit(const FunctionCall &_node) override;
     virtual bool visit(const FunctionDefinition &_node) override;
@@ -199,10 +199,6 @@ public:
     virtual bool visit(const SourceUnit &_node) override;
     virtual bool visit(const TupleExpression &_node) override;
     virtual bool visit(const UserDefinedTypeName &_node) override;
-    void extracted(const VariableDeclaration &_node);
-    
-    void extracted();
-    
     virtual bool visit(const VariableDeclaration &_node) override;
     virtual bool visit(const VariableDeclarationStatement &_node) override;
 

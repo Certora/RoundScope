@@ -12,9 +12,13 @@ public class SolidityTypes {
 	
 	public static TypeReference root = TypeReference.findOrCreate(solidity, "Lroot");
 
+	public static TypeReference exception = TypeReference.findOrCreate(solidity, "Lexception");
+
+	public static TypeReference contract = TypeReference.findOrCreate(solidity, "Lcontract");
+
 	public static TypeReference msg = TypeReference.findOrCreate(solidity, "Lmsg");
 
-	public static TypeReference codeBody = TypeReference.findOrCreate(solidity, "LCodeBode");
+	public static TypeReference codeBody = TypeReference.findOrCreate(solidity, "LCodeBody");
 
 	public static TypeReference function = TypeReference.findOrCreate(solidity, "Lfunction");
 

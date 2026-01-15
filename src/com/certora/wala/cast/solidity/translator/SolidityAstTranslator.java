@@ -1,8 +1,6 @@
 package com.certora.wala.cast.solidity.translator;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -57,21 +55,12 @@ public class SolidityAstTranslator extends AstTranslator {
 		if (parent.top().getKind() == CAstEntity.FILE_ENTITY) {
 			return f.getName();
 		} else {
-			String myName = parent.top().getName();
-			String stem = (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
 			if (f.getKind() == CAstEntity.FUNCTION_ENTITY) {
-				stem += "(";
-				boolean first = true;
-				for(CAstType at : ((Function)f.getType()).getArgumentTypes()) {
-					if (!first) { 
-						stem += ",";
-					}
-					stem += at.getName();
-					first = false;
-				}
-				stem += ")";
+				return f.getType().getName();
+			} else {
+				String myName = parent.top().getName();
+				return (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
 			}
-			return stem;
 		}
 	}
 

@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
-import com.certora.wala.cast.solidity.tree.SolidityFunctionType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Method;
@@ -43,15 +42,14 @@ public class FunctionType implements Method {
 	}
 	
 	public FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
-		this.name = name;
 		this.returnType = returnType==null? SolidityCAstType.get("void"): returnType;
 		this.args = args;
 		this.self = self;
 		
-		String sig = signature(name, args, returnType);
+		this.name = signature(name, args, returnType);
 		
-		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, sig);
-		SolidityCAstType.record(sig, this, tr);
+		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + this.name);
+		SolidityCAstType.record(this.name, this, tr);
 	}
 	
 	@Override
