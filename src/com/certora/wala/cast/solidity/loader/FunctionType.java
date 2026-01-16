@@ -29,7 +29,7 @@ public class FunctionType implements Method {
 			s += ")";
 			return s;
 		} else {
-			return "";
+			return "()";
 		}
 	}
 

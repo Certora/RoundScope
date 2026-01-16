@@ -452,7 +452,7 @@ bool Translator::visit(const Identifier &_node) {
             return false;
         }
     } else if (EventDefinition const* var = dynamic_cast<EventDefinition const*>(_node.annotation().referencedDeclaration)) {
-        jobject fun = getSolidityFunctionType(var->name().c_str(), getCAstTypes(var->parameters()),NULL, true);
+        jobject fun = getSolidityFunctionType(var->name().c_str(), getCAstTypes(var->parameters()), NULL, true);
         jobject selfPtr = getSelfPtr();
         jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(_node.name().c_str())), _node.location());
         cast.setAstNodeType(context->entity(), retVal, fun);
