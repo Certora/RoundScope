@@ -83,8 +83,8 @@ public class Configuration {
 					String[] elts = elt.split("[:=]");
 					result.put(
 						Pair.make(Atom.findOrCreateUnicodeAtom(elts[1]),
-								  TypeReference.findOrCreate(SolidityTypes.solidity, elts[0])),
-						TypeReference.findOrCreate(SolidityTypes.solidity, elts[2]));
+								  TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[0])),
+						TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[2]));
 				}
 				return result;
 			}

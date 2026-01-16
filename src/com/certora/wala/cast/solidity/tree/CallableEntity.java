@@ -32,6 +32,7 @@ public abstract class CallableEntity extends AbstractCodeEntity {
 		this.nameLocation = nameLocation;
 		this.argLocations = argLocations;
 		this.argumentNames = argumentNames;
+		
 	}
 
 	@Override

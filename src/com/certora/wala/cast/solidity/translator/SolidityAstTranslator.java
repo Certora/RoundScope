@@ -16,9 +16,9 @@ import com.ibm.wala.cast.ir.translator.AstTranslator;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.tree.CAstNode;
+import com.ibm.wala.cast.tree.CAstNodeTypeMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
-import com.ibm.wala.cast.tree.CAstType.Function;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
@@ -26,7 +26,6 @@ import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
-import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
@@ -141,57 +140,43 @@ public class SolidityAstTranslator extends AstTranslator {
 			String typeName = (String) call.getChild(0).getChild(0).getValue();
 			TypeReference type = SolidityCAstType.getIRType(typeName);
 			context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, receiver, type, false));
-		} else if (call.getChild(0).getValue() instanceof SolidityFunctionType){
-			CAstType selfCAstType = ((FunctionType)context.top().getType()).getDeclaringType();
-			TypeReference selfRef = SolidityCAstType.getIRType(selfCAstType.getName());
-			IClass selfCls = ((SolidityLoader)loader).lookupClass(selfRef.getName());
-			
-			SolidityFunctionType ft = (SolidityFunctionType) call.getChild(0).getValue();
-			TypeName[] params = new TypeName[ ft.parameters().length ];
-			for(int i = 0; i < ft.parameters().length ; i++) {
-				params[i] = SolidityCAstType.getIRType(ft.parameters()[i].getName()).getName();
-			}
-			TypeName ret = 
-				ft.returns() == null? 
-					TypeReference.Void.getName(): 
-					SolidityCAstType.getIRType(ft.returns()[0].getName()).getName();
-			
-			Descriptor d = Descriptor.findOrCreate(params, ret);
-			Selector s = new Selector(Atom.findOrCreateUnicodeAtom(ft.getName()), d);
-			IField mf = selfCls.getField(Atom.findOrCreateUnicodeAtom(s.toString()));
-			
-			int f = context.currentScope().allocateTempValue();
-			context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), f, 1, mf.getReference()));
-
-			int argsAndSelf[] = new int[ arguments.length + 1 ];
-			argsAndSelf[0] = f;
-			System.arraycopy(arguments, 0, argsAndSelf, 1, arguments.length);
-			
-			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), AstMethodReference.fnReference(selfRef), Dispatch.VIRTUAL);
-			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));
 		} else {
 			int argsAndSelf[] = new int[ arguments.length + 1 ];
 			argsAndSelf[0] = receiver;
 			System.arraycopy(arguments, 0, argsAndSelf, 1, arguments.length);
 
-			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), AstMethodReference.fnReference(SolidityTypes.root), Dispatch.VIRTUAL);
+			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
+			TypeReference recType =  recCAstType == null? SolidityTypes.root: SolidityCAstType.getIRType(recCAstType.getName());
+			
+			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), AstMethodReference.fnReference(recType), Dispatch.VIRTUAL);
 			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
 		}
 	}
 
 	@Override
 	protected void doFieldRead(WalkContext context, int result, int receiver, CAstNode elt, CAstNode parent) {
-		CAstEntity contract = getParent(context.top());
-		CAstType objCAstType = contract.getType();
-		TypeReference objType = SolidityCAstType.getIRType(objCAstType.getName());
-		context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom(elt.getValue().toString()), objType)));
+		CAstEntity code = context.top();
+		CAstNodeTypeMap typeMap = code.getNodeTypeMap();
+		CAstType objCAstType = typeMap.getNodeType(parent.getChild(0));
+		CAstType eltCAstType = typeMap.getNodeType(parent);	
+		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType.getName());
+		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType.getName());
+		if (eltCAstType instanceof FunctionType) {
+			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, eltType.getName());
+			NewSiteReference ns = NewSiteReference.make(context.cfg().getCurrentInstruction(), t);
+			context.cfg().addInstruction(insts.NewInstruction(ns.getProgramCounter(), result, ns));
+			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), objType);
+			context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, receiver, self));
+		} else {
+			context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom(elt.getValue().toString()), eltType)));
+		}
 	}
 
 	@Override
 	protected void doFieldWrite(WalkContext context, int receiver, CAstNode elt, CAstNode parent, int rval) {
 		CAstEntity contract = getParent(context.top());
 		CAstType objCAstType = contract.getType();
-		TypeReference objType = SolidityCAstType.getIRType(objCAstType.getName());
+		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType.getName());
 		context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), objType)));
 	}
 

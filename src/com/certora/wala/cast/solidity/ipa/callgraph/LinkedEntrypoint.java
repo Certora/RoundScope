@@ -23,31 +23,34 @@ import com.ibm.wala.util.collections.Pair;
 public class LinkedEntrypoint extends DefaultEntrypoint {
 
 	private final Map<Pair<Atom, TypeReference>, TypeReference> linkage;
-
-	public LinkedEntrypoint(IMethod method, IClassHierarchy cha, Map<Pair<Atom,TypeReference>,TypeReference> linkage) {
+	private final IClass selfType;
+	
+	public LinkedEntrypoint(IMethod method, IClassHierarchy cha, IClass selfType, Map<Pair<Atom,TypeReference>,TypeReference> linkage) {
 		super(method, cha);
 		this.linkage = linkage;
+		this.selfType = selfType;
 	}
 
-	public LinkedEntrypoint(MethodReference method, IClassHierarchy cha, Map<Pair<Atom,TypeReference>,TypeReference> linkage) {
+	public LinkedEntrypoint(MethodReference method, IClassHierarchy cha,IClass selfType,  Map<Pair<Atom,TypeReference>,TypeReference> linkage) {
 		super(method, cha);
 		this.linkage = linkage;
+		this.selfType = selfType;
 	}
 
 	@Override
 	public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
 		SSAAbstractInvokeInstruction call = super.addCall(m);
-		if (call.getDeclaredTarget().isInit()) {
-			int self = call.getUse(0);
-			TypeReference selfType = call.getDeclaredTarget().getDeclaringClass();
-			linkage.forEach((x, y) -> { 
-				if (selfType.equals(x.snd)) {
-					FieldReference fr = FieldReference.findOrCreate(selfType, x.fst, y);
-					SSANewInstruction alloc = m.addAllocation(y);
-					m.addSetInstance(fr, self, alloc.getDef());
-				}
-			});
-		}
+		int functionSelf = call.getUse(0);
+		int objSelf = m.addAllocation(selfType.getReference()).getDef();
+		m.addSetInstance(FieldReference.findOrCreate(call.getDeclaredTarget().getDeclaringClass(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference()), functionSelf, objSelf);
+		linkage.forEach((x, y) -> { 
+			if (selfType.getReference().equals(x.snd)) {
+				FieldReference fr = FieldReference.findOrCreate(x.snd, x.fst, y);
+				SSANewInstruction alloc = m.addAllocation(y);
+				m.addSetInstance(fr, objSelf, alloc.getDef());
+			}
+		});
+		
 		return call;
 	}
 
@@ -66,7 +69,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 					if (fieldClass != null && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
 						AstFunctionClass afc = (AstFunctionClass) fieldClass;
 						if (afc.isPublic() && !afc.isAbstract()) {
-							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, linkage));
+							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, cl, linkage));
 						}
 					}
 				});

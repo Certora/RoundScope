@@ -159,7 +159,9 @@ private:
     jobject getSolidityFunctionType(const char *, jobjectArray, jobjectArray, bool);
     jobject getSolidityFunctionType(const CallableDeclaration*, bool);
     jobject visitCall(const CallableDeclaration &, jobject, bool);
-    
+    jobject getSelfType();
+    jobject getSelfPtr();
+
 public:
     jobject last() {
         return tree;

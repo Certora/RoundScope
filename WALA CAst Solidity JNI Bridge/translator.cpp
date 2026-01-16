@@ -399,23 +399,30 @@ void Translator::endVisit(const FunctionDefinition &_node) {
  }
 
 jobjectArray Translator::getCAstTypes(const std::vector<ASTPointer<VariableDeclaration>>& ts) {
-    jobjectArray result = jniEnv->NewObjectArray(ts.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType"), NULL);
-    int i = 0;
-    for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t=ts.begin();
-         t != ts.end();
-         ++t, i++)
-    {
-        jobject pt = getType(t->get()->type());
-        jniEnv->SetObjectArrayElement(result, i, pt);
-    }
-    
-    return result;
+        jobjectArray result = jniEnv->NewObjectArray(ts.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType"), NULL);
+        int i = 0;
+        for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t=ts.begin();
+             t != ts.end();
+             ++t, i++)
+        {
+            jobject pt = getType(t->get()->type());
+            jniEnv->SetObjectArrayElement(result, i, pt);
+        }
+        
+        return result;
+}
+
+jobject Translator::getSelfType() {
+    jobject methodType = cast.getEntityType(context->entity());
+    jclass mtc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType$Method");
+    jmethodID gdc = jniEnv->GetMethodID(mtc, "getDeclaringType", "()Lcom/ibm/wala/cast/tree/CAstType;");
+    return jniEnv->CallObjectMethod(methodType, gdc);
 }
 
 jobject Translator::getSolidityFunctionType(const char *name, jobjectArray params, jobjectArray returns, bool event) {
-    jclass sfc = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityFunctionType");
-    jmethodID sfctor = jniEnv->GetMethodID(sfc, "<init>", "(Ljava/lang/String;[Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;Z)V");
-    return jniEnv->NewObject(sfc, sfctor, jniEnv->NewStringUTF(name), params, returns, event);
+    jclass sfc = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
+    jmethodID sfctor = jniEnv->GetMethodID(sfc, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)V");
+    return jniEnv->NewObject(sfc, sfctor, jniEnv->NewStringUTF(name), getSelfType(), returns, params);
 }
 
 jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool event) {
@@ -425,25 +432,43 @@ jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool
     return getSolidityFunctionType(nm, ps, rs, event);
 }
 
+jobject Translator::getSelfPtr() {
+    jobject thisPtr = cast.makeNode(cast.THIS);
+    jobject methodType = cast.getEntityType(context->entity());
+    cast.setAstNodeType(context->entity(), thisPtr, methodType);
+    jobject selfPtr = cast.makeNode(cast.OBJECT_REF, thisPtr, cast.makeConstant("self"));
+    cast.setAstNodeType(context->entity(), selfPtr, getSelfType());
+    return selfPtr;
+}
+
 bool Translator::visit(const Identifier &_node) {
     if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
         if (var->isStateVariable()) {
-            ret(record(cast.makeNode(cast.OBJECT_REF, cast.makeNode(cast.THIS), cast.makeConstant(_node.name().c_str())),   _node.location(), _node.annotation().type));
+            jobject selfPtr = getSelfPtr();
+              ret(record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(_node.name().c_str())),   _node.location(), _node.annotation().type));
             return false;
         } else if (var->isLocalVariable()) {
             ret(record(cast.makeNode(cast.VAR, cast.makeConstant(_node.name().c_str())), _node.location(), _node.annotation().type));
             return false;
         }
     } else if (EventDefinition const* var = dynamic_cast<EventDefinition const*>(_node.annotation().referencedDeclaration)) {
-        jobject fun = getSolidityFunctionType(var->name().c_str(), getCAstTypes(var->parameters()), NULL, true);
-        ret(record(cast.makeConstant(fun), _node.location(), _node.annotation().type));
+        jobject fun = getSolidityFunctionType(var->name().c_str(), getCAstTypes(var->parameters()),NULL, true);
+        jobject selfPtr = getSelfPtr();
+        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(_node.name().c_str())), _node.location());
+        cast.setAstNodeType(context->entity(), retVal, fun);
+        ret(retVal);
         return false;
+        
     } else if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
-        jobject fun = getSolidityFunctionType(var, false);
-        ret(record(cast.makeConstant(fun), _node.location(), _node.annotation().type));
+        jobject fun = getSolidityFunctionType(var->name().c_str(), getCAstTypes(var->parameters()), getCAstTypes(var->returnParameters()), false);
+        jobject selfPtr = getSelfPtr();
+        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(_node.name().c_str())), _node.location());
+        cast.setAstNodeType(context->entity(), retVal, fun);
+        ret(retVal);
         return false;
+
     } else if (MagicVariableDeclaration const* var = dynamic_cast<MagicVariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
-        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(_node.name().c_str())), _node.location(), _node.annotation().type));
+        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(_node.name().c_str())), _node.location(), var->type()));
         return false;
     }
     
@@ -536,18 +561,18 @@ bool Translator::visit(const MemberAccess &_node) {
     _node.expression().accept(*this);
     jobject obj = last();
 
-    jobject elt;
-    if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
+    jobject elt = cast.makeConstant( _node.memberName().c_str() );
+    jobject ref = cast.makeNode(cast.OBJECT_REF, obj, elt);
+   if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
         jobject fun = getSolidityFunctionType(var, false);
-        elt = cast.makeConstant( fun );
+       cast.setAstNodeType(context->entity(), ref, fun);
+       ret(record(ref, _node.location()));
     } else {
-        elt = cast.makeConstant( _node.memberName().c_str() );
+        ret(record(ref, _node.location(), _node.annotation().type));
     }
     
-    jobject ref = cast.makeNode(cast.OBJECT_REF, obj, elt);
+     
     
-    
-    ret(record(ref, _node.location(), _node.annotation().type));
     return false;
 }
 

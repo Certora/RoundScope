@@ -41,6 +41,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 				{"address", SolidityTypes.address},
 				{"string", SolidityTypes.string},
 				{"bool", SolidityTypes.bool},
+				{"function", SolidityTypes.function},
 				{"void", TypeReference.Void}}) {
 			types.put((String)nm[0], new SolidityCAstType((String)nm[0]));
 			irTypes.put((String)nm[0], (TypeReference)nm[1]);

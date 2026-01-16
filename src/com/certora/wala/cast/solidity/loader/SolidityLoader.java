@@ -70,6 +70,7 @@ import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 
 public class SolidityLoader extends CAstAbstractModuleLoader {
@@ -422,6 +423,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		public TypeReference getSelf();
 
 		public TypeReference[] getArgumentTypes();
+		
 	}
 	
 	private abstract class TypedFunctionClass extends AstFunctionClass implements TypedCodeBody {
@@ -431,13 +433,55 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	}
 	
 	private abstract class TypedFunctionBody extends DynamicCodeBody implements TypedCodeBody {
-
+		private final IField self;
+		
 		public TypedFunctionBody(TypeReference codeName, TypeReference parent, IClassLoader loader, Position sourcePosition,
-				CAstEntity entity, WalkContext context) {
+				CAstEntity entity, WalkContext context, TypeReference selfType) {
 			super(codeName, parent, loader, sourcePosition, entity, context);
+			this.self = new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType), Collections.emptySet(), cha.lookupClass(selfType), cha, Collections.emptySet()) {
+
+				@Override
+				public IClass getDeclaringClass() {
+					return TypedFunctionBody.this;
+				}
+				
+			};
 		}
 		
-		
+		@Override
+		public IField getField(Atom name) {
+			if (self.getName().equals(name)) {
+				return self;
+			} else {
+				return super.getField(name);
+			}
+		}
+
+		@Override
+		public IField getField(Atom name, TypeName type) {
+			if (self.getName().equals(name) && self.getFieldTypeReference().getName().equals(type)) {
+				return self;
+			} else {
+				return super.getField(name);
+			}
+		}
+
+		@Override
+		public Collection<IField> getAllInstanceFields() {
+			Collection<IField> x = super.getAllInstanceFields();
+			if (x.isEmpty()) {
+				return Collections.singleton(self);
+			} else {
+				Set<IField> y = HashSetFactory.make(x);
+				y.add(self);
+				return y;
+			}
+		}
+
+		@Override
+		public Collection<IField> getAllFields() {
+			return super.getAllInstanceFields();
+		}
 	}
 	
 	public IClass defineFunctionType(CAstEntity n, String name, WalkContext c) {
@@ -503,7 +547,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			int modifiers = pblc? Constants.ACC_PUBLIC: prvt? Constants.ACC_PRIVATE: 0;
 			return new TypedFunctionBody(fn, 
 				function.getReference(), this,
-				n.getPosition(), n, c) {
+				n.getPosition(), n, c, self) {
 
 					@Override
 					public boolean isPublic() {

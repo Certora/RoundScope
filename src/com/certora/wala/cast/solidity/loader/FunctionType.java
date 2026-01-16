@@ -40,7 +40,7 @@ public class FunctionType implements Method {
 		}
 		return sig;
 	}
-	
+
 	public FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
 		this.returnType = returnType==null? SolidityCAstType.get("void"): returnType;
 		this.args = args;
@@ -51,6 +51,11 @@ public class FunctionType implements Method {
 		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + this.name);
 		SolidityCAstType.record(this.name, this, tr);
 	}
+
+	// TODO: multiple return types; probably use a tuple
+	public FunctionType(String name, CAstType self, CAstType[] returnType, CAstType... args) {
+		this(name, self, returnType==null? null: returnType[0], args);
+	}
 	
 	@Override
 	public String getName() {
@@ -59,7 +64,7 @@ public class FunctionType implements Method {
 
 	@Override
 	public Collection<CAstType> getSupertypes() {
-		return Collections.singleton(SolidityCAstType.get("root"));
+		return Collections.singleton(SolidityCAstType.get("function"));
 	}
 
 	@Override
@@ -92,4 +97,8 @@ public class FunctionType implements Method {
 		return false;
 	}
 
+	@Override
+	public String toString() {
+		return "function type " + name;
+	}
 }
