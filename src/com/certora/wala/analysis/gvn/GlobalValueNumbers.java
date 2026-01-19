@@ -5,14 +5,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import com.certora.wala.analysis.gvn.GlobalValueKey.Op;
 import com.ibm.wala.ipa.slicer.NormalStatement;
 import com.ibm.wala.ipa.slicer.Statement;
-import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.SSAArrayLengthInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
@@ -27,17 +23,9 @@ import com.ibm.wala.ssa.SSAPiInstruction;
 import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.ssa.SSAUnaryOpInstruction;
 import com.ibm.wala.ssa.SymbolTable;
-import com.ibm.wala.util.collections.EmptyIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.collections.IteratorUtil;
-import com.ibm.wala.util.graph.AbstractNumberedGraph;
 import com.ibm.wala.util.graph.Graph;
-import com.ibm.wala.util.graph.NumberedEdgeManager;
-import com.ibm.wala.util.graph.NumberedNodeManager;
-import com.ibm.wala.util.intset.IntSet;
-import com.ibm.wala.util.intset.IntSetUtil;
-import com.ibm.wala.util.intset.MutableIntSet;
 
 public abstract class GlobalValueNumbers<T> {
 	Graph<T> G;
@@ -218,155 +206,6 @@ public abstract class GlobalValueNumbers<T> {
 		}
 	}
 	
-	public static class DefUseGraph extends AbstractNumberedGraph<Integer> {
-		private final IR ir;
-		private final DefUse du;
-		
-		public DefUseGraph(IR ir) {
-			this.du = new DefUse(this.ir = ir);
-		}
-		
-		@Override
-		protected NumberedNodeManager<Integer> getNodeManager() {
-			return new NumberedNodeManager<>() {
-
-				@Override
-				public Stream<Integer> stream() {
-					return IntStream.range(1, getMaxNumber()).boxed();
-				}
-
-				@Override
-				public int getNumberOfNodes() {
-					return ir.getSymbolTable().getMaxValueNumber();
-				}
-
-				@Override
-				public void addNode(Integer n) {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public void removeNode(Integer n) throws UnsupportedOperationException {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public boolean containsNode(Integer n) {
-					return n > 0 && n <= ir.getSymbolTable().getMaxValueNumber();
-				}
-
-				@Override
-				public int getNumber(Integer N) {
-					return N;
-				}
-
-				@Override
-				public Integer getNode(int number) {
-					return number;
-				}
-
-				@Override
-				public int getMaxNumber() {
-					return ir.getSymbolTable().getMaxValueNumber();
-				}
-
-				@Override
-				public Iterator<Integer> iterateNodes(IntSet s) {
-					return stream().filter(i -> s.contains(i)).iterator();
-				}
-			};
-		}
-
-		@Override
-		protected NumberedEdgeManager<Integer> getEdgeManager() {
-			return new NumberedEdgeManager<>() {
-
-				private <X> Stream<X> toStream(Iterator<X> i) {
-					Iterable<X> s = () -> i;
-					return StreamSupport.stream(s.spliterator(), false);			
-				}
-				
-				@Override
-				public Iterator<Integer> getSuccNodes(Integer n) {
-					return toStream(du.getUses(n)).map(inst -> inst.getDef()).iterator();
-				}
-
-				@Override
-				public int getSuccNodeCount(Integer n) {
-					return IteratorUtil.count(du.getUses(n));
-				}
-
-				@Override
-				public Iterator<Integer> getPredNodes(Integer n) {
-					SSAInstruction def = du.getDef(n);
-					if (def == null) {
-						return EmptyIterator.instance();
-					} else {
-						return IntStream.range(0, def.getNumberOfUses()).map(i -> def.getUse(i)).iterator();
-					}					
-				}
-
-				@Override
-				public int getPredNodeCount(Integer N) {
-					SSAInstruction def = du.getDef(N);
-					if (N == null) {
-						return 0;
-					} else {
-						return def.getNumberOfUses();
-					}
-				}
-
-				@Override
-				public void addEdge(Integer src, Integer dst) {
-					throw new UnsupportedOperationException();
-					
-				}
-
-				@Override
-				public void removeEdge(Integer src, Integer dst) throws UnsupportedOperationException {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public void removeAllIncidentEdges(Integer node) throws UnsupportedOperationException {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public void removeIncomingEdges(Integer node) throws UnsupportedOperationException {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public void removeOutgoingEdges(Integer node) throws UnsupportedOperationException {
-					throw new UnsupportedOperationException();
-				}
-
-				@Override
-				public boolean hasEdge(Integer src, Integer dst) {
-					// TODO Auto-generated method stub
-					return false;
-				}
-
-				@Override
-				public IntSet getSuccNodeNumbers(Integer node) {
-					MutableIntSet x = IntSetUtil.make();
-					getSuccNodes(node).forEachRemaining(i -> x.add(i));
-					return x;
-				}
-
-				@Override
-				public IntSet getPredNodeNumbers(Integer node) {
-					MutableIntSet x = IntSetUtil.make();
-					getPredNodes(node).forEachRemaining(i -> x.add(i));
-					return x;
-				}
-				
-			};
-		}
-		
-	}
-	
 	public static class IRValueNumbers extends GlobalValueNumbers<Integer> {
 
 		private IRValueNumbers(DefUseGraph G) {
@@ -380,7 +219,7 @@ public abstract class GlobalValueNumbers<T> {
 		
 		@Override
 		protected void init(Map<Integer, GlobalValueKey<Integer>> globalValues, Map<GlobalValueKey<Integer>, Set<Integer>> keySets) {
-			SymbolTable st = ((DefUseGraph)G).ir.getSymbolTable();
+			SymbolTable st = ((DefUseGraph)G).ir().getSymbolTable();
 			for(int i = 1; i <= st.getMaxValueNumber(); i++) {
 				if (st.isConstant(i) || i <= st.getNumberOfParameters()) {
 					globalValues.put(i, new GlobalValueKey<Integer>(new Op(i)));
@@ -390,7 +229,7 @@ public abstract class GlobalValueNumbers<T> {
 
 		@Override
 		protected boolean process(Integer elt, Map<Integer, GlobalValueKey<Integer>> globalValues, Map<GlobalValueKey<Integer>, Set<Integer>> keySets) {
-			SSAInstruction def = ((DefUseGraph)G).du.getDef(elt);
+			SSAInstruction def = ((DefUseGraph)G).du().getDef(elt);
 			if (def == null) {
 				if (globalValues.containsKey(elt) ) {
 					return false;
@@ -417,7 +256,8 @@ public abstract class GlobalValueNumbers<T> {
 						if (! keySets.containsKey(k)) {
 							globalValues.put(elt, k);
 							changed = true;
-						} else {
+						} else if (! globalValues.containsKey(elt)) {
+							changed = true;
 							globalValues.put(elt, globalValues.get(elt));
 						}
 					}
@@ -434,14 +274,12 @@ public abstract class GlobalValueNumbers<T> {
 
 					@Override
 					public void visitConversion(SSAConversionInstruction instruction) {
-						// TODO Auto-generated method stub
-						super.visitConversion(instruction);
+						visitOp(instruction, new Op(instruction.getToType()));
 					}
 
 					@Override
 					public void visitComparison(SSAComparisonInstruction instruction) {
-						// TODO Auto-generated method stub
-						super.visitComparison(instruction);
+						visitOp(instruction, new Op(instruction.getOperator()));
 					}
 
 					@Override

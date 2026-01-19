@@ -6,7 +6,9 @@ import java.util.Objects;
 
 import com.ibm.wala.ipa.slicer.Statement;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrike.shrikeBT.IComparisonInstruction;
 import com.ibm.wala.shrike.shrikeBT.IUnaryOpInstruction;
+import com.ibm.wala.types.TypeReference;
 
 public class GlobalValueKey<T> {
 
@@ -66,6 +68,14 @@ public class GlobalValueKey<T> {
 			this.op = op;
 		}
 		
+		public Op(TypeReference op) {
+			this.op = op;
+		}
+
+		public Op(IComparisonInstruction.Operator op) {
+			this.op = op;
+		}
+
 		@Override
 		public int hashCode() {
 			return Objects.hash(op);
