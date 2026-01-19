@@ -6,19 +6,23 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.certora.certoraprover.cvl.Ast;
+import com.certora.wala.analysis.gvn.GlobalValueNumbers;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
+import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
+import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
+import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilderCancelException;
 import com.ibm.wala.ipa.callgraph.ContextSelector;
@@ -34,8 +38,11 @@ import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
+import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
+import com.ibm.wala.types.MethodReference;
+import com.ibm.wala.types.TypeReference;
 
 public class TestRunner {
 
@@ -89,6 +96,20 @@ public class TestRunner {
 	    SDG<InstanceKey> sdg = new SDG<>(cg, cgBuilder.getPointerAnalysis(), Slicer.DataDependenceOptions.NO_BASE_NO_HEAP, Slicer.ControlDependenceOptions.NO_EXCEPTIONAL_EDGES);
 
 	    System.out.println(sdg);
+	    System.out.println(cg);
+	    
+	    /*
+	    CGNode muldivdown = cg.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(SolidityTypes.solidity, "LmulDivDown (uint256,uint256,uint256) --> uint256"), AstMethodReference.fnSelector)).iterator().next();
+	    IR mddir = muldivdown.getIR();
+	    System.err.println(mddir);
+	    System.err.println(new GlobalValueNumbers.IRValueNumbers(mddir));
+	     */
+	    
+	    CGNode muldivup = cg.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(SolidityTypes.solidity, "LmulDivUp (uint256,uint256,uint256) --> uint256"), AstMethodReference.fnSelector)).iterator().next();
+	    IR mduir = muldivup.getIR();
+	    System.err.println(mduir);
+	    System.err.println(new GlobalValueNumbers.IRValueNumbers(mduir));
+
 	}
 
 	private static void getSpecRules(Conf files) throws FileNotFoundException {
