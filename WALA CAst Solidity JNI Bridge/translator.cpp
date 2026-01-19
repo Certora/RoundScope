@@ -280,7 +280,7 @@ jobject Translator::visitCall(const CallableDeclaration &_node, jobject retType,
                 qual = cast.PUBLIC;
         }
     }
-    
+
     jclass sfet = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/FunctionEntity");
     jmethodID sfeCtor = jniEnv->GetMethodID(sfet, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType$Function;[Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;[Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstQualifier;Lcom/ibm/wala/cast/tree/CAstNode;)V");
     
@@ -341,9 +341,16 @@ bool Translator::visit(const FunctionDefinition &_node) {
     } else {
         // todo
     }
-
-    jobject funEntity = visitCall(_node, retType, _node.isConstructor());
     
+    jobject funEntity = visitCall(_node, retType, _node.isConstructor());
+
+    jclass sfet = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/FunctionEntity");
+    jmethodID feaq = jniEnv->GetMethodID(sfet, "addQualifier", "(Lcom/ibm/wala/cast/tree/CAstQualifier;)V");
+    if (_node.stateMutability() == StateMutability::Pure) {
+        jniEnv->CallVoidMethod(funEntity, feaq, cast.PURE);
+    } else if (_node.stateMutability() == StateMutability::View) {
+        jniEnv->CallVoidMethod(funEntity, feaq, cast.CONST);
+    }
     context = new CodeContext(funEntity, context);
 
    _node.body().accept(*this);

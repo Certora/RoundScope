@@ -424,6 +424,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		public TypeReference[] getArgumentTypes();
 		
+		public boolean isPure();
 	}
 	
 	private abstract class TypedFunctionClass extends AstFunctionClass implements TypedCodeBody {
@@ -434,20 +435,24 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	
 	private abstract class TypedFunctionBody extends DynamicCodeBody implements TypedCodeBody {
 		private final IField self;
+		boolean isPure;
 		
 		public TypedFunctionBody(TypeReference codeName, TypeReference parent, IClassLoader loader, Position sourcePosition,
 				CAstEntity entity, WalkContext context, TypeReference selfType) {
 			super(codeName, parent, loader, sourcePosition, entity, context);
+			isPure = entity.getQualifiers().contains(CAstQualifier.PURE);
 			this.self = new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType), Collections.emptySet(), cha.lookupClass(selfType), cha, Collections.emptySet()) {
-
 				@Override
 				public IClass getDeclaringClass() {
 					return TypedFunctionBody.this;
 				}
-				
 			};
 		}
-		
+
+		public boolean isPure() {
+			return isPure;
+		}
+
 		@Override
 		public IField getField(Atom name) {
 			if (self.getName().equals(name)) {
@@ -506,6 +511,10 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					types.put(fn.getName(), this);
 				}
 
+				public boolean isPure() {
+					return true;
+				}
+				
 				@Override
 				public boolean isAbstract() {
 					return true;

@@ -252,13 +252,14 @@ public abstract class GlobalValueNumbers<T> {
 							operands[i] = globalValues.get(inst.getUse(i));
 						}
 						GlobalValueKey<Integer> k = new GlobalValueKey<Integer>(op, operands);
-						add(k, elt, keySets);
 						if (! keySets.containsKey(k)) {
+							add(k, elt, keySets);
 							globalValues.put(elt, k);
 							changed = true;
 						} else if (! globalValues.containsKey(elt)) {
-							changed = true;
+							add(k, elt, keySets);
 							globalValues.put(elt, globalValues.get(elt));
+							changed = true;
 						}
 					}
 					

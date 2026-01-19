@@ -7,6 +7,7 @@ import com.ibm.wala.cast.tree.CAstNode;
 import com.ibm.wala.cast.tree.CAstQualifier;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 public class FunctionEntity extends CallableEntity {
 
@@ -33,7 +34,7 @@ public class FunctionEntity extends CallableEntity {
 			Position[] argLocations,
 			CAstQualifier qualifier,
 			CAstNode ast) {
-		this(name, type, argumentNames, location, nameLocation, argLocations, Collections.singleton(qualifier), ast);
+		this(name, type, argumentNames, location, nameLocation, argLocations, HashSetFactory.make(Collections.singleton(qualifier)), ast);
 	}
 
 	@Override
@@ -41,4 +42,7 @@ public class FunctionEntity extends CallableEntity {
 		return qualifiers;
 	}
 
+	public void addQualifier(CAstQualifier q) {
+		qualifiers.add(q);
+	}
 }
