@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.certora.certoraprover.cvl.Ast;
 import com.certora.wala.analysis.gvn.GlobalValueNumbers;
+import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
@@ -110,6 +111,8 @@ public class TestRunner {
 	    System.err.println(mduir);
 	    System.err.println(new GlobalValueNumbers.IRValueNumbers(mduir));
 
+	    RoundingEstimator re = new RoundingEstimator(mduir);
+	    re.analyze();
 	}
 
 	private static void getSpecRules(Conf files) throws FileNotFoundException {
