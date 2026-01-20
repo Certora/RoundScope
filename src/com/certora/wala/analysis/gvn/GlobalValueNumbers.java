@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.certora.wala.analysis.defuse.DefUseGraph;
 import com.certora.wala.analysis.gvn.GlobalValueKey.Op;
 import com.ibm.wala.ipa.slicer.NormalStatement;
 import com.ibm.wala.ipa.slicer.Statement;

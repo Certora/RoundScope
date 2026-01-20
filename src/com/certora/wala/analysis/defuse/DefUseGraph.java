@@ -1,4 +1,4 @@
-package com.certora.wala.analysis.gvn;
+package com.certora.wala.analysis.defuse;
 
 import java.util.Iterator;
 import java.util.stream.IntStream;
