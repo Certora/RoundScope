@@ -3,20 +3,18 @@ package com.certora.wala.cast.solidity.loader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 
 import com.certora.certoraprover.cvl.Ast;
-import com.certora.wala.analysis.gvn.GlobalValueNumbers;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
-import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
-import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
@@ -39,11 +37,9 @@ import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
-import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
-import com.ibm.wala.types.MethodReference;
-import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
 
 public class TestRunner {
 
@@ -99,20 +95,24 @@ public class TestRunner {
 	    System.out.println(sdg);
 	    System.out.println(cg);
 	    
-	    /*
-	    CGNode muldivdown = cg.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(SolidityTypes.solidity, "LmulDivDown (uint256,uint256,uint256) --> uint256"), AstMethodReference.fnSelector)).iterator().next();
-	    IR mddir = muldivdown.getIR();
-	    System.err.println(mddir);
-	    System.err.println(new GlobalValueNumbers.IRValueNumbers(mddir));
-	     */
+	    Map<CGNode,RoundingEstimator.Direction> rounding = HashMapFactory.make();
+	    boolean changed;
+	    do {
+	    	changed = false;
+	    	for(CGNode n : cg) {
+	    		RoundingEstimator re = new RoundingEstimator(n);
+	    		RoundingEstimator.Direction d = re.analyze(cg, rounding);	
+	    		if (rounding.put(n, d) != d) {
+	    			changed = true;
+	    		}
+	    	}
+	    } while (changed);
 	    
-	    CGNode muldivup = cg.getNodes(MethodReference.findOrCreate(TypeReference.findOrCreate(SolidityTypes.solidity, "LmulDivUp (uint256,uint256,uint256) --> uint256"), AstMethodReference.fnSelector)).iterator().next();
-	    IR mduir = muldivup.getIR();
-	    System.err.println(mduir);
-	    System.err.println(new GlobalValueNumbers.IRValueNumbers(mduir));
-
-	    RoundingEstimator re = new RoundingEstimator(mduir);
-	    re.analyze();
+	    rounding.entrySet().forEach(x -> {
+	    	if (x.getValue() != RoundingEstimator.Direction.Neither) {
+	    		System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue());
+	    	}
+	    });
 	}
 
 	private static void getSpecRules(Conf files) throws FileNotFoundException {
