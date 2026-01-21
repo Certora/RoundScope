@@ -13,13 +13,40 @@
 #include "CAstWrapper.h"
 
 std::map<int, solidity::frontend::CompilerStack *> compilers;
+std::map<int, JNIEnv *> jniEnvs;
+
+class Reader {
+    int id;
+    jobject globalSelf;
+    
+public:
+    Reader(int id, jobject globalSelf) : id(id), globalSelf(globalSelf) { }
+ 
+    solidity::frontend::ReadCallback::Result read(const std::string& a, const std::string& b) {
+        JNIEnv *currentEnv = jniEnvs[id];
+        jclass sjbCls = currentEnv->GetObjectClass(globalSelf);
+        jstring ja = currentEnv->NewStringUTF(a.c_str());
+        jstring jb = currentEnv->NewStringUTF(b.c_str());
+        jmethodID lf = currentEnv->GetMethodID(sjbCls, "loadFile", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+        jstring res = (jstring)currentEnv->CallObjectMethod(globalSelf, lf, ja, jb);
+        const char *buf = currentEnv->GetStringUTFChars(res, NULL);
+        
+        solidity::frontend::ReadCallback::Result r = {res!=NULL, std::string(buf)};
+        
+        return r;
+    }
+};
 
 void Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_init(
    JNIEnv *env,
    jobject self)
 {
     int id = env->GetIntField(self, env->GetFieldID(env->GetObjectClass(self), "id", "I"));
-    compilers[id] = new solidity::frontend::CompilerStack();
+    jobject globalSelf = env->NewGlobalRef(self);
+
+    Reader* r = new Reader(id, globalSelf);
+
+    compilers[id] = new solidity::frontend::CompilerStack(std::bind(&Reader::read, r, std::placeholders::_1, std::placeholders::_2));
 }
 
 void Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_close(
@@ -38,6 +65,7 @@ void Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_loadFiles(
     jobjectArray filesAndNames)
 {
     int id = env->GetIntField(self, env->GetFieldID(env->GetObjectClass(self), "id", "I"));
+    jniEnvs[id] = env;
     
     int len = env->GetArrayLength(filesAndNames);
     const char *data[len];
@@ -54,6 +82,8 @@ void Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_loadFiles(
             (jstring)env->GetObjectArrayElement(filesAndNames, i),
             data[i]);
     }
+    
+    jniEnvs.erase(id);
 }
 
 jobject Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_files(

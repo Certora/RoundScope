@@ -1,6 +1,8 @@
 package com.certora.wala.cast.solidity.loader;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -112,7 +114,27 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		solidityCode.loadFiles(files);
 
-		super.init(modules);
+		List<Module> newModules;
+		List<String> loadedFiles = solidityCode.files();
+		if (loadedFiles.size() > modules.size()) {
+			newModules =  new ArrayList<>();
+		
+			outer: for (String f : loadedFiles) {
+				for(Module m : modules) {
+					SourceFileModule sfm = (SourceFileModule)m;
+					if (sfm.getFile().equals(new File(f))) {
+						newModules.add(m);
+						continue outer;
+					}
+				}
+			
+				newModules.add(new SourceFileModule(new File(f), f, null));
+			}
+		} else {
+			newModules = modules;
+		}
+		
+		super.init(newModules);
 	}
 
 	public SolidityLoader(IClassHierarchy cha, IClassLoader parent) {

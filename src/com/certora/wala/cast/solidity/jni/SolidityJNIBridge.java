@@ -1,11 +1,14 @@
 package com.certora.wala.cast.solidity.jni;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
@@ -222,6 +225,19 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 
 	public native List<String> files();
 
+	public String loadFile(String a, String b) {
+		String v = null;
+		if (new File(b).exists()) {
+			try {
+				v = new String(Files.readAllBytes(Paths.get(new File(b).toURI())));
+			} catch (IOException e) {
+				assert false : e;
+			}
+		}
+		
+		return v;
+	}
+	
 	public CAstEntity translateFile(String fileName) throws Error, IOException {
 		return new SolidityFileTranslator(fileName).translateToCAst();
 	}
