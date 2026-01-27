@@ -26,6 +26,8 @@ public class SolidityTypes {
 
 	public static TypeReference uint8 = TypeReference.findOrCreate(solidity, "Puint8");
 
+	public static TypeReference uint64 = TypeReference.findOrCreate(solidity, "Puint64");
+
 	public static TypeReference uint256 = TypeReference.findOrCreate(solidity, "Puint256");
 
 	public static TypeReference address = TypeReference.findOrCreate(solidity, "Paddress");
@@ -33,5 +35,13 @@ public class SolidityTypes {
 	public static TypeReference string = TypeReference.findOrCreate(solidity, "Pstring");
 
 	public static TypeReference bool = TypeReference.findOrCreate(solidity, "Pbool");
+
+	public static TypeReference struct = TypeReference.findOrCreate(solidity, "Lstruct");
+
+	public static TypeReference interfce = TypeReference.findOrCreate(solidity, "Linterface");
+
+	public static TypeReference library = TypeReference.findOrCreate(solidity, "Llibrary");
+
+	public static TypeReference bytes32 = TypeReference.findOrCreate(solidity, "Pbytes32");
 
 }

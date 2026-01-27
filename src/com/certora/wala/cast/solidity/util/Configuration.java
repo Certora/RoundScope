@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -32,6 +33,16 @@ public class Configuration {
 		Ast getRules();
 		Collection<Module> getFiles();
 		public Map<Pair<Atom,TypeReference>,TypeReference> getLink();
+		Map<String, File> getIncludePath();
+	}
+	
+	public static File getFile(File stem, String suffix) {
+		File file = new File(stem, suffix);
+		while (!file.exists() && stem != null) {
+			stem = stem.getParentFile();
+			file = new File(stem, suffix);
+		}
+		return stem==null? null: file;
 	}
 	
 	public static Conf getConf(File configFile) throws FileNotFoundException {
@@ -42,8 +53,9 @@ public class Configuration {
 		if (spec.contains(":")) {
 			spec = spec.substring(spec.lastIndexOf(':')+1, spec.length());
 		}
-		File rulesFile = new File(configFile.getParent(), spec);
-		
+		File stem = configFile.getParentFile();
+		File rulesFile = getFile(stem, spec);
+
 		return new Conf() {
 
 			@Override
@@ -65,7 +77,7 @@ public class Configuration {
 						f = f.substring(0, f.lastIndexOf(':'));
 					}
 					if (! result.containsKey(f)) {
-						File m = new File(configFile.getParent(), f);
+						File m = getFile(configFile.getParentFile(), f);
 						result.put(f, new SourceFileModule(m, m.getAbsolutePath(), null));
 					}
 				}
@@ -87,6 +99,22 @@ public class Configuration {
 						TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[2]));
 				}
 				return result;
+			}
+
+			@Override
+			public Map<String,File> getIncludePath() {
+				if (cf.has("packages") ) {
+					Map<String,File> result = HashMapFactory.make();
+					JSONArray packages = cf.getJSONArray("packages");
+					for(int i =  0; i < packages.length(); i++) {
+						String elt = packages.getString(i);
+						String[] elts = elt.split("[=]");
+						result.put(elts[0], getFile(configFile.getParentFile(), elts[1]));
+					}
+					return result;
+				} else {
+					return Collections.emptyMap();
+				}
 			}
 			
 		};

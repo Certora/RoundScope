@@ -11,21 +11,21 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Class;
 import com.ibm.wala.types.TypeReference;
 
-public class ContractType implements Class {
+public class InterfaceType implements Class {
 	private final String name;
 	private final Set<CAstType> superTypes;
 	
-	public ContractType(String name) {
+	public InterfaceType(String name) {
 		this(name, Collections.emptySet());
 	}
 
-	public ContractType(String name, Set<CAstType> superTypes) {
+	public InterfaceType(String name, Set<CAstType> superTypes) {
 		super();
 		this.name = name;
 		this.superTypes = superTypes;
 		
 		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
-		SolidityCAstType.record("contract "+name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
+		SolidityCAstType.record("interface "+name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class ContractType implements Class {
 
 	@Override
 	public boolean isInterface() {
-		return false;
+		return true;
 	}
 
 	@Override

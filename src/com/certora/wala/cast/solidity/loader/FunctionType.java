@@ -54,7 +54,7 @@ public class FunctionType implements Method {
 
 	// TODO: multiple return types; probably use a tuple
 	public FunctionType(String name, CAstType self, CAstType[] returnType, CAstType... args) {
-		this(name, self, returnType==null? null: returnType[0], args);
+		this(name, self, returnType==null || returnType.length==0? null: returnType[0], args);
 	}
 	
 	@Override

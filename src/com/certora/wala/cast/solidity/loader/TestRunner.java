@@ -44,10 +44,11 @@ import com.ibm.wala.util.collections.HashMapFactory;
 public class TestRunner {
 
 	public static void main(String[] args) throws ClassHierarchyException, FileNotFoundException, IllegalArgumentException, CallGraphBuilderCancelException {
-		Conf conf = Configuration.getConf(new File(args[0]));
+		File confFile = new File(args[0]);
+		Conf conf = Configuration.getConf(confFile);
 		getSpecRules(conf);
 				
-		SingleClassLoaderFactory sl = new SolidityLoaderFactory();
+		SingleClassLoaderFactory sl = new SolidityLoaderFactory(confFile, conf.getIncludePath());
 		
 		AnalysisScope s = new CAstAnalysisScope(
 			conf.getFiles().toArray(new Module[conf.getFiles().size()]), sl, 

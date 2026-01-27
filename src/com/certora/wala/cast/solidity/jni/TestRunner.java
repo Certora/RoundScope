@@ -9,7 +9,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 public class TestRunner {
 	public static void main(String... args) throws Exception {
 		Set<CAstEntity> ces = HashSetFactory.make();
-		try (SolidityJNIBridge test = new SolidityJNIBridge()) {
+		try (SolidityJNIBridge test = new SolidityJNIBridge(null)) {
 			test.loadFiles(args);
 			System.out.println(test.files());
 			for (String f : test.files()) {

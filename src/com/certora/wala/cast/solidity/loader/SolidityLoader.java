@@ -2,6 +2,8 @@ package com.certora.wala.cast.solidity.loader;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -14,6 +16,7 @@ import com.certora.wala.cast.solidity.translator.SolidityAstTranslator;
 import com.certora.wala.cast.solidity.tree.EventEntity;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
+import com.certora.wala.cast.solidity.util.Configuration;
 import com.ibm.wala.analysis.typeInference.PrimitiveType;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator.AstLexicalInformation;
@@ -76,7 +79,7 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 
 public class SolidityLoader extends CAstAbstractModuleLoader {
-	SolidityJNIBridge solidityCode = new SolidityJNIBridge();
+	SolidityJNIBridge solidityCode;
 
 	private final IClass root = new CoreClass(SolidityTypes.root.getName(), null, this, null);
 
@@ -84,6 +87,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			null);
 
 	private final IClass contract = new CoreClass(SolidityTypes.contract.getName(), root.getName(), this,
+			null);
+
+	private final IClass struct = new CoreClass(SolidityTypes.struct.getName(), root.getName(), this,
 			null);
 
 	private final IClass msg = new CoreClass(SolidityTypes.msg.getName(), root.getName(), this,
@@ -98,6 +104,44 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass event = new CoreClass(SolidityTypes.event.getName(), codeBody.getName(), this,
 			null);
 
+	private final IClass interfce = new CoreClass(SolidityTypes.interfce.getName(), codeBody.getName(), this,
+			null);
+	
+	private final IClass library = new CoreClass(SolidityTypes.library.getName(), root.getName(), this,
+			null);
+
+	private File confFile;
+
+	private Map<String, File> includePath;
+
+	public Pair<File,String> getFile(String b) {
+		File f = null;
+		String v = null;
+		try {
+			if ((f = new File(b)).exists()) {
+				v = new String(Files.readAllBytes(Paths.get(new File(b).toURI())));
+			} else {
+				f = Configuration.getFile(confFile.getParentFile(), b);
+				if (f != null) {
+					v = new String(Files.readAllBytes(Paths.get(f.toURI())));													
+				} else {
+					outer: for(Map.Entry<String,File> e : includePath.entrySet()) {
+						if (b.startsWith(e.getKey() + "/")) {
+							f = new File(e.getValue(), b.substring(e.getKey().length() + 1));
+							if (f.exists()) {
+								v = new String(Files.readAllBytes(Paths.get(f.toURI())));							
+								break outer;
+							}
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			assert false : e;
+		}
+		return Pair.make(f, v);
+	}
+	
 	@Override
 	public void init(List<Module> modules) {
 		for (Module m : modules) {
@@ -128,7 +172,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					}
 				}
 			
-				newModules.add(new SourceFileModule(new File(f), f, null));
+				File resolvedFile = getFile(f).fst;
+				assert resolvedFile.exists();
+				newModules.add(new SourceFileModule(resolvedFile, f, null));
 			}
 		} else {
 			newModules = modules;
@@ -137,8 +183,11 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		super.init(newModules);
 	}
 
-	public SolidityLoader(IClassHierarchy cha, IClassLoader parent) {
+	public SolidityLoader(File confFile, Map<String, File> includePath, IClassHierarchy cha, IClassLoader parent) {
 		super(cha, parent);
+		this.confFile = confFile;
+		this.includePath = includePath;
+		this.solidityCode = new SolidityJNIBridge(this);
 	}
 
 	@Override
@@ -335,7 +384,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	@Override
 	protected TranslatorToCAst getTranslatorToCAst(CAst ast, ModuleEntry M, List<Module> modules) throws IOException {
 		SourceFileModule f = (SourceFileModule) M;
-		return solidityCode.new SolidityFileTranslator(f.getAbsolutePath());
+		return solidityCode.new SolidityFileTranslator(f.logicalFileName());
 	}
 
 	@Override
@@ -431,7 +480,10 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			si = Collections.emptyList();
 			superClass = supers.iterator().next().getName();
 		} else {
-			superClass = contract.getName();
+			superClass = 
+				type.getType() instanceof ContractType? contract.getName(): 
+					type.getType() instanceof LibraryType? library.getName():
+						struct.getName();
 			si = supers;
 		}
 		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass);

@@ -24,8 +24,16 @@ jobject Translator::getType(Type const* type) {
         jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityMappingType");
         jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "(Lcom/ibm/wala/cast/tree/CAstType;Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
         return jniEnv->CallStaticObjectMethod(smt, gt, keyType, valueType);
+        
     } else {
-        std::string tn = type->toString(true);
+        const UserDefinedValueTypeDefinition *t = dynamic_cast<UserDefinedValueTypeDefinition const*>(type->typeDefinition());
+        std::string tn;
+        if (t != NULL) {
+            tn = t->underlyingType()->annotation().type->toString(true);
+        } else {
+            tn = type->toString(true);
+        }
+        
         return getType(tn);
     }
 }
@@ -93,26 +101,33 @@ bool Translator::visit(const ContractDefinition &_node) {
     jclass sCls = jniEnv->FindClass("java/util/HashSet");
     jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
     jobject supersSet = jniEnv->NewObject(sCls, sCtor);
-    jclass ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
-    jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
     jstring entityName = jniEnv->NewStringUTF(_node.name().c_str());
 
-    jobject contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet);
+    jclass ctCls;
+    jobject contractType;
+    if (_node.isInterface()) {
+        ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/InterfaceType");
+        jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
+        jobject contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet);
+    } else if (_node.isLibrary()) {
+        ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/LibraryType");
+        jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;)V");
+        contractType = jniEnv->NewObject(ctCls, ctCtor, entityName);
+    } else {
+        ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
+        jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
+        contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet);
+    }
+    
     types[_node.name()] = contractType;
+    
 
     context = new ContractContext(context, jniEnv, supersSet, contractType);
     return true;
 }
 
 void Translator::endVisit(const ContractDefinition &_node) {
-    jobject& supers = context->superClasses();
- 
-    jclass ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
-    jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
-    jstring entityName = jniEnv->NewStringUTF(_node.name().c_str());
-
-    jobject contractType = jniEnv->NewObject(ctCls, ctCtor, entityName, supers);
-    types[_node.name()] = contractType;
+    jobject contractType = types[_node.name()] ;
     
     jclass sCls = jniEnv->FindClass("java/util/HashSet");
     jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
@@ -144,6 +159,7 @@ void Translator::endVisit(const ContractDefinition &_node) {
 
 jobject translateOpcode(CAstWrapper& cast, Token t) {
     switch(t) {
+        case Token::Exp: return cast.OP_POW;
         case Token::Add: case Token::AssignAdd: return cast.OP_ADD;
         case Token::Sub: case Token::AssignSub: return cast.OP_SUB;
         case Token::Mul: case Token::AssignMul: return cast.OP_MUL;
@@ -287,6 +303,16 @@ jobject Translator::visitCall(const CallableDeclaration &_node, jobject retType,
     return jniEnv->NewObject(sfet, sfeCtor, funName, funType, argNames, loc, nameLoc, argLocations,qual, NULL);
 }
 
+bool Translator::visit(const ErrorDefinition &_node) {
+    jobject funEntity = visitCall(_node, NULL, false);
+    
+    jstring funName = jniEnv->NewStringUTF(_node.name().c_str());
+
+    context->registerFunction(funName, funEntity);
+
+     return false;
+}
+
 bool Translator::visit(const EventDefinition &_node) {
     jobject funEntity = visitCall(_node, NULL, false);
     
@@ -339,6 +365,7 @@ bool Translator::visit(const FunctionDefinition &_node) {
         Type const * retTypeName = rets[0].get()->type();
         retType = getType(retTypeName);
     } else {
+        std::cout << rets.size() << std::endl;
         // todo
     }
     
@@ -449,6 +476,8 @@ jobject Translator::getSelfPtr() {
 }
 
 bool Translator::visit(const Identifier &_node) {
+    std::cout << "identifier " << _node.name().c_str() << std::endl;
+    
     if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
         if (var->isStateVariable()) {
             jobject selfPtr = getSelfPtr();
@@ -577,11 +606,33 @@ bool Translator::visit(const MemberAccess &_node) {
     } else {
         ret(record(ref, _node.location(), _node.annotation().type));
     }
-    
-     
-    
     return false;
 }
+
+bool Translator::visit(const ModifierDefinition &_node) {
+    jobject funEntity = visitCall(_node, NULL, false);
+
+    context = new CodeContext(funEntity, context);
+
+   _node.body().accept(*this);
+   
+   return false;
+}
+
+void Translator::endVisit(const ModifierDefinition &_node) {
+    int i = 0;
+    jobject ast = last();
+    jobject funEntity = context->entity();
+    
+    jclass ace = jniEnv->FindClass("com/ibm/wala/cast/ir/translator/AbstractCodeEntity");
+    jmethodID aceSetAst = jniEnv->GetMethodID(ace, "setAst", "(Lcom/ibm/wala/cast/tree/CAstNode;)V");
+    jniEnv->CallVoidMethod(funEntity, aceSetAst, ast);
+    
+    context = context->parent();
+    
+    jstring funName = jniEnv->NewStringUTF(_node.name().c_str());
+    context->registerFunction(funName, funEntity);
+ }
 
 bool Translator::visit(const ModifierInvocation &_node) {
     return visitNode(_node);
@@ -602,6 +653,50 @@ bool Translator::visit(const Return &_node) {
     return false;
 }
 
+bool Translator::visit(const PragmaDirective &_node) {
+    return false;
+}
+
+bool Translator::visit(const StructDefinition &_node) {
+    context = new VariableContainerContext(context);
+    return true;
+}
+
+void Translator::endVisit(const StructDefinition &_node) {
+    
+    jclass sCls = jniEnv->FindClass("java/util/HashSet");
+    jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
+    jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
+    jobject entitiesSet = jniEnv->NewObject(sCls, sCtor);
+    std::map<jstring, jobject>& fields = context->variables();
+    for (std::map<jstring,jobject>::iterator t=fields.begin();
+         t != fields.end();
+         ++t)
+    {
+        jniEnv->CallBooleanMethod(entitiesSet, add, t->second);
+    }
+
+    jclass ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/StructType");
+    jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;)V");
+    jstring entityName = jniEnv->NewStringUTF(_node.name().c_str());
+
+    jobject structType = jniEnv->NewObject(ctCls, ctCtor, entityName);
+    types[_node.name()] = structType;
+
+    jclass seCls = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/ContractEntity");
+    jmethodID seCtor = jniEnv->GetMethodID(seCls, "<init>", "(Lcom/ibm/wala/cast/tree/CAstType$Class;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Ljava/util/Set;)V");
+    jobject structEntity = jniEnv->NewObject(seCls, seCtor, structType, makePosition(_node.location()), makePosition(_node.nameLocation()), entitiesSet);
+    
+    context = context->parent();
+    
+    cast.addChildEntity(context->entity(), NULL, structEntity);
+}
+
+bool Translator::visit(const StructuredDocumentation &_node) {
+    return false;
+}
+
+
 bool Translator::visit(const TupleExpression &_node) {
     if (_node.components().size() == 1) {
         _node.components().at(0)->accept(*this);
@@ -613,6 +708,10 @@ bool Translator::visit(const TupleExpression &_node) {
 
 bool Translator::visit(const UserDefinedTypeName &_node) {
     return visitNode(_node);
+}
+
+bool Translator::visit(const UsingForDirective &_node) {
+    return false;
 }
 
 bool Translator::visit(const VariableDeclaration &_node) {
@@ -630,7 +729,9 @@ bool Translator::visit(const VariableDeclaration &_node) {
         value = last();
     }
 
-     if (_node.isStateVariable()) {
+    std::cout << name << std::endl;
+    
+     if (_node.isStateVariable() || _node.isStructMember()) {
         jobject jname = cast.makeConstant(name);
         jobject loc = makePosition(_node.location());
         jobject nameLoc = makePosition(_node.nameLocation());

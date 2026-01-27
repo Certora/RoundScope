@@ -4,6 +4,8 @@
 //
 //  Created by Julian Dolby on 12/18/25.
 //
+#include <algorithm>
+
 #include "solidityBridge.h"
 #include "translator.h"
 #include "com_certora_wala_cast_solidity_jni_SolidityJNIBridge.h"
@@ -98,6 +100,14 @@ jobject Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_files(
     
     int id = env->GetIntField(self, env->GetFieldID(env->GetObjectClass(self), "id", "I"));
     std::vector<std::string> sourceASTs = compilers[id]->sourceNames();
+    
+    std::function<bool(std::string, std::string)> compare = [id](std::string a, std::string b) -> bool {
+        std::set<SourceUnit const*> refs = compilers[id]->ast(b).referencedSourceUnits(true);
+        return refs.contains(&compilers[id]->ast(a));
+    };
+    
+    sort(sourceASTs.begin(), sourceASTs.end(), compare);
+    
     for (std::vector<std::string>::iterator t=sourceASTs.begin(); t!=sourceASTs.end(); ++t) {
         env->CallBooleanMethod(result, add, env->NewStringUTF(t->c_str()));
     }

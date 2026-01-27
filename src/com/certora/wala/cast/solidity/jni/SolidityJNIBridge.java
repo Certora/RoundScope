@@ -1,17 +1,15 @@
 package com.certora.wala.cast.solidity.jni;
 
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
+import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.ibm.wala.cast.ir.translator.AbstractEntity;
 import com.ibm.wala.cast.ir.translator.NativeBridge;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
@@ -150,6 +148,8 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 	}
 	
 	final CAstSourcePositionRecorder posMap = new CAstSourcePositionRecorder();
+
+	private final SolidityLoader loader;
 	
 	void record(CAstNode node, Position pos) {
 		posMap.setPosition(node, pos);
@@ -214,8 +214,9 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 		};
 	}
 
-	public SolidityJNIBridge() {
+	public SolidityJNIBridge(SolidityLoader loader) {
 		super(new CAstImpl());
+		this.loader = loader;
 		init();
 	}
 
@@ -227,17 +228,13 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 
 	public String loadFile(String a, String b) {
 		String v = null;
-		if (new File(b).exists()) {
-			try {
-				v = new String(Files.readAllBytes(Paths.get(new File(b).toURI())));
-			} catch (IOException e) {
-				assert false : e;
-			}
+		if ("source".equals(a)) {
+			v = loader.getFile(b).snd;
 		}
-		
+
 		return v;
 	}
-	
+
 	public CAstEntity translateFile(String fileName) throws Error, IOException {
 		return new SolidityFileTranslator(fileName).translateToCAst();
 	}
