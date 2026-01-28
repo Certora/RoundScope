@@ -36,6 +36,7 @@ import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Function;
 import com.ibm.wala.cast.tree.CAstType.Method;
+import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.IClass;
@@ -95,7 +96,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass msg = new CoreClass(SolidityTypes.msg.getName(), root.getName(), this,
 			null);
 
-	private final IClass exception = new CoreClass(SolidityTypes.exception.getName(), root.getName(), this,
+	private final IClass exception = new CoreClass(SolidityTypes.error.getName(), root.getName(), this,
 			null);
 
 	private final IClass function = new CoreClass(SolidityTypes.function.getName(), codeBody.getName(), this,
@@ -259,7 +260,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public TypeReference getThrowableType() {
-			return SolidityTypes.exception;
+			return SolidityTypes.error;
 		}
 
 		@Override
@@ -453,15 +454,8 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				for(int i = 0; i < ft.getArgumentCount() ; i++) {
 					params[i] = SolidityCAstType.getIRType(ft.getArgumentTypes().get(i).getName()).getName();
 				}
-				TypeName ret = 
-					ft.getReturnType() == null? 
-						TypeReference.Void.getName(): 
-							SolidityCAstType.getIRType(ft.getReturnType().getName()).getName();
-
-				Descriptor d = Descriptor.findOrCreate(params, ret);
-				Selector s = new Selector(Atom.findOrCreateUnicodeAtom(ft.getName()), d);
 			
-				Atom fieldName = Atom.findOrCreateUnicodeAtom(s.toString());
+				Atom fieldName = Atom.findOrCreateUnicodeAtom(newClass.getReference().getName() + "." + ft.getName());
 				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, SolidityCAstType.getIRType(ft.getName()));
 				fields.put(fieldName,
 					new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
@@ -538,7 +532,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public IField getField(Atom name, TypeName type) {
-			if (self.getName().equals(name) && self.getFieldTypeReference().getName().equals(type)) {
+			if (self.getName().equals(name)) {
 				return self;
 			} else {
 				return super.getField(name);
@@ -661,12 +655,25 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		}
 	}
 
+	public MethodReference getReference(FunctionType recCAstType) {
+		TypeReference recType = SolidityCAstType.getIRType(recCAstType.getName());
+		TypeName[] argTypes = new TypeName[ recCAstType.getArgumentCount() ];
+		for(int i = 0; i < argTypes.length; i++) {
+			argTypes[i] = SolidityCAstType.getIRType(recCAstType.getArgumentTypes().get(i).getName()).getName();
+		}
+		TypeReference retType = 
+				recCAstType.getReturnType() == null?
+					TypeReference.Void:
+					SolidityCAstType.getIRType(recCAstType.getReturnType().getName());
+		Descriptor d = Descriptor.findOrCreate(argTypes, retType.getName());
+		return MethodReference.findOrCreate(recType, AstMethodReference.fnAtom, d);
+	}
+
 	public DynamicMethodObject makeCodeBodyCode(CAstType t, AbstractCFG<?, ?> cfg, SymbolTable symtab, boolean hasCatchBlock,
 			Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> caughtTypes, boolean hasMonitorOp,
 			AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo, IClass C) {
-		return new DynamicMethodObject(C, Collections.emptySet(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp,
+		return new DynamicMethodObject(C, SolidityLoader.this.getReference((FunctionType)t), Collections.emptySet(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp,
 				lexicalInfo, debugInfo) {
-
 					@Override
 					public SourcePosition getParameterSourcePosition(int paramNum) throws InvalidClassFileException {
 						if (paramNum == 0) {

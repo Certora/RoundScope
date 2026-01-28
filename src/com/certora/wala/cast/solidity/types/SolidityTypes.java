@@ -12,7 +12,7 @@ public class SolidityTypes {
 	
 	public static TypeReference root = TypeReference.findOrCreate(solidity, "Lroot");
 
-	public static TypeReference exception = TypeReference.findOrCreate(solidity, "Lexception");
+	public static TypeReference error = TypeReference.findOrCreate(solidity, "Lerror");
 
 	public static TypeReference contract = TypeReference.findOrCreate(solidity, "Lcontract");
 
@@ -41,6 +41,8 @@ public class SolidityTypes {
 	public static TypeReference interfce = TypeReference.findOrCreate(solidity, "Linterface");
 
 	public static TypeReference library = TypeReference.findOrCreate(solidity, "Llibrary");
+
+	public static TypeReference bytes4 = TypeReference.findOrCreate(solidity, "Pbytes4");
 
 	public static TypeReference bytes32 = TypeReference.findOrCreate(solidity, "Pbytes32");
 

@@ -95,7 +95,7 @@ public class DefUseGraph extends AbstractNumberedGraph<Integer> {
 			
 			@Override
 			public Iterator<Integer> getSuccNodes(Integer n) {
-				return toStream(du.getUses(n)).map(inst -> inst.getDef()).filter(i -> i > 0).iterator();
+				return toStream(du.getUses(n)).filter(inst -> inst.hasDef()).map(inst -> inst.getDef()).iterator();
 			}
 
 			@Override

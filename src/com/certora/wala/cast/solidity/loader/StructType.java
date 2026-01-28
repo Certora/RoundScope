@@ -18,7 +18,6 @@ public class StructType implements Class {
 		this.name = name;
 
 		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
-		SolidityCAstType.record("struct "+name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 	}
 
 	@Override

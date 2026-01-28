@@ -36,8 +36,8 @@ public class SolidityCAstType implements CAstType.Primitive {
 	
 	static {
 		for(Object[] nm : new Object[][] {
-			{"uint8", SolidityTypes.uint8},
-			{"uint64", SolidityTypes.uint64},
+				{"uint8", SolidityTypes.uint8},
+				{"uint64", SolidityTypes.uint64},
 				{"uint256", SolidityTypes.uint256},
 				{"address", SolidityTypes.address},
 				{"string", SolidityTypes.string},
@@ -45,6 +45,9 @@ public class SolidityCAstType implements CAstType.Primitive {
 				{"function", SolidityTypes.function},
 				{"struct", SolidityTypes.struct},
 				{"bytes32", SolidityTypes.bytes32},
+				{"bytes4", SolidityTypes.bytes4},
+				{"error", SolidityTypes.error},
+				{"msg", SolidityTypes.msg},
 				{"void", TypeReference.Void}}) {
 			types.put((String)nm[0], new SolidityCAstType((String)nm[0]));
 			irTypes.put((String)nm[0], (TypeReference)nm[1]);
@@ -58,7 +61,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 	}
 	
 	public static CAstType get(String name) {
-		assert types.containsKey(name) : name;
+//		assert types.containsKey(name) : name;
 		return types.get(name);
 	}
 

@@ -33,7 +33,7 @@ public class FunctionType implements Method {
 		}
 	}
 
-	public static String signature(String name, CAstType[] args, CAstType returnType) {
+	private static String signature(String name, CAstType[] args, CAstType returnType) {
 		String sig = name + " " + arrayToString(args);
 		if (returnType != null) {
 			sig += " --> " + returnType.getName();
@@ -41,20 +41,34 @@ public class FunctionType implements Method {
 		return sig;
 	}
 
-	public FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
-		this.returnType = returnType==null? SolidityCAstType.get("void"): returnType;
+	private FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
+		this.returnType = returnType;
 		this.args = args;
 		this.self = self;
 		
 		this.name = signature(name, args, returnType);
 		
-		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + this.name);
+		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + self.getName() + "." + this.name);
 		SolidityCAstType.record(this.name, this, tr);
 	}
 
 	// TODO: multiple return types; probably use a tuple
 	public FunctionType(String name, CAstType self, CAstType[] returnType, CAstType... args) {
-		this(name, self, returnType==null || returnType.length==0? null: returnType[0], args);
+		this(name, self, returnType[0], args);
+	}
+	
+	public static FunctionType findOrCreate(String name, CAstType self, CAstType returnType[], CAstType... args) {
+		CAstType ret = returnType==null || returnType.length==0? SolidityCAstType.get("void"): returnType[0];
+		String sig = signature(name, args, ret);
+		if (SolidityCAstType.types.containsKey(sig)) {
+			return (FunctionType) SolidityCAstType.get(sig);
+		} else {
+			return new FunctionType(name, self, new CAstType[] {ret}, args);
+		}
+	}
+
+	public static FunctionType findOrCreate(String name, CAstType self, CAstType returnType, CAstType... args) {
+		return findOrCreate(name, self, new CAstType[] { returnType }, args); 
 	}
 	
 	@Override

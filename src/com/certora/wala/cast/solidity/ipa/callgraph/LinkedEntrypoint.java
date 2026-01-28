@@ -65,7 +65,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 		cha.forEach(cl -> { 
 			if (cl != contractClass && cha.isSubclassOf(cl, contractClass)) {
 				cl.getDeclaredInstanceFields().forEach(m -> { 
-					IClass fieldClass = cha.lookupClass(m.getFieldTypeReference());
+					IClass fieldClass = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, m.getName().toString()));
 					if (fieldClass != null && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
 						AstFunctionClass afc = (AstFunctionClass) fieldClass;
 						if (afc.isPublic() && !afc.isAbstract()) {

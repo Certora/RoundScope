@@ -30,6 +30,7 @@ import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.types.Descriptor;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
@@ -52,7 +53,11 @@ public class SolidityAstTranslator extends AstTranslator {
 			return f.getName();
 		} else {
 			if (f.getKind() == CAstEntity.FUNCTION_ENTITY) {
-				return f.getType().getName();
+				if (f.getType() instanceof FunctionType) {
+					return ((FunctionType)f.getType()).getDeclaringType().getName() + "." + f.getType().getName();
+				} else {
+					return f.getType().getName();
+				}
 			} else {
 				String myName = parent.top().getName();
 				return (myName.contains("/")? myName.substring(myName.lastIndexOf('/')+1): myName) + "/" + f.getName();
@@ -129,24 +134,34 @@ public class SolidityAstTranslator extends AstTranslator {
 		TypeReference eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
 		context.cfg().addInstruction(insts.ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, eltType));
 	}
-
+	
 	@Override
 	protected void doCall(WalkContext context, CAstNode call, int result, int exception, CAstNode name, int receiver,
 			int[] arguments) {
 		if (call.getChild(0).getKind() == CAstNode.TYPE_LITERAL_EXPR) {
 			String typeName = (String) call.getChild(0).getChild(0).getValue();
 			TypeReference type = SolidityCAstType.getIRType(typeName);
-			context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, receiver, type, false));
+			context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, receiver, type, true));
 		} else {
 			int argsAndSelf[] = new int[ arguments.length + 1 ];
 			argsAndSelf[0] = receiver;
 			System.arraycopy(arguments, 0, argsAndSelf, 1, arguments.length);
 
-			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
-			TypeReference recType =  recCAstType == null? SolidityTypes.root: SolidityCAstType.getIRType(recCAstType.getName());
-			
-			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), AstMethodReference.fnReference(recType), Dispatch.VIRTUAL);
-			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
+			FunctionType recCAstType = (FunctionType)context.top().getNodeTypeMap().getNodeType(call.getChild(0));
+			MethodReference m;
+			if (recCAstType == null) {
+				TypeReference retType = SolidityTypes.root;
+				TypeName[] argTypes = new TypeName[ arguments.length ];
+				for(int i = 0; i < argTypes.length; i++) {
+					argTypes[i] = SolidityTypes.root.getName();
+					}
+				Descriptor d = Descriptor.findOrCreate(argTypes, retType.getName());
+				m = MethodReference.findOrCreate(SolidityTypes.root, AstMethodReference.fnAtom, d);
+			} else {
+				m = ((SolidityLoader)loader).getReference(recCAstType);
+			}
+			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), m, Dispatch.VIRTUAL);
+			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), m.getReturnType() == TypeReference.Void? -1: result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
 		}
 	}
 
@@ -171,12 +186,15 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void doFieldWrite(WalkContext context, int receiver, CAstNode elt, CAstNode parent, int rval) {
-		CAstEntity contract = getParent(context.top());
-		CAstType objCAstType = contract.getType();
+		CAstEntity code = context.top();
+		CAstNodeTypeMap typeMap = code.getNodeTypeMap();
+		CAstType objCAstType = typeMap.getNodeType(parent.getChild(0));
+		CAstType eltCAstType = typeMap.getNodeType(parent);	
 		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType.getName());
-		context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), objType)));
+		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType.getName());
+		context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), eltType)));
 	}
-
+	
 	@Override
 	protected void doNewObject(WalkContext context, CAstNode newNode, int result, Object type, int[] arguments) {
 		// TODO Auto-generated method stub

@@ -48,7 +48,8 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 		}
 
 		final CAstEntity fileEntity = new AbstractEntity() {
-
+			CAstSourcePositionRecorder rec = new CAstSourcePositionRecorder();
+			
 			@Override
 			public int getKind() {
 				return CAstEntity.FILE_ENTITY;
@@ -114,8 +115,7 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 
 			@Override
 			public CAstSourcePositionMap getSourceMap() {
-				assert false;
-				return null;
+				return rec;
 			}
 
 			@Override

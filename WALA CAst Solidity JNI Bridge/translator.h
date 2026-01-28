@@ -202,11 +202,13 @@ public:
     virtual bool visit(const ParameterList &_node) override;
     virtual bool visit(const PragmaDirective &_node) override;
     virtual bool visit(const Return &_node) override;
+    virtual bool visit(const RevertStatement &_node) override;
     virtual bool visit(const SourceUnit &_node) override;
     virtual bool visit(const StructDefinition &_node) override;
     virtual void endVisit(const StructDefinition &_node) override;
     virtual bool visit(const StructuredDocumentation &_node) override;
     virtual bool visit(const TupleExpression &_node) override;
+    virtual bool visit(const UnaryOperation &_node) override;
     virtual bool visit(const UserDefinedTypeName &_node) override;
     virtual bool visit(const UsingForDirective &_node) override;
     virtual bool visit(const VariableDeclaration &_node) override;

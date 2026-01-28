@@ -44,6 +44,7 @@ import com.ibm.wala.util.collections.HashMapFactory;
 public class TestRunner {
 
 	public static void main(String[] args) throws ClassHierarchyException, FileNotFoundException, IllegalArgumentException, CallGraphBuilderCancelException {
+		try {
 		File confFile = new File(args[0]);
 		Conf conf = Configuration.getConf(confFile);
 		getSpecRules(conf);
@@ -114,6 +115,9 @@ public class TestRunner {
 	    		System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue());
 	    	}
 	    });
+		} catch (RuntimeException e) {
+			assert false : e;
+		}
 	}
 
 	private static void getSpecRules(Conf files) throws FileNotFoundException {
