@@ -35,11 +35,8 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
-import com.ibm.wala.util.collections.HashMapFactory;
 
 public class SolidityAstTranslator extends AstTranslator {
-	private final Map<CAstType,IClass> types = HashMapFactory.make();
-
 	private final AstInstructionFactory insts; 
 	
 	public SolidityAstTranslator(IClassLoader loader) {
@@ -74,6 +71,14 @@ public class SolidityAstTranslator extends AstTranslator {
 		v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.LoadMetadataInstruction(context.cfg().getCurrentInstruction(), v, SolidityTypes.codeBody, MethodReference.findOrCreate(SolidityTypes.root, "getType", "(Lroot;)LCodeBody;")));
 		context.currentScope().declare(new CAstSymbolImpl("type", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.abi)));
+		context.currentScope().declare(new CAstSymbolImpl("abi", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.abi)));
+		context.currentScope().declare(new CAstSymbolImpl("mulmod", CAstType.DYNAMIC), v);
 	}
 
 	@Override
@@ -107,21 +112,24 @@ public class SolidityAstTranslator extends AstTranslator {
 		TypeName typeName = TypeName.findOrCreate("L" + typeNameStr);
 		IClass cls;
 		if (! type.getType().getSupertypes().isEmpty()) {
-			Set<IClass> supers = type.getType().getSupertypes().stream().map(ct -> types.get(ct)).collect(Collectors.toSet());
+			Set<TypeName> supers = type.getType().getSupertypes().stream().map(ct -> TypeName.findOrCreate("L" + ct.getName())).collect(Collectors.toSet());
 			cls = ((SolidityLoader)loader).defineType(type, typeName, supers);
 		} else {
 			cls = ((SolidityLoader)loader).defineType(type, typeName, Collections.emptySet());
 		}
-		types.put(type.getType(), cls);
 		return true;
 	}
 
 	@Override
 	public void doArrayRead(WalkContext context, int result, int arrayValue, CAstNode arrayRef, int[] dimValues) {
 		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef.getChild(0));
-		assert t instanceof SolidityMappingType;
-		CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
-		TypeReference eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+		TypeReference eltType;
+		if (t instanceof SolidityMappingType) {
+			CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
+			eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+		} else {
+			eltType = SolidityTypes.bytes;
+		}
 		int instNum = context.cfg().getCurrentInstruction();
 		context.cfg().addInstruction(insts.ArrayLoadInstruction(instNum, result, arrayValue, dimValues[0], eltType));
 	}
@@ -142,15 +150,19 @@ public class SolidityAstTranslator extends AstTranslator {
 			String typeName = (String) call.getChild(0).getChild(0).getValue();
 			TypeReference type = SolidityCAstType.getIRType(typeName);
 			context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, receiver, type, true));
+		} else if (call.getChild(0).getKind() == CAstNode.PRIMITIVE &&
+				"type".equals(call.getChild(0).getChild(0).getValue()) &&
+				call.getChild(2).getKind() == CAstNode.TYPE_LITERAL_EXPR) {
+			context.cfg().addInstruction(insts.LoadMetadataInstruction(context.cfg().getCurrentInstruction(), result, SolidityTypes.root, TypeReference.findOrCreate(SolidityTypes.solidity, (String)call.getChild(2).getChild(0).getValue())));
 		} else {
 			int argsAndSelf[] = new int[ arguments.length + 1 ];
 			argsAndSelf[0] = receiver;
 			System.arraycopy(arguments, 0, argsAndSelf, 1, arguments.length);
 
-			FunctionType recCAstType = (FunctionType)context.top().getNodeTypeMap().getNodeType(call.getChild(0));
+			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
 			MethodReference m;
-			if (recCAstType == null) {
-				TypeReference retType = SolidityTypes.root;
+			if (! (recCAstType instanceof FunctionType)) {
+				TypeReference retType = SolidityCAstType.getIRType(recCAstType.getName());
 				TypeName[] argTypes = new TypeName[ arguments.length ];
 				for(int i = 0; i < argTypes.length; i++) {
 					argTypes[i] = SolidityTypes.root.getName();
@@ -158,7 +170,7 @@ public class SolidityAstTranslator extends AstTranslator {
 				Descriptor d = Descriptor.findOrCreate(argTypes, retType.getName());
 				m = MethodReference.findOrCreate(SolidityTypes.root, AstMethodReference.fnAtom, d);
 			} else {
-				m = ((SolidityLoader)loader).getReference(recCAstType);
+				m = ((SolidityLoader)loader).getReference((FunctionType) recCAstType);
 			}
 			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), m, Dispatch.VIRTUAL);
 			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), m.getReturnType() == TypeReference.Void? -1: result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			

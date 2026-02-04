@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.certora.wala.cast.solidity.jni.SolidityJNIBridge;
 import com.certora.wala.cast.solidity.translator.SolidityAstTranslator;
@@ -111,6 +112,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass library = new CoreClass(SolidityTypes.library.getName(), root.getName(), this,
 			null);
 
+	private final IClass enm = new CoreClass(SolidityTypes.enm.getName(), root.getName(), this,
+			null);
+
 	private File confFile;
 
 	private Map<String, File> includePath;
@@ -180,6 +184,8 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		} else {
 			newModules = modules;
 		}
+		
+		System.err.println("file: " + newModules);
 		
 		super.init(newModules);
 	}
@@ -401,13 +407,13 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	class SolidityClass extends AstClass {
 
 		protected SolidityClass(Position sourcePosition, TypeName typeName, Map<Atom, IField> declaredFields,
-				Map<Selector, IMethod> declaredMethods, Collection<IClass> supers, TypeName superClass) {
+				Map<Selector, IMethod> declaredMethods, Collection<TypeName> supers, TypeName superClass) {
 			super(sourcePosition, typeName, SolidityLoader.this, (short) 0, declaredFields, declaredMethods);
 			this.supers = supers;
 			this.superClass = superClass;
 		}
 
-		private Collection<IClass> supers;
+		private Collection<TypeName> supers;
 		private TypeName superClass;
 
 		@Override
@@ -423,7 +429,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public Collection<IClass> getDirectInterfaces() {
-			return supers;
+			return supers.stream().map(t -> cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, t))).collect(Collectors.toList());
 		}
 
 		@Override
@@ -465,14 +471,14 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		});
 	}
 
-	public IClass defineType(CAstEntity type, TypeName typeName, Set<IClass> supers) {
+	public IClass defineType(CAstEntity type, TypeName typeName, Set<TypeName> supers) {
 		Map<Atom, IField> fields = HashMapFactory.make();
 		Map<Selector, IMethod> methods = HashMapFactory.make();
 		TypeName superClass;
-		Collection<IClass> si;
+		Collection<TypeName> si;
 		if (supers.size() == 1) {
 			si = Collections.emptyList();
-			superClass = supers.iterator().next().getName();
+			superClass = supers.iterator().next();
 		} else {
 			superClass = 
 				type.getType() instanceof ContractType? contract.getName(): 

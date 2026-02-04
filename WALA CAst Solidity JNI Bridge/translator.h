@@ -7,6 +7,7 @@
 
 #include "solidityBridge.h"
 #include <jni.h>
+#include <cpptrace/cpptrace.hpp>
 
 #include "CAstWrapper.h"
 
@@ -132,7 +133,7 @@ private:
     jobject print(jobject v) {
         jclass obj = jniEnv->FindClass("java/lang/Object");
         jmethodID toString = jniEnv->GetMethodID(obj, "toString", "()Ljava/lang/String;");
-        std::cout << jniEnv->GetStringUTFChars((jstring)jniEnv->CallObjectMethod(v, toString), 0);
+        std::cout << jniEnv->GetStringUTFChars((jstring)jniEnv->CallObjectMethod(v, toString), 0) << std::endl;
         return v;
     }
     
@@ -181,9 +182,11 @@ public:
     virtual bool visit(const ElementaryTypeName &_node) override;
     virtual bool visit(const ElementaryTypeNameExpression &_node) override;
     virtual bool visit(const EmitStatement &_node) override;
+    virtual bool visit(const EnumDefinition &_node) override;
     virtual bool visit(const ErrorDefinition &_node) override;
     virtual bool visit(const EventDefinition &_node) override;
     virtual bool visit(const ExpressionStatement &_node) override;
+    virtual bool visit(const ForStatement &_node) override;
     virtual bool visit(const FunctionCall &_node) override;
     virtual bool visit(const FunctionDefinition &_node) override;
     virtual void endVisit(const FunctionDefinition &_node) override;
@@ -193,6 +196,7 @@ public:
     virtual bool visit(const ImportDirective &_node) override;
     virtual bool visit(const IndexAccess &_node) override;
     virtual bool visit(const InheritanceSpecifier &_node) override;
+    virtual bool visit(const InlineAssembly &_node) override;
     virtual bool visit(const Literal &_node) override;
     virtual bool visit(const Mapping &_node) override;
     virtual bool visit(const MemberAccess &_node) override;
@@ -208,8 +212,11 @@ public:
     virtual void endVisit(const StructDefinition &_node) override;
     virtual bool visit(const StructuredDocumentation &_node) override;
     virtual bool visit(const TupleExpression &_node) override;
+    virtual bool visit(const TryStatement &_node) override;
+    virtual bool visit(const TryCatchClause &_node) override;
     virtual bool visit(const UnaryOperation &_node) override;
     virtual bool visit(const UserDefinedTypeName &_node) override;
+    virtual bool visit(const UserDefinedValueTypeDefinition &_node) override;
     virtual bool visit(const UsingForDirective &_node) override;
     virtual bool visit(const VariableDeclaration &_node) override;
     virtual bool visit(const VariableDeclarationStatement &_node) override;

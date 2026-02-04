@@ -26,10 +26,132 @@ public class SolidityTypes {
 
 	public static TypeReference uint8 = TypeReference.findOrCreate(solidity, "Puint8");
 
+	public static TypeReference uint24 = TypeReference.findOrCreate(solidity, "Puint16");
+
+	public static TypeReference uint16 = TypeReference.findOrCreate(solidity, "Puint24");
+
+	public static TypeReference uint32 = TypeReference.findOrCreate(solidity, "Puint32");
+
+	public static TypeReference uint40 = TypeReference.findOrCreate(solidity, "Puint40");
+
+	public static TypeReference uint48 = TypeReference.findOrCreate(solidity, "Puint48");
+
+	public static TypeReference uint56 = TypeReference.findOrCreate(solidity, "Puint56");
+
 	public static TypeReference uint64 = TypeReference.findOrCreate(solidity, "Puint64");
+
+	public static TypeReference uint72 = TypeReference.findOrCreate(solidity, "Puint72");
+
+	public static TypeReference uint80 = TypeReference.findOrCreate(solidity, "Puint80");
+
+	public static TypeReference uint88 = TypeReference.findOrCreate(solidity, "Puint88");
+
+	public static TypeReference uint96 = TypeReference.findOrCreate(solidity, "Puint96");
+
+	public static TypeReference uint104 = TypeReference.findOrCreate(solidity, "Puint104");
+
+	public static TypeReference uint112 = TypeReference.findOrCreate(solidity, "Puint112");
+
+	public static TypeReference uint120 = TypeReference.findOrCreate(solidity, "Puint120");
+
+	public static TypeReference uint128 = TypeReference.findOrCreate(solidity, "Puint128");
+
+	public static TypeReference uint136 = TypeReference.findOrCreate(solidity, "Puint136");
+
+	public static TypeReference uint144 = TypeReference.findOrCreate(solidity, "Puint144");
+
+	public static TypeReference uint152 = TypeReference.findOrCreate(solidity, "Puint152");
+
+	public static TypeReference uint160 = TypeReference.findOrCreate(solidity, "Puint160");
+
+	public static TypeReference uint168 = TypeReference.findOrCreate(solidity, "Puint168");
+
+	public static TypeReference uint176 = TypeReference.findOrCreate(solidity, "Puint176");
+
+	public static TypeReference uint184 = TypeReference.findOrCreate(solidity, "Puint184");
+
+	public static TypeReference uint192 = TypeReference.findOrCreate(solidity, "Puint192");
+
+	public static TypeReference uint200 = TypeReference.findOrCreate(solidity, "Puint200");
+
+	public static TypeReference uint208 = TypeReference.findOrCreate(solidity, "Puint208");
+
+	public static TypeReference uint216 = TypeReference.findOrCreate(solidity, "Puint216");
+
+	public static TypeReference uint224 = TypeReference.findOrCreate(solidity, "Puint224");
+
+	public static TypeReference uint232 = TypeReference.findOrCreate(solidity, "Puint232");
+
+	public static TypeReference uint240 = TypeReference.findOrCreate(solidity, "Puint240");
+
+	public static TypeReference uint248 = TypeReference.findOrCreate(solidity, "Puint248");
 
 	public static TypeReference uint256 = TypeReference.findOrCreate(solidity, "Puint256");
 
+	public static TypeReference int8 = TypeReference.findOrCreate(solidity, "Pint8");
+
+	public static TypeReference int24 = TypeReference.findOrCreate(solidity, "Pint16");
+
+	public static TypeReference int16 = TypeReference.findOrCreate(solidity, "Pint24");
+
+	public static TypeReference int32 = TypeReference.findOrCreate(solidity, "Pint32");
+
+	public static TypeReference int40 = TypeReference.findOrCreate(solidity, "Pint40");
+
+	public static TypeReference int48 = TypeReference.findOrCreate(solidity, "Pint48");
+
+	public static TypeReference int56 = TypeReference.findOrCreate(solidity, "Pint56");
+
+	public static TypeReference int64 = TypeReference.findOrCreate(solidity, "Pint64");
+
+	public static TypeReference int72 = TypeReference.findOrCreate(solidity, "Pint72");
+
+	public static TypeReference int80 = TypeReference.findOrCreate(solidity, "Pint80");
+
+	public static TypeReference int88 = TypeReference.findOrCreate(solidity, "Pint88");
+
+	public static TypeReference int96 = TypeReference.findOrCreate(solidity, "Pint96");
+
+	public static TypeReference int104 = TypeReference.findOrCreate(solidity, "Pint104");
+
+	public static TypeReference int112 = TypeReference.findOrCreate(solidity, "Pint112");
+
+	public static TypeReference int120 = TypeReference.findOrCreate(solidity, "Pint120");
+
+	public static TypeReference int128 = TypeReference.findOrCreate(solidity, "Pint128");
+
+	public static TypeReference int136 = TypeReference.findOrCreate(solidity, "Pint136");
+
+	public static TypeReference int144 = TypeReference.findOrCreate(solidity, "Pint144");
+
+	public static TypeReference int152 = TypeReference.findOrCreate(solidity, "Pint152");
+
+	public static TypeReference int160 = TypeReference.findOrCreate(solidity, "Pint160");
+
+	public static TypeReference int168 = TypeReference.findOrCreate(solidity, "Pint168");
+
+	public static TypeReference int176 = TypeReference.findOrCreate(solidity, "Pint176");
+
+	public static TypeReference int184 = TypeReference.findOrCreate(solidity, "Pint184");
+
+	public static TypeReference int192 = TypeReference.findOrCreate(solidity, "Pint192");
+
+	public static TypeReference int200 = TypeReference.findOrCreate(solidity, "Pint200");
+
+	public static TypeReference int208 = TypeReference.findOrCreate(solidity, "Pint208");
+
+	public static TypeReference int216 = TypeReference.findOrCreate(solidity, "Pint216");
+
+	public static TypeReference int224 = TypeReference.findOrCreate(solidity, "Pint224");
+
+	public static TypeReference int232 = TypeReference.findOrCreate(solidity, "Pint232");
+
+	public static TypeReference int240 = TypeReference.findOrCreate(solidity, "Pint240");
+
+	public static TypeReference int248 = TypeReference.findOrCreate(solidity, "Pint248");
+
+	public static TypeReference int256 = TypeReference.findOrCreate(solidity, "Pint256");
+	
 	public static TypeReference address = TypeReference.findOrCreate(solidity, "Paddress");
 
 	public static TypeReference string = TypeReference.findOrCreate(solidity, "Pstring");
@@ -45,5 +167,11 @@ public class SolidityTypes {
 	public static TypeReference bytes4 = TypeReference.findOrCreate(solidity, "Pbytes4");
 
 	public static TypeReference bytes32 = TypeReference.findOrCreate(solidity, "Pbytes32");
+
+	public static TypeReference bytes = TypeReference.findOrCreate(solidity, "Pbytes");
+
+	public static TypeReference enm = TypeReference.findOrCreate(solidity, "Penum");
+
+	public static TypeReference abi = TypeReference.findOrCreate(solidity, "Labi");
 
 }

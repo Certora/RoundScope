@@ -35,7 +35,7 @@ translator.o:	solidityBridge.h translator.h translator.cpp
 	$(CC) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) translator.cpp
 
 libwalacastsolidity.jnilib:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o solidityBridge.o translator.o
-	$(CC) -dynamiclib -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) -lstdc++ 
+	$(CC) -dynamiclib -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) -lcpptrace -lstdc++ 
 
 clean:
 	rm libwalacastsolidity.jnilib *.o

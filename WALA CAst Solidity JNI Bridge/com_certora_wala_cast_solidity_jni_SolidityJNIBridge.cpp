@@ -88,6 +88,7 @@ void Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_loadFiles(
     jniEnvs.erase(id);
 }
 
+
 jobject Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_files(
     JNIEnv *env,
     jobject self)
@@ -101,8 +102,26 @@ jobject Java_com_certora_wala_cast_solidity_jni_SolidityJNIBridge_files(
     int id = env->GetIntField(self, env->GetFieldID(env->GetObjectClass(self), "id", "I"));
     std::vector<std::string> sourceASTs = compilers[id]->sourceNames();
     
-    std::function<bool(std::string, std::string)> compare = [id](std::string a, std::string b) -> bool {
-        std::set<SourceUnit const*> refs = compilers[id]->ast(b).referencedSourceUnits(true);
+    std::map<const SourceUnit *, std::set<const SourceUnit *>> imports;
+    for (std::vector<std::string>::const_iterator t=sourceASTs.begin();
+         t != sourceASTs.end();
+         ++t) {
+        const SourceUnit& ast = compilers[id]->ast(*t);
+        std::vector<ASTPointer<ASTNode>> ns = ast.nodes();
+        for (std::vector<ASTPointer<ASTNode>>::const_iterator n=ns.begin();
+             n != ns.end();
+             ++n) {
+            ASTNode *np = n->get();
+            if (ImportDirective *i = dynamic_cast<ImportDirective *>(np)) {
+                const SourceUnit *imported = i->annotation().sourceUnit;
+                imports[&ast].insert(imported);
+            }
+        }
+    }
+
+    std::function<bool(std::string, std::string)> compare = [id, &imports](std::string a, std::string b) -> bool {
+        const SourceUnit& bast = compilers[id]->ast(b);
+        std::set<const SourceUnit *> refs =  imports[&bast];
         return refs.contains(&compilers[id]->ast(a));
     };
     

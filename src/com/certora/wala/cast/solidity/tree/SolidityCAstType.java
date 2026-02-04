@@ -36,21 +36,35 @@ public class SolidityCAstType implements CAstType.Primitive {
 	
 	static {
 		for(Object[] nm : new Object[][] {
-				{"uint8", SolidityTypes.uint8},
-				{"uint64", SolidityTypes.uint64},
-				{"uint256", SolidityTypes.uint256},
-				{"address", SolidityTypes.address},
-				{"string", SolidityTypes.string},
-				{"bool", SolidityTypes.bool},
-				{"function", SolidityTypes.function},
-				{"struct", SolidityTypes.struct},
-				{"bytes32", SolidityTypes.bytes32},
-				{"bytes4", SolidityTypes.bytes4},
-				{"error", SolidityTypes.error},
-				{"msg", SolidityTypes.msg},
-				{"void", TypeReference.Void}}) {
+			{"library", SolidityTypes.library},
+			{"enum", SolidityTypes.enm},
+			{"address", SolidityTypes.address},
+			{"string", SolidityTypes.string},
+			{"bool", SolidityTypes.bool},
+			{"function", SolidityTypes.function},
+			{"struct", SolidityTypes.struct},
+			{"bytes", SolidityTypes.bytes},
+			{"bytes32", SolidityTypes.bytes32},
+			{"bytes4", SolidityTypes.bytes4},
+			{"error", SolidityTypes.error},
+			{"msg", SolidityTypes.msg},
+			{"void", TypeReference.Void}}) {
 			types.put((String)nm[0], new SolidityCAstType((String)nm[0]));
 			irTypes.put((String)nm[0], (TypeReference)nm[1]);
+		}
+		try {
+			for(int i = 8; i <= 256; i += 8) {
+				TypeReference ut = (TypeReference) SolidityTypes.class.getField("uint" + i).get(null);
+				types.put("uint" + i, new SolidityCAstType("uint" + i));
+				irTypes.put("uint" + i, ut);
+
+				TypeReference it = (TypeReference) SolidityTypes.class.getField("int" + i).get(null);
+				types.put("int" + i, new SolidityCAstType("int" + i));
+				irTypes.put("int" + i, it);
+
+			}
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			assert false : e;
 		}
 	}
 	
@@ -61,7 +75,12 @@ public class SolidityCAstType implements CAstType.Primitive {
 	}
 	
 	public static CAstType get(String name) {
-//		assert types.containsKey(name) : name;
+		if (!types.containsKey(name) && name.startsWith("type(")) {
+			return get(name.substring(5, name.length()-1));
+		} else if (!types.containsKey(name) && name.contains(" ")) {
+			return get(name.split(" ")[0]);
+		}
+		assert types.containsKey(name) : name;
 		return types.get(name);
 	}
 
