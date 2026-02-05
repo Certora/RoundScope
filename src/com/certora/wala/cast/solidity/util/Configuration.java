@@ -88,17 +88,21 @@ public class Configuration {
 
 			@Override
 			public Map<Pair<Atom,TypeReference>,TypeReference> getLink() {
-				Map<Pair<Atom,TypeReference>,TypeReference> result = HashMapFactory.make();
-				JSONArray map = cf.getJSONArray("link");
-				for(int i =  0; i < map.length(); i++) {
-					String elt = map.getString(i);
-					String[] elts = elt.split("[:=]");
-					result.put(
-						Pair.make(Atom.findOrCreateUnicodeAtom(elts[1]),
-								  TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[0])),
-						TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[2]));
+				if (cf.has("link")) {
+					Map<Pair<Atom,TypeReference>,TypeReference> result = HashMapFactory.make();
+					JSONArray map = cf.getJSONArray("link");
+					for(int i =  0; i < map.length(); i++) {
+						String elt = map.getString(i);
+						String[] elts = elt.split("[:=]");
+						result.put(
+								Pair.make(Atom.findOrCreateUnicodeAtom(elts[1]),
+										TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[0])),
+								TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[2]));
+					}
+					return result;
+				} else {
+					return Collections.emptyMap();
 				}
-				return result;
 			}
 
 			@Override

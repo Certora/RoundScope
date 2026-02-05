@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,6 +80,9 @@ import com.ibm.wala.types.annotations.Annotation;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
+import com.ibm.wala.util.graph.traverse.Topological;
 
 public class SolidityLoader extends CAstAbstractModuleLoader {
 	SolidityJNIBridge solidityCode;
@@ -429,7 +433,13 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public Collection<IClass> getDirectInterfaces() {
-			return supers.stream().map(t -> cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, t))).collect(Collectors.toList());
+			return supers.stream().map(t -> {
+				IClass s = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, t));
+				if (s == null && t.toString().startsWith("Lcontract ")) {
+					s = types.get(TypeName.findOrCreate("Linterface " + t.toString().substring(10)));
+				}
+				return s;
+			}).collect(Collectors.toList());
 		}
 
 		@Override
@@ -720,4 +730,32 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		return C.setCodeBody(
 			makeCodeBodyCode(n.getType(), cfg, symtab, hasCatchBlock, caughtTypes, hasMonitorOp, lexicalInfo, debugInfo, C));
 	}
+
+	@Override
+	public Iterator<IClass> iterateAllClasses() {
+		Map<TypeName,IClass> m = HashMapFactory.make();
+		Graph<IClass> x = SlowSparseNumberedGraph.make();
+		super.iterateAllClasses().forEachRemaining(c -> {
+			x.addNode(c);
+			m.put(c.getName(), c);
+		});
+		for(IClass c : x) {
+			if (c instanceof SolidityClass) {
+				Collection<TypeName> ss = ((SolidityClass)c).supers;
+				if (ss != null) {
+					ss.forEach(sc -> { 
+						if (m.containsKey(sc)) {
+							x.addEdge(m.get(sc), c); 
+						} else {
+							System.err.println("cannot find " + sc);
+							System.err.println(x);
+						}
+					});
+				}
+			}
+		}
+		return Topological.makeTopologicalIter(x).iterator();
+	}
+	
+	
 }

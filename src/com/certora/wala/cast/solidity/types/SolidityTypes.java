@@ -164,7 +164,11 @@ public class SolidityTypes {
 
 	public static TypeReference library = TypeReference.findOrCreate(solidity, "Llibrary");
 
+	public static TypeReference bytes1 = TypeReference.findOrCreate(solidity, "Pbytes1");
+
 	public static TypeReference bytes4 = TypeReference.findOrCreate(solidity, "Pbytes4");
+
+	public static TypeReference bytes16 = TypeReference.findOrCreate(solidity, "Pbytes16");
 
 	public static TypeReference bytes32 = TypeReference.findOrCreate(solidity, "Pbytes32");
 
@@ -173,5 +177,7 @@ public class SolidityTypes {
 	public static TypeReference enm = TypeReference.findOrCreate(solidity, "Penum");
 
 	public static TypeReference abi = TypeReference.findOrCreate(solidity, "Labi");
+
+	public static TypeReference block = TypeReference.findOrCreate(solidity, "Lblock");
 
 }

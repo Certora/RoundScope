@@ -79,6 +79,23 @@ public class SolidityAstTranslator extends AstTranslator {
 		v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.abi)));
 		context.currentScope().declare(new CAstSymbolImpl("mulmod", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.block)));
+		context.currentScope().declare(new CAstSymbolImpl("block", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
+		context.currentScope().declare(new CAstSymbolImpl("require", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
+		context.currentScope().declare(new CAstSymbolImpl("keccak256", CAstType.DYNAMIC), v);
+
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
+		context.currentScope().declare(new CAstSymbolImpl("ecrecover", CAstType.DYNAMIC), v);
+
 	}
 
 	@Override
@@ -137,9 +154,13 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
 		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef.getChild(0));
-		assert t instanceof SolidityMappingType;
-		CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
-		TypeReference eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+		TypeReference eltType;
+		if (t instanceof SolidityMappingType) {
+			CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
+			eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+		} else {
+			eltType = SolidityTypes.bytes;
+		}
 		context.cfg().addInstruction(insts.ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, eltType));
 	}
 	
@@ -219,7 +240,7 @@ public class SolidityAstTranslator extends AstTranslator {
 		context.cfg().addInstruction(
 			insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
 				resultVal, 
-				"this".equals(name)? 1:  context.currentScope().lookup(name).valueNumber()));
+				"this".equals(name) || "super".equals(name)? 1:  context.currentScope().lookup(name).valueNumber()));
 	}
 
 	@Override
