@@ -725,12 +725,15 @@ bool Translator::visit(const InlineAssembly &_node) {
 
 bool Translator::visit(const Literal &_node) {
     Type const* type = _node.annotation().type;
+    std::cout << "^^^^ " << type->toString(true) << " " << static_cast<int>(type->category()) << std::endl;
     switch (type->category())
     {
+        case Type::Category::Integer:
         case Type::Category::RationalNumber:
         case Type::Category::Bool:
         case Type::Category::Address:
             ret(cast.makeConstant((long)type->literalValue(&_node)));
+            std::cout << type->literalValue(&_node) << std::endl;
             break;
         case Type::Category::StringLiteral:
             ret(cast.makeConstant(_node.value().c_str()));
@@ -1005,11 +1008,14 @@ bool Translator::visit(const VariableDeclaration &_node) {
             value = last();
         }
 
+        jobject result = record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), _node.location(), _node.type());
         if (value != NULL) {
-            ret(record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol), value), _node.location(), _node.type()));
-        } else {
-            ret(record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), _node.location(), _node.type()));
+            result = cast.makeNode(cast.BLOCK_EXPR,
+                result,
+                record(cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), value), _node.location(), _node.type()));
         }
+        
+        ret(result);
     }
      
     return false;
@@ -1024,7 +1030,7 @@ bool Translator::visit(const VariableDeclarationStatement &_node) {
     
     int i = 0;
     const std::vector<ASTPointer<VariableDeclaration>> names = _node.declarations();
-    jobjectArray elts = jniEnv->NewObjectArray(names.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode"), NULL);
+    jobjectArray elts = jniEnv->NewObjectArray(names.size() + val==NULL? 0: 1, jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode"), NULL);
     for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t = names.begin();
          t != names.end();
          ++t, ++i)
@@ -1039,7 +1045,10 @@ bool Translator::visit(const VariableDeclarationStatement &_node) {
     }
     
     if (val != NULL) {
-        ret(record(cast.makeNode(cast.BLOCK_STMT, val, elts), _node.location()));\
+        jobject nm = cast.makeConstant(names.begin()->get()->name().c_str());
+        jobject init = cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, nm), val);
+        jniEnv->SetObjectArrayElement(elts, names.size(), init);
+        ret(record(cast.makeNode(cast.BLOCK_STMT, elts), _node.location()));
     }  else {
         ret(record(cast.makeNode(cast.BLOCK_STMT, elts), _node.location()));
     }
