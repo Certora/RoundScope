@@ -37,6 +37,8 @@ public class SolidityCAstType implements CAstType.Primitive {
 	static {
 		for(Object[] nm : new Object[][] {
 			{"library", SolidityTypes.library},
+			{"contract", SolidityTypes.contract},
+			{"abi", SolidityTypes.abi},
 			{"enum", SolidityTypes.enm},
 			{"address", SolidityTypes.address},
 			{"string", SolidityTypes.string},
@@ -82,7 +84,9 @@ public class SolidityCAstType implements CAstType.Primitive {
 		} else if (!types.containsKey(name) && name.contains(" ")) {
 			return get(name.split(" ")[0]);
 		}
-		assert types.containsKey(name) : name;
+		if (!types.containsKey(name)) {
+			System.err.println("cannot find type " + name);
+		}
 		return types.get(name);
 	}
 

@@ -41,6 +41,7 @@ import com.ibm.wala.cast.tree.CAstType.Method;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
+import com.ibm.wala.classLoader.ArrayClassLoader;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
 import com.ibm.wala.classLoader.IField;
@@ -119,9 +120,11 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass enm = new CoreClass(SolidityTypes.enm.getName(), root.getName(), this,
 			null);
 
-	private File confFile;
+	private final File confFile;
 
-	private Map<String, File> includePath;
+	private final Map<String, File> includePath;
+
+	private final ArrayClassLoader arrayClassLoader;
 
 	public Pair<File,String> getFile(String b) {
 		File f = null;
@@ -199,6 +202,22 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		this.confFile = confFile;
 		this.includePath = includePath;
 		this.solidityCode = new SolidityJNIBridge(this);
+		this.arrayClassLoader = new ArrayClassLoader();
+	}
+
+	
+	@Override
+	public IClass lookupClass(String className, IClassHierarchy cha) {
+		return lookupClass(TypeName.string2TypeName(className));
+	}
+
+	@Override
+	public IClass lookupClass(TypeName className) {
+		if (className.isArrayType()) {
+			return arrayClassLoader.lookupClass(className, this, cha);
+		} else {
+			return super.lookupClass(className);
+		}
 	}
 
 	@Override
@@ -210,8 +229,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public TypeReference[] getArrayInterfaces() {
-			// TODO Auto-generated method stub
-			return null;
+			return new TypeReference[0];
 		}
 
 		@Override
@@ -434,7 +452,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		@Override
 		public Collection<IClass> getDirectInterfaces() {
 			return supers.stream().map(t -> {
-				IClass s = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, t));
+				IClass s = types.get(t);
 				if (s == null && t.toString().startsWith("Lcontract ")) {
 					s = types.get(TypeName.findOrCreate("Linterface " + t.toString().substring(10)));
 				}
@@ -525,7 +543,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				CAstEntity entity, WalkContext context, TypeReference selfType) {
 			super(codeName, parent, loader, sourcePosition, entity, context);
 			isPure = entity.getQualifiers().contains(CAstQualifier.PURE);
-			this.self = new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType), Collections.emptySet(), cha.lookupClass(selfType), cha, Collections.emptySet()) {
+			this.self = new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType), Collections.emptySet(), types.get(selfType.getName()), cha, Collections.emptySet()) {
 				@Override
 				public IClass getDeclaringClass() {
 					return TypedFunctionBody.this;
@@ -745,7 +763,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				if (ss != null) {
 					ss.forEach(sc -> { 
 						if (m.containsKey(sc)) {
-							x.addEdge(m.get(sc), c); 
+							x.addEdge(c, m.get(sc)); 
 						} else {
 							System.err.println("cannot find " + sc);
 							System.err.println(x);

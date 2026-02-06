@@ -38,6 +38,7 @@ jobject Translator::getType(Type const* type) {
              ++t, i++)
         {
             jniEnv->SetObjectArrayElement(eltCAstTypes, i, getType(*t));
+            CheckExceptions(cast);
         }
         jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityTupleType");
         jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "([Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
@@ -96,6 +97,7 @@ bool Translator::visit(const SourceUnit &_node) {
             stmts = cast.makeNode(cast.EMPTY);
         }
         jniEnv->SetObjectArrayElement(children, i, stmts);
+        CheckExceptions(cast);
     }
     
     ret(cast.makeNode(cast.BLOCK_STMT, children));
@@ -267,6 +269,7 @@ bool Translator::visit(const Block &_node) {
     {
         t->get()->accept(*this);
         jniEnv->SetObjectArrayElement(children, i, last());
+        CheckExceptions(cast);
     }
     
     ret(record(cast.makeNode(cast.BLOCK_STMT, children), _node.location()));
@@ -567,6 +570,7 @@ jobjectArray Translator::getCAstTypes(const std::vector<ASTPointer<VariableDecla
         {
             jobject pt = getType(t->get()->type());
             jniEnv->SetObjectArrayElement(result, i, pt);
+            CheckExceptions(cast);
         }
         
         return result;
@@ -929,9 +933,11 @@ bool Translator::visit(const TryCatchClause &_node) {
                                           cast.makeNode(cast.ASSIGN,
                                                         cast.makeNode(cast.VAR, cast.makeConstant(t->get()->name().c_str())),
                                                         cast.makeNode(cast.OBJECT_REF, cast.makeNode(cast.VAR, cast.makeConstant("e")), cast.makeConstant(t->get()->name().c_str()))));
+            CheckExceptions(cast);
         }
         
         jniEnv->SetObjectArrayElement(elts, i, body);
+        CheckExceptions(cast);
         
         ret(record(cast.makeNode(cast.CATCH, cast.makeConstant("e"), cast.makeNode(cast.BLOCK_STMT, elts)), _node.location()));
     } else {
@@ -1030,7 +1036,7 @@ bool Translator::visit(const VariableDeclarationStatement &_node) {
     
     int i = 0;
     const std::vector<ASTPointer<VariableDeclaration>> names = _node.declarations();
-    jobjectArray elts = jniEnv->NewObjectArray(names.size() + val==NULL? 0: 1, jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode"), NULL);
+    jobjectArray elts = jniEnv->NewObjectArray(names.size() + (val==NULL? 0: 1), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode"), NULL);
     for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t = names.begin();
          t != names.end();
          ++t, ++i)
@@ -1042,13 +1048,24 @@ bool Translator::visit(const VariableDeclarationStatement &_node) {
         } else {
             jniEnv->SetObjectArrayElement(elts, i, cast.makeNode(cast.EMPTY));
         }
+        CheckExceptions(cast);
     }
     
     if (val != NULL) {
-        jobject nm = cast.makeConstant(names.begin()->get()->name().c_str());
-        jobject init = cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, nm), val);
-        jniEnv->SetObjectArrayElement(elts, names.size(), init);
-        ret(record(cast.makeNode(cast.BLOCK_STMT, elts), _node.location()));
+        std::cout << "found val" << std::endl;
+        for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t = names.begin();
+             t != names.end();
+             ++t)
+        {
+            if (t->get()) {
+                jobject nm = cast.makeConstant(t->get()->name().c_str());
+                jobject init = cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, nm), val);
+                jniEnv->SetObjectArrayElement(elts, names.size(), init);
+                CheckExceptions(cast);
+                ret(record(cast.makeNode(cast.BLOCK_STMT, elts), _node.location()));
+                break;
+            }
+        }
     }  else {
         ret(record(cast.makeNode(cast.BLOCK_STMT, elts), _node.location()));
     }
