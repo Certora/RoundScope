@@ -11,8 +11,6 @@
 
 #include "CAstWrapper.h"
 
-using namespace solidity::frontend;
-
 extern std::map<std::string, jobject> types;
 
 class DelegatingContext {
@@ -107,7 +105,9 @@ public:
     RootContext(jobject entity) : EntityContext(entity, NULL), DelegatingContext(NULL) { }
 };
 
-class Translator : public ASTConstVisitor {
+using namespace solidity::frontend;
+
+class Translator : public solidity::frontend::ASTConstVisitor {
 private:
     JNIEnv *jniEnv;
     CAstWrapper cast;
@@ -143,7 +143,7 @@ private:
         return jniEnv->CallObjectMethod(xlator, mp, jniEnv->NewStringUTF(fileName), loc.start, loc.end);
     }
     
-    jobject record(jobject castNode, const solidity::frontend::ASTNode::SourceLocation& loc, Type const* type) {
+    jobject record(jobject castNode, const solidity::frontend::ASTNode::SourceLocation& loc, solidity::frontend::Type const* type) {
         cast.setAstNodeType(context->entity(), castNode, getType(type));
         return record(castNode, loc);
     }
@@ -156,10 +156,10 @@ private:
     jobject getType(std::string type);
     jobject getType(Type const* type);
 
-    jobjectArray getCAstTypes(const std::vector<ASTPointer<VariableDeclaration>>&);
+    jobjectArray getCAstTypes(const std::vector< solidity::frontend::ASTPointer< solidity::frontend::VariableDeclaration>>&);
     jobject getSolidityFunctionType(const char *, jobjectArray, jobjectArray, bool);
-    jobject getSolidityFunctionType(const CallableDeclaration*, bool);
-    jobject visitCall(const CallableDeclaration &, jobject, bool);
+    jobject getSolidityFunctionType(const  solidity::frontend::CallableDeclaration*, bool);
+    jobject visitCall(const  solidity::frontend::CallableDeclaration &, jobject, bool);
     jobject getSelfType();
     jobject getSelfPtr();
 

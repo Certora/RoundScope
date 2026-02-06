@@ -5,7 +5,8 @@
 //  Created by Julian Dolby on 12/19/25.
 //
 #include "translator.h"
-#include "CAstWrapper.h"
+
+using namespace solidity::frontend;
 
 void showStackTrace() {
     std::cout << cpptrace::generate_trace() << std::endl;
@@ -718,12 +719,6 @@ bool Translator::visit(const InheritanceSpecifier &_node) {
     context->addSuperclass(typeName);
     */
                            
-    return false;
-}
-
-bool Translator::visit(const InlineAssembly &_node) {
-    solidity::yul::AST const& ast = _node.operations();
-    ret(cast.makeNode(cast.EMPTY));
     return false;
 }
 
