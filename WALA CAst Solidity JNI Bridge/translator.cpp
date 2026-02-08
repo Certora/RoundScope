@@ -261,7 +261,7 @@ bool Translator::visit(const Block &_node) {
     const std::vector<ASTPointer<Statement>> nodes = _node.statements();
     int len = (int)nodes.size();
     jclass cnc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode");
-    jobjectArray children = jniEnv->NewObjectArray(len, cnc, NULL);
+    jobjectArray children = jniEnv->NewObjectArray(len, cnc, cast.makeNode(cast.EMPTY));
 
     int i = 0;
     for (std::vector<ASTPointer<Statement>>::const_iterator t=nodes.begin();
@@ -957,7 +957,12 @@ bool Translator::visit(const UnaryOperation &_node) {
 
     jobject op = translateOpcode(cast, _node.getOperator());
     
-    expr = cast.makeNode(cast.UNARY_EXPR, op, expr);
+    if (_node.getOperator() == Token::Inc || _node.getOperator() == Token::Dec) {
+        expr = cast.makeNode((_node.isPrefixOperation()? cast.ASSIGN_PRE_OP: cast.ASSIGN_POST_OP), expr, cast.makeConstant(1), op);
+    } else {
+        expr = cast.makeNode(cast.UNARY_EXPR, op, expr);
+    }
+    
     ret(record(expr, _node.location(), _node.annotation().type));
     
     return false;

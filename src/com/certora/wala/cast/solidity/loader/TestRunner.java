@@ -68,7 +68,11 @@ public class TestRunner {
 		IRFactory<IMethod> f = AstIRFactory.makeDefaultFactory();
 		cha.forEach(c -> { 
 			c.getDeclaredMethods().forEach(m -> { 
-				System.out.println(f.makeIR(m, Everywhere.EVERYWHERE, SSAOptions.defaultOptions()));
+				try {
+					System.out.println(f.makeIR(m, Everywhere.EVERYWHERE, SSAOptions.defaultOptions()));
+				} catch (RuntimeException e) {
+					System.err.println(e);
+				}
 			});
 		});
 		

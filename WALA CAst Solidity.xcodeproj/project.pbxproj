@@ -492,6 +492,7 @@
 					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
 					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
 					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
+					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
 				);
 				"LIBRARY_SEARCH_PATHS[arch=*]" = (
 					LIBRARY_SEARCH_PATHS,
@@ -523,6 +524,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					/Users/julian/git/solidity/build/libevmasm,
 					/opt/homebrew/Cellar/boost/1.90.0/lib,
+					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
 					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
 					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
 					"$(PROJECT_DIR)/WALA\\ CAst\\ Solidity\\ JNI\\ Bridge",
