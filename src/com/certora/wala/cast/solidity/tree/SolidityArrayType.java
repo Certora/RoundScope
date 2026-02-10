@@ -33,7 +33,7 @@ public class SolidityArrayType implements CAstType {
 		} else {
 			SolidityArrayType type = new SolidityArrayType(elt);
 			
-			TypeReference irType = SolidityCAstType.getIRType(elt.getName()).getArrayTypeForElementType();
+			TypeReference irType = SolidityCAstType.getIRType(elt).getArrayTypeForElementType();
 			
 			SolidityCAstType.record(type.getName(), type, irType);
 			types.put(elt, type);

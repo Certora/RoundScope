@@ -49,7 +49,7 @@ public class SolidityAstTranslator extends AstTranslator {
 		if (parent.top().getKind() == CAstEntity.FILE_ENTITY) {
 			return f.getName();
 		} else {
-			if (f.getKind() == CAstEntity.FUNCTION_ENTITY) {
+			if (f.getKind() == CAstEntity.FUNCTION_ENTITY &&  ((FunctionType)f.getType()).getDeclaringType() != null) {
 				if (f.getType() instanceof FunctionType) {
 					return ((FunctionType)f.getType()).getDeclaringType().getName() + "." + f.getType().getName();
 				} else {
@@ -101,6 +101,9 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	protected void declareFunction(CAstEntity N, WalkContext context) {
 		assert N.getKind() == CAstEntity.FUNCTION_ENTITY;
+		if (N.getName().contains("hasRole")) {
+			System.err.println(N);
+		}
 		((SolidityLoader)loader).defineFunctionType(N, composeEntityName(context, N), context);
 	}
 
@@ -119,6 +122,9 @@ public class SolidityAstTranslator extends AstTranslator {
 			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
 			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> catchTypes,
 			boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
+		if (N.getName().contains("hasRole")) {
+			System.err.println(N);
+		}
 		String clsName = composeEntityName(definingContext, N);
 		((SolidityLoader)loader).defineFunctionBody(clsName, N, definingContext, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo, debugInfo);
 	}
@@ -143,7 +149,7 @@ public class SolidityAstTranslator extends AstTranslator {
 		TypeReference eltType;
 		if (t instanceof SolidityMappingType) {
 			CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
-			eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+			eltType =  SolidityCAstType.getIRType(eltCAstType);
 		} else {
 			eltType = SolidityTypes.bytes;
 		}
@@ -157,7 +163,7 @@ public class SolidityAstTranslator extends AstTranslator {
 		TypeReference eltType;
 		if (t instanceof SolidityMappingType) {
 			CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
-			eltType =  SolidityCAstType.getIRType(eltCAstType.getName());
+			eltType =  SolidityCAstType.getIRType(eltCAstType);
 		} else {
 			eltType = SolidityTypes.bytes;
 		}
@@ -169,8 +175,12 @@ public class SolidityAstTranslator extends AstTranslator {
 			int[] arguments) {
 		if (call.getChild(0).getKind() == CAstNode.TYPE_LITERAL_EXPR) {
 			String typeName = (String) call.getChild(0).getChild(0).getValue();
-			TypeReference type = SolidityCAstType.getIRType(typeName);
-			context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, receiver, type, true));
+			TypeReference type = SolidityCAstType.getIRType(SolidityCAstType.get(typeName));
+			if (type != null) {
+				context.cfg().addInstruction(insts.CheckCastInstruction(context.cfg().getCurrentInstruction(), result, arguments[0], type, true));
+			} else {
+				context.cfg().addInstruction(insts.AssignInstruction(context.cfg().getCurrentInstruction(), result, arguments[0]));
+			}
 		} else if (call.getChild(0).getKind() == CAstNode.PRIMITIVE &&
 				"type".equals(call.getChild(0).getChild(0).getValue()) &&
 				call.getChild(2).getKind() == CAstNode.TYPE_LITERAL_EXPR) {
@@ -183,7 +193,7 @@ public class SolidityAstTranslator extends AstTranslator {
 			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
 			MethodReference m;
 			if (! (recCAstType instanceof FunctionType)) {
-				TypeReference retType = SolidityCAstType.getIRType(recCAstType.getName());
+				TypeReference retType = SolidityCAstType.getIRType(recCAstType);
 				TypeName[] argTypes = new TypeName[ arguments.length ];
 				for(int i = 0; i < argTypes.length; i++) {
 					argTypes[i] = SolidityTypes.root.getName();
@@ -204,8 +214,8 @@ public class SolidityAstTranslator extends AstTranslator {
 		CAstNodeTypeMap typeMap = code.getNodeTypeMap();
 		CAstType objCAstType = typeMap.getNodeType(parent.getChild(0));
 		CAstType eltCAstType = typeMap.getNodeType(parent);	
-		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType.getName());
-		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType.getName());
+		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType);
+		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType);
 		if (eltCAstType instanceof FunctionType) {
 			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, eltType.getName());
 			NewSiteReference ns = NewSiteReference.make(context.cfg().getCurrentInstruction(), t);
@@ -223,8 +233,8 @@ public class SolidityAstTranslator extends AstTranslator {
 		CAstNodeTypeMap typeMap = code.getNodeTypeMap();
 		CAstType objCAstType = typeMap.getNodeType(parent.getChild(0));
 		CAstType eltCAstType = typeMap.getNodeType(parent);	
-		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType.getName());
-		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType.getName());
+		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType);
+		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType);
 		context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), eltType)));
 	}
 	
@@ -271,7 +281,7 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected TypeReference makeType(CAstType type) {
-		return SolidityCAstType.getIRType(type.getName());
+		return SolidityCAstType.getIRType(type);
 	}
 
 	@Override

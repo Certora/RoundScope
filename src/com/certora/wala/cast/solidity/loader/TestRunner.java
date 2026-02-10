@@ -57,9 +57,9 @@ public class TestRunner {
 
 		IClassHierarchy cha = ClassHierarchyFactory.make(s, sl);
 		
-		Set<Entrypoint> es = LinkedEntrypoint.getContractEntrypoints(conf.getLink(), cha);
-		
 		System.out.println(cha);
+		
+		Set<Entrypoint> es = LinkedEntrypoint.getContractEntrypoints(conf.getLink(), cha);
 		
 		System.out.println("Entrypoints:");
 		es.forEach(e -> System.out.println(e));

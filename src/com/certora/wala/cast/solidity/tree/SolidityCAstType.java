@@ -32,7 +32,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 	}
 	
 	public static final Map<String,CAstType> types = HashMapFactory.make();
-	public static final Map<String,TypeReference> irTypes = HashMapFactory.make();
+	public static final Map<CAstType,TypeReference> irTypes = HashMapFactory.make();
 	
 	static {
 		for(Object[] nm : new Object[][] {
@@ -53,18 +53,21 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"error", SolidityTypes.error},
 			{"msg", SolidityTypes.msg},
 			{"void", TypeReference.Void}}) {
-			types.put((String)nm[0], new SolidityCAstType((String)nm[0]));
-			irTypes.put((String)nm[0], (TypeReference)nm[1]);
+			CAstType t = new SolidityCAstType((String)nm[0]);
+			types.put((String)nm[0], t);
+			irTypes.put(t, (TypeReference)nm[1]);
 		}
 		try {
 			for(int i = 8; i <= 256; i += 8) {
 				TypeReference ut = (TypeReference) SolidityTypes.class.getField("uint" + i).get(null);
-				types.put("uint" + i, new SolidityCAstType("uint" + i));
-				irTypes.put("uint" + i, ut);
+				SolidityCAstType t = new SolidityCAstType("uint" + i);
+				types.put("uint" + i, t);
+				irTypes.put(t, ut);
 
 				TypeReference it = (TypeReference) SolidityTypes.class.getField("int" + i).get(null);
-				types.put("int" + i, new SolidityCAstType("int" + i));
-				irTypes.put("int" + i, it);
+				SolidityCAstType ti = new SolidityCAstType("int" + i);
+				types.put("int" + i, ti);
+				irTypes.put(ti, it);
 
 			}
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
@@ -74,8 +77,11 @@ public class SolidityCAstType implements CAstType.Primitive {
 	
 	public static void record(String name, CAstType type, TypeReference irType) {
 		assert !types.containsKey(name);
+		if (irType.toString().contains("contract.decimals")) {
+			System.err.println(name + ":" + type);
+		}
 		types.put(name, type);
-		irTypes.put(name, irType);
+		irTypes.put(type, irType);
 	}
 	
 	public static CAstType get(String name) {
@@ -90,7 +96,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 		return types.get(name);
 	}
 
-	public static TypeReference getIRType(String name) {
+	public static TypeReference getIRType(CAstType name) {
 		return irTypes.get(name);
 	}
 }

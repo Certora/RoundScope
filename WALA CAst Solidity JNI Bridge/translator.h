@@ -157,11 +157,12 @@ private:
     jobject getType(Type const* type);
 
     jobjectArray getCAstTypes(const std::vector< solidity::frontend::ASTPointer< solidity::frontend::VariableDeclaration>>&);
-    jobject getSolidityFunctionType(const char *, jobjectArray, jobjectArray, bool);
-    jobject getSolidityFunctionType(const  solidity::frontend::CallableDeclaration*, bool);
-    jobject visitCall(const  solidity::frontend::CallableDeclaration &, jobject, bool);
+    jobject getSolidityFunctionType(const char *, jobject, jobjectArray, jobjectArray, bool);
+    jobject getSolidityFunctionType(const solidity::frontend::CallableDeclaration*, bool);
+    jobject visitCallableDefinition(const  solidity::frontend::CallableDeclaration &, jobject, bool);
     jobject getSelfType();
     jobject getSelfPtr();
+    bool handleIdentifierDeclaration(const Declaration *, solidity::langutil::SourceLocation const&);
 
 public:
     jobject last() {
@@ -220,5 +221,8 @@ public:
     virtual bool visit(const UsingForDirective &_node) override;
     virtual bool visit(const VariableDeclaration &_node) override;
     virtual bool visit(const VariableDeclarationStatement &_node) override;
+
+    jobject visitAssemblyExpression(solidity::yul::Dialect const&, std::map<solidity::yul::Identifier const*, InlineAssemblyAnnotation::ExternalIdentifierInfo>&, const solidity::yul::Expression &);
+    jobject visitAssemblyBlock(solidity::yul::Dialect const&, std::map<solidity::yul::Identifier const*, InlineAssemblyAnnotation::ExternalIdentifierInfo>&, const solidity::yul::Block&);
 
 };

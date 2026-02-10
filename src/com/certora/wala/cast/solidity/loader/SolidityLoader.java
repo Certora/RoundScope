@@ -475,7 +475,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private void makeFields(CAstEntity type, IClass newClass, Map<Atom, IField> fields) {
 		type.getScopedEntities(null).forEachRemaining(ce -> {
 			if (ce.getKind() == CAstEntity.FIELD_ENTITY) {
-				TypeReference fieldType = SolidityCAstType.getIRType(ce.getType().getName());
+				TypeReference fieldType = SolidityCAstType.getIRType(ce.getType());
 				Atom fieldName = Atom.findOrCreateUnicodeAtom(ce.getName());
 				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, fieldType);
 				fields.put(fieldName,
@@ -486,11 +486,11 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				CAstType.Function ft = (CAstType.Function) ce.getType();
 				TypeName[] params = new TypeName[ ft.getArgumentCount() ];
 				for(int i = 0; i < ft.getArgumentCount() ; i++) {
-					params[i] = SolidityCAstType.getIRType(ft.getArgumentTypes().get(i).getName()).getName();
+					params[i] = SolidityCAstType.getIRType(ft.getArgumentTypes().get(i)).getName();
 				}
 			
 				Atom fieldName = Atom.findOrCreateUnicodeAtom(newClass.getReference().getName() + "." + ft.getName());
-				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, SolidityCAstType.getIRType(ft.getName()));
+				FieldReference fr = FieldReference.findOrCreate(newClass.getReference(), fieldName, SolidityCAstType.getIRType(ft));
 				fields.put(fieldName,
 					new AstField(fr, Collections.emptyList(), newClass, cha, Collections.emptyList()) {
 					
@@ -593,15 +593,15 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	
 	public IClass defineFunctionType(CAstEntity n, String name, WalkContext c) {
 		TypeReference fn = TypeReference.findOrCreate(getReference(), 'L' + name);
-		Function f = (Function) n.getType();
+		FunctionType f = (FunctionType) n.getType();
 		TypeReference args[] = new TypeReference[ f.getArgumentCount() ];
 		for(int i = 0; i < f.getArgumentCount(); i++) {
-			args[i] = SolidityCAstType.getIRType(f.getArgumentTypes().get(i).getName());
+			args[i] = SolidityCAstType.getIRType(f.getArgumentTypes().get(i));
 		}
 
 		TypeReference self;
-		if (f instanceof Method) {
-			self = SolidityCAstType.getIRType(((Method)f).getDeclaringType().getName());
+		if (f instanceof Method && ((Method)f).getDeclaringType() != null) {
+			self = SolidityCAstType.getIRType(((Method)f).getDeclaringType());
 		} else {
 			self = null;
 		}
@@ -612,7 +612,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				{
 					types.put(fn.getName(), this);
 				}
-
+				
 				public boolean isPure() {
 					return true;
 				}
@@ -661,6 +661,11 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				n.getPosition(), n, c, self) {
 
 					@Override
+					public String toString() {
+						return (isAbstract()? "abstract ": "") + "function " + n.getName();
+					}
+
+					@Override
 					public boolean isPublic() {
 						return pblc;
 					}
@@ -668,6 +673,16 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					@Override
 					public boolean isPrivate() {
 						return prvt;
+					}
+		
+					@Override
+					public boolean isAbstract() {
+						if (n.getType() instanceof FunctionType) {
+							if (((FunctionType)n.getType()).getDeclaringType() instanceof InterfaceType) {
+								return true;
+							}
+						}
+						return super.isAbstract();
 					}
 
 					@Override
@@ -684,21 +699,238 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					public TypeReference[] getArgumentTypes() {
 						return args;
 					}
-				
+
+					private IMethod abs = null;
+					@Override
+					public IMethod getMethod(Selector selector) {
+						if (! isAbstract()) {
+							return super.getMethod(selector);
+						} else {
+							if (abs == null) {
+								IClass cls = this;
+								abs = new IMethod() {
+
+									@Override
+									public IClass getDeclaringClass() {
+										return cls;
+									}
+
+									@Override
+									public Atom getName() {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public boolean isStatic() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public Collection<Annotation> getAnnotations() {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public IClassHierarchy getClassHierarchy() {										// TODO Auto-generated method stub
+										return cha;
+									}
+
+									@Override
+									public boolean isSynchronized() {
+										return false;
+									}
+
+									@Override
+									public boolean isClinit() {
+										return false;
+									}
+
+									@Override
+									public boolean isInit() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isNative() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isWalaSynthetic() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isSynthetic() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isAbstract() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isPrivate() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isProtected() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isPublic() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isFinal() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isBridge() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public MethodReference getReference() {
+										return SolidityLoader.this.getReference(f);
+									}
+
+									@Override
+									public boolean hasExceptionHandler() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public TypeReference getParameterType(int i) {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public TypeReference getReturnType() {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public int getNumberOfParameters() {
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public TypeReference[] getDeclaredExceptions()
+											throws InvalidClassFileException, UnsupportedOperationException {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public int getLineNumber(int bcIndex) {
+										// TODO Auto-generated method stub
+										return 0;
+									}
+
+									@Override
+									public SourcePosition getSourcePosition(int instructionIndex)
+											throws InvalidClassFileException {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public SourcePosition getParameterSourcePosition(int paramNum)
+											throws InvalidClassFileException {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public String getLocalVariableName(int bcIndex, int localNumber) {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public String getSignature() {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public Selector getSelector() {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public Descriptor getDescriptor() {
+										// TODO Auto-generated method stub
+										return null;
+									}
+
+									@Override
+									public boolean hasLocalVariableTable() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isAnnotation() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isEnum() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+
+									@Override
+									public boolean isModule() {
+										// TODO Auto-generated method stub
+										return false;
+									}
+									
+								};
+							}
+							return abs;
+						}
+					}				
 			};
 		}
 	}
 
 	public MethodReference getReference(FunctionType recCAstType) {
-		TypeReference recType = SolidityCAstType.getIRType(recCAstType.getName());
+		TypeReference recType = SolidityCAstType.getIRType(recCAstType);
 		TypeName[] argTypes = new TypeName[ recCAstType.getArgumentCount() ];
 		for(int i = 0; i < argTypes.length; i++) {
-			argTypes[i] = SolidityCAstType.getIRType(recCAstType.getArgumentTypes().get(i).getName()).getName();
+			argTypes[i] = SolidityCAstType.getIRType(recCAstType.getArgumentTypes().get(i)).getName();
 		}
 		TypeReference retType = 
 				recCAstType.getReturnType() == null?
 					TypeReference.Void:
-					SolidityCAstType.getIRType(recCAstType.getReturnType().getName());
+					SolidityCAstType.getIRType(recCAstType.getReturnType());
 		Descriptor d = Descriptor.findOrCreate(argTypes, retType.getName());
 		return MethodReference.findOrCreate(recType, AstMethodReference.fnAtom, d);
 	}
@@ -729,9 +961,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					@Override
 					public TypeReference getParameterType(int i) {
 						if (i == 0) {
-							return SolidityCAstType.getIRType(t.getName());
+							return SolidityCAstType.getIRType(t);
 						} else {
-							return SolidityCAstType.getIRType(((Function)t).getArgumentTypes().get(i-1).getName());
+							return SolidityCAstType.getIRType(((Function)t).getArgumentTypes().get(i-1));
 						}
 					}	
 					

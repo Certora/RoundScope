@@ -40,16 +40,16 @@ public class FunctionType implements Method {
 		}
 		return sig;
 	}
-
+	
 	private FunctionType(String name, CAstType self, CAstType returnType, CAstType... args) {
 		this.returnType = returnType;
 		this.args = args;
 		this.self = self;
 		
 		this.name = signature(name, args, returnType);
-		
+		 		
 		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + self.getName() + "." + this.name);
-		SolidityCAstType.record(this.name, this, tr);
+		SolidityCAstType.record(self.getName() + "." + this.name, this, tr);
 	}
 
 	// TODO: multiple return types; probably use a tuple
