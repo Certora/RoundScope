@@ -47,7 +47,11 @@ public class TestRunner {
 		try {
 		File confFile = new File(args[0]);
 		Conf conf = Configuration.getConf(confFile);
-		getSpecRules(conf);
+		try {
+			getSpecRules(conf);
+		} catch (IllegalStateException e) {
+			
+		}
 				
 		SingleClassLoaderFactory sl = new SolidityLoaderFactory(confFile, conf.getIncludePath());
 		

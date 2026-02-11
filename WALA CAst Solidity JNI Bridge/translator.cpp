@@ -253,7 +253,9 @@ jobject translateOpcode(CAstWrapper& cast, Token t) {
         case Token::SHR: case Token::AssignShr: return cast.OP_URSH;
         case Token::SAR: case Token::AssignSar: return cast.OP_RSH;
         case Token::BitNot: return cast.OP_BITNOT;
-        default: return NULL;
+        default:
+            std::cout << "unknown opcode: " << t << std::endl;
+            return NULL;
     }
  }
 
@@ -467,11 +469,21 @@ bool Translator::visit(const ForStatement &_node) {
         stuff = last();
     }
     
-    _node.condition()->accept(*this);
-    jobject test = last();
+    jobject test;
+    if (_node.condition()) {
+        _node.condition()->accept(*this);
+        test = last();
+    } else {
+        test = cast.makeConstant(true);
+    }
     
-    _node.loopExpression()->accept(*this);
-    jobject update = last();
+    jobject update;
+    if (_node.loopExpression()) {
+        _node.loopExpression()->accept(*this);
+        update = last();
+    } else {
+        update = cast.makeNode(cast.EMPTY);
+    }
     
     _node.body().accept(*this);
     jobject body = last();
@@ -1043,6 +1055,8 @@ bool Translator::visit(const UnaryOperation &_node) {
     
     if (_node.getOperator() == Token::Inc || _node.getOperator() == Token::Dec) {
         expr = cast.makeNode((_node.isPrefixOperation()? cast.ASSIGN_PRE_OP: cast.ASSIGN_POST_OP), expr, cast.makeConstant(1), op);
+    } else if (_node.getOperator() == Token::Delete) {
+        expr = cast.makeNode(cast.PRIMITIVE, cast.makeConstant("delete"), expr);
     } else {
         expr = cast.makeNode(cast.UNARY_EXPR, op, expr);
     }
@@ -1117,9 +1131,9 @@ bool Translator::visit(const VariableDeclaration &_node) {
            jobject a = record(cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), value), _node.location());
            result = cast.makeNode(cast.BLOCK_EXPR, result, a);
            cast.setAstNodeType(context->entity(), a, type);
-       } else if ("bytes32" == _node.type()->toString(true) || "uint256" == _node.type()->toString(true)) {
-           jobject a = cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), cast.makeConstant(0));
-           result = cast.makeNode(cast.BLOCK_EXPR, result, a);
+       } else {
+           jobject a = getDefaultValue(type);
+           result = cast.makeNode(cast.BLOCK_EXPR, result, cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), cast.makeConstant(a)));
        }
         std::cout << "step" << std::endl;
 

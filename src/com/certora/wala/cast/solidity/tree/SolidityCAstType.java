@@ -11,11 +11,17 @@ import com.ibm.wala.util.collections.HashMapFactory;
 public class SolidityCAstType implements CAstType.Primitive {
 
 	private final String name;
-
-	private SolidityCAstType(String name) {
+	private final Object defaultValue;
+	
+	private SolidityCAstType(String name, Object defaultValue) {
 		this.name = name;
+		this.defaultValue = defaultValue;
 	}
 	
+	public Object getDefaultValue() {
+		return defaultValue;
+	}
+
 	@Override
 	public String getName() {
 		return name;
@@ -36,38 +42,38 @@ public class SolidityCAstType implements CAstType.Primitive {
 	
 	static {
 		for(Object[] nm : new Object[][] {
-			{"root", SolidityTypes.root},
-			{"tuple", SolidityTypes.tuple},
-			{"library", SolidityTypes.library},
-			{"contract", SolidityTypes.contract},
-			{"abi", SolidityTypes.abi},
-			{"enum", SolidityTypes.enm},
-			{"address", SolidityTypes.address},
-			{"string", SolidityTypes.string},
-			{"bool", SolidityTypes.bool},
-			{"function", SolidityTypes.function},
-			{"struct", SolidityTypes.struct},
-			{"bytes", SolidityTypes.bytes},
-			{"bytes32", SolidityTypes.bytes32},
-			{"bytes4", SolidityTypes.bytes4},
-			{"bytes16", SolidityTypes.bytes16},
-			{"bytes1", SolidityTypes.bytes1},
-			{"error", SolidityTypes.error},
-			{"msg", SolidityTypes.msg},
-			{"void", TypeReference.Void}}) {
-			CAstType t = new SolidityCAstType((String)nm[0]);
+			{"root", SolidityTypes.root, null},
+			{"tuple", SolidityTypes.tuple, null},
+			{"library", SolidityTypes.library, null},
+			{"contract", SolidityTypes.contract, null},
+			{"abi", SolidityTypes.abi, null},
+			{"enum", SolidityTypes.enm, null},
+			{"address", SolidityTypes.address, 0},
+			{"string", SolidityTypes.string, null},
+			{"bool", SolidityTypes.bool, false},
+			{"function", SolidityTypes.function, null},
+			{"struct", SolidityTypes.struct, null},
+			{"bytes", SolidityTypes.bytes, 0},
+			{"bytes32", SolidityTypes.bytes32, 0},
+			{"bytes4", SolidityTypes.bytes4, 0},
+			{"bytes16", SolidityTypes.bytes16, 0},
+			{"bytes1", SolidityTypes.bytes1, 0},
+			{"error", SolidityTypes.error, null},
+			{"msg", SolidityTypes.msg, null},
+			{"void", TypeReference.Void, null}}) {
+			CAstType t = new SolidityCAstType((String)nm[0], nm[2]);
 			types.put((String)nm[0], t);
 			irTypes.put(t, (TypeReference)nm[1]);
 		}
 		try {
 			for(int i = 8; i <= 256; i += 8) {
 				TypeReference ut = (TypeReference) SolidityTypes.class.getField("uint" + i).get(null);
-				SolidityCAstType t = new SolidityCAstType("uint" + i);
+				SolidityCAstType t = new SolidityCAstType("uint" + i, 0);
 				types.put("uint" + i, t);
 				irTypes.put(t, ut);
 
 				TypeReference it = (TypeReference) SolidityTypes.class.getField("int" + i).get(null);
-				SolidityCAstType ti = new SolidityCAstType("int" + i);
+				SolidityCAstType ti = new SolidityCAstType("int" + i, 0);
 				types.put("int" + i, ti);
 				irTypes.put(ti, it);
 

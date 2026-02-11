@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
+import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.ibm.wala.cast.ir.translator.AbstractEntity;
 import com.ibm.wala.cast.ir.translator.NativeBridge;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
@@ -131,6 +132,14 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 		
 		void record(CAstNode node, Position pos) {
 			SolidityJNIBridge.this.record(node, pos);
+		}
+		
+		Object defaultValue(CAstType t) {
+			if (t instanceof SolidityCAstType) {
+				return ((SolidityCAstType)t).getDefaultValue();
+			} else {
+				return null;
+			}
 		}
 		
 		@Override

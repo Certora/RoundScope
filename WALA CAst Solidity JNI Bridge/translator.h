@@ -141,6 +141,12 @@ private:
         return jniEnv->CallObjectMethod(xlator, mp, jniEnv->NewStringUTF(fileName), loc.start, loc.end);
     }
     
+    jobject getDefaultValue(jobject type) {
+        jclass xcls = jniEnv->GetObjectClass(xlator);
+        jmethodID mp = jniEnv->GetMethodID(xcls, "defaultValue", "(Lcom/ibm/wala/cast/tree/CAstType;)Ljava/lang/Object;");
+        return jniEnv->CallObjectMethod(xlator, mp, type);
+    }
+
     jobject record(jobject castNode, const solidity::frontend::ASTNode::SourceLocation& loc, solidity::frontend::Type const* type) {
         cast.setAstNodeType(context->entity(), castNode, getType(type));
         return record(castNode, loc);

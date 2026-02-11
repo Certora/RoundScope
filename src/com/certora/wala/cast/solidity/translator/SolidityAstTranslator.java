@@ -102,6 +102,10 @@ public class SolidityAstTranslator extends AstTranslator {
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
 		context.currentScope().declare(new CAstSymbolImpl("revert", CAstType.DYNAMIC), v);
 
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
+		context.currentScope().declare(new CAstSymbolImpl("assert", CAstType.DYNAMIC), v);
+
 		context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.msg)));
 		context.currentScope().declare(new CAstSymbolImpl("tx", CAstType.DYNAMIC), v);
@@ -197,7 +201,7 @@ public class SolidityAstTranslator extends AstTranslator {
 			context.cfg().addInstruction(insts.LoadMetadataInstruction(context.cfg().getCurrentInstruction(), result, SolidityTypes.root, TypeReference.findOrCreate(SolidityTypes.solidity, (String)call.getChild(2).getChild(0).getValue())));
 		} else if (call.getChild(0).getKind() == CAstNode.PRIMITIVE &&
 				"revert".equals(call.getChild(0).getChild(0).getValue())) {
-			context.cfg().addInstruction(insts.ThrowInstruction(context.cfg().getCurrentInstruction(), arguments[0]));
+			context.cfg().addInstruction(insts.ThrowInstruction(context.cfg().getCurrentInstruction(), arguments.length>0? arguments[0]: context.currentScope().getConstantValue(null)));
 			context.cfg().addPreEdgeToExit(context.cfg().getCurrentBlock(), true);
 			
 		} else {
@@ -262,10 +266,16 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	protected void doPrimitive(int resultVal, WalkContext context, CAstNode primitiveCall) {
 		String name = (String)primitiveCall.getChild(0).getValue();
+		if ("delete".equals(name)) {
+			context.cfg().addInstruction(
+					insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
+						resultVal, context.currentScope().getConstantValue(null)));
+		} else {
 		context.cfg().addInstruction(
 			insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
 				resultVal, 
 				"this".equals(name) || "super".equals(name)? 1:  context.currentScope().lookup(name).valueNumber()));
+		}
 	}
 
 	@Override
