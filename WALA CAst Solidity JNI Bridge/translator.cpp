@@ -249,6 +249,7 @@ jobject translateOpcode(CAstWrapper& cast, Token t) {
         case Token::SHL: case Token::AssignShl: return cast.OP_LSH;
         case Token::SHR: case Token::AssignShr: return cast.OP_URSH;
         case Token::SAR: case Token::AssignSar: return cast.OP_RSH;
+        case Token::BitNot: return cast.OP_BITNOT;
         default: return NULL;
     }
  }
@@ -794,6 +795,7 @@ bool Translator::visit(const Literal &_node) {
         default:
             ret(cast.makeNode(cast.EMPTY));
     }
+    std::cout << "^^^^ " << type->toString(true) << " " << static_cast<int>(type->category()) << std::endl;
     return false;
 }
 
@@ -849,6 +851,12 @@ void Translator::endVisit(const ModifierDefinition &_node) {
 
 bool Translator::visit(const ModifierInvocation &_node) {
     return visitNode(_node);
+}
+
+bool Translator::visit(const NewExpression &_node) {
+    jobject type = getType(_node.annotation().type);
+    ret(record(cast.makeNode(cast.NEW, cast.makeConstant(type)), _node.location(), _node.annotation().type));
+    return false;
 }
 
 bool Translator::visit(const ParameterList &_node) {
@@ -1046,7 +1054,7 @@ bool Translator::visit(const VariableDeclaration &_node) {
     
     bool isFinal = _node.isConstant();
     
-     if (_node.isStateVariable() || _node.isStructMember()) {
+     if (_node.isStateVariable() || _node.isStructMember() || _node.isFileLevelVariable()) {
         jobject jname = cast.makeConstant(name);
         jobject loc = makePosition(_node.location());
         jobject nameLoc = makePosition(_node.nameLocation());
@@ -1062,14 +1070,29 @@ bool Translator::visit(const VariableDeclaration &_node) {
             value = last();
         }
 
-        jobject result = record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), _node.location(), _node.type());
-        if (value != NULL) {
-            result = cast.makeNode(cast.BLOCK_EXPR,
-                result,
-                record(cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), value), _node.location(), _node.type()));
-        }
+        std::cout << _node.location().start << " " << print(type) << " end" << std::endl;
         
+        std::cout << "step" << *_node.location().sourceName << std::endl;
+        print(symbol);
+        
+        jobject result = record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), _node.location());
+        std::cout << "step " << context->entity() << std::endl;
+        print(context->entity());
+        print(result);
+        print(type);
+        cast.setAstNodeType(context->entity(), result, type);
+        CheckExceptions(cast);
+        std::cout << "step" << std::endl;
+       if (value != NULL) {
+           jobject a = record(cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), value), _node.location());
+           result = cast.makeNode(cast.BLOCK_EXPR, result, a);
+           cast.setAstNodeType(context->entity(), a, type);
+        }
+        std::cout << "step" << std::endl;
+
         ret(result);
+
+        std::cout << _node.location().start << std::endl;
     }
      
     return false;

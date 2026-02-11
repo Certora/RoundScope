@@ -11,8 +11,6 @@
 
 #include "CAstWrapper.h"
 
-extern std::map<std::string, jobject> types;
-
 class DelegatingContext {
 private:
     DelegatingContext *_parent;
@@ -100,9 +98,9 @@ public:
     }
 };
 
-class RootContext : virtual public EntityContext, virtual public DelegatingContext  {
+class RootContext : virtual public VariableContainerContext, virtual public EntityContext  {
 public:
-    RootContext(jobject entity) : EntityContext(entity, NULL), DelegatingContext(NULL) { }
+    RootContext(jobject entity) : DelegatingContext(NULL), VariableContainerContext(NULL), EntityContext(entity, NULL)  { }
 };
 
 using namespace solidity::frontend;
@@ -204,6 +202,7 @@ public:
     virtual bool visit(const ModifierDefinition &_node) override;
     virtual void endVisit(const ModifierDefinition &_node) override;
     virtual bool visit(const ModifierInvocation &_node) override;
+    virtual bool visit(const NewExpression &_node) override;
     virtual bool visit(const ParameterList &_node) override;
     virtual bool visit(const PragmaDirective &_node) override;
     virtual bool visit(const Return &_node) override;

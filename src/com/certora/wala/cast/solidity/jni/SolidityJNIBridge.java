@@ -236,6 +236,7 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 	}
 
 	public CAstEntity translateFile(String fileName) throws Error, IOException {
+		System.err.println("parsing " + fileName);
 		return new SolidityFileTranslator(fileName).translateToCAst();
 	}
 	

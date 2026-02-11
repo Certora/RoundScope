@@ -96,6 +96,14 @@ public class SolidityAstTranslator extends AstTranslator {
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
 		context.currentScope().declare(new CAstSymbolImpl("ecrecover", CAstType.DYNAMIC), v);
 
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
+		context.currentScope().declare(new CAstSymbolImpl("revert", CAstType.DYNAMIC), v);
+
+		context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.msg)));
+		context.currentScope().declare(new CAstSymbolImpl("tx", CAstType.DYNAMIC), v);
+
 	}
 
 	@Override
@@ -185,6 +193,10 @@ public class SolidityAstTranslator extends AstTranslator {
 				"type".equals(call.getChild(0).getChild(0).getValue()) &&
 				call.getChild(2).getKind() == CAstNode.TYPE_LITERAL_EXPR) {
 			context.cfg().addInstruction(insts.LoadMetadataInstruction(context.cfg().getCurrentInstruction(), result, SolidityTypes.root, TypeReference.findOrCreate(SolidityTypes.solidity, (String)call.getChild(2).getChild(0).getValue())));
+		} else if (call.getChild(0).getKind() == CAstNode.PRIMITIVE &&
+				"revert".equals(call.getChild(0).getChild(0).getValue())) {
+			context.cfg().addInstruction(insts.ThrowInstruction(context.cfg().getCurrentInstruction(), arguments[0]));
+
 		} else {
 			int argsAndSelf[] = new int[ arguments.length + 1 ];
 			argsAndSelf[0] = receiver;
