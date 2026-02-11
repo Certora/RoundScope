@@ -180,4 +180,6 @@ public class SolidityTypes {
 
 	public static TypeReference block = TypeReference.findOrCreate(solidity, "Lblock");
 
+	public static TypeReference tuple = TypeReference.findOrCreate(solidity, "Ltuple");
+
 }

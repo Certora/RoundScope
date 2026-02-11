@@ -90,9 +90,12 @@ jobject Translator::getType(Type const* type) {
              t != eltTypes.end();
              ++t, i++)
         {
-            jniEnv->SetObjectArrayElement(eltCAstTypes, i, getType(*t));
-            CheckExceptions(cast);
+            if (*t) {
+                jniEnv->SetObjectArrayElement(eltCAstTypes, i, getType(*t));
+                CheckExceptions(cast);
+            }
         }
+        
         jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityTupleType");
         jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "([Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
         return jniEnv->CallStaticObjectMethod(smt, gt, eltCAstTypes);
@@ -572,6 +575,7 @@ void Translator::endVisit(const FunctionDefinition &_node) {
                 jobject symbol = cast.makeSymbol(t->get()->name().c_str(), type, false);
                 ast = cast.makeNode(cast.BLOCK_STMT,
                                     record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), t->get()->location()),
+                                    cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(t->get()->name().c_str())), cast.makeConstant(0)),
                                     ast);
             }
         }
@@ -1003,7 +1007,31 @@ bool Translator::visit(const TupleExpression &_node) {
         _node.components().at(0)->accept(*this);
         return false;
     } else {
-        return visitNode(_node);
+        jobject type = getType(_node.annotation().type);
+        std::vector<ASTPointer<Expression>> const& elts  = _node.components();
+        jobjectArray newArgs = jniEnv->NewObjectArray(elts.size()+1, jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode"), NULL);
+        jniEnv->SetObjectArrayElement(newArgs, 0, cast.makeConstant(type));
+        int i = 1;
+        for (std::vector<ASTPointer<Expression>>::const_iterator t=elts.begin();
+             t != elts.end();
+             ++t, i++)
+        {
+            jobject val;
+            if (t->get()) {
+                t->get()->accept(*this);
+                val = last();
+            } else {
+                val = cast.makeNode(cast.EMPTY);
+            }
+            jniEnv->SetObjectArrayElement(newArgs, i, val);
+            CheckExceptions(cast);
+        }
+
+        jobject tuple = record(cast.makeNode(cast.NEW, newArgs), _node.location());
+        cast.setAstNodeType(context->entity(), tuple, type);
+        ret(tuple);
+        
+        return false;
     }
 }
 
@@ -1046,6 +1074,8 @@ bool Translator::visit(const UsingForDirective &_node) {
 bool Translator::visit(const VariableDeclaration &_node) {
     showStackTrace();
     
+    std::cout << "&&&&" << _node.type()->toString(true) << std::endl;
+    
     jobject type = getType(_node.type());
     
     jobject loc = makePosition(_node.location());
@@ -1087,7 +1117,10 @@ bool Translator::visit(const VariableDeclaration &_node) {
            jobject a = record(cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), value), _node.location());
            result = cast.makeNode(cast.BLOCK_EXPR, result, a);
            cast.setAstNodeType(context->entity(), a, type);
-        }
+       } else if ("bytes32" == _node.type()->toString(true) || "uint256" == _node.type()->toString(true)) {
+           jobject a = cast.makeNode(cast.ASSIGN, cast.makeNode(cast.VAR, cast.makeConstant(name)), cast.makeConstant(0));
+           result = cast.makeNode(cast.BLOCK_EXPR, result, a);
+       }
         std::cout << "step" << std::endl;
 
         ret(result);

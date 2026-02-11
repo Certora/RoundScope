@@ -57,9 +57,11 @@ public class RoundingEstimator {
 	private Set<SSAInstruction> getRelevant(SSAInstruction inst, NumberedGraph<Integer> g) {
 		if (inst == null) {
 			return Collections.emptySet();
-		} else {
+		} else if (inst.hasDef() ){
 			int v = inst.getDef();
 			return DFS.getReachableNodes(g, Collections.singleton(v)).stream().map(i -> dug.du().getDef(i)).filter(instr -> instr != null).collect(Collectors.toSet());
+		} else {
+			return Collections.emptySet();
 		}
 	}
 

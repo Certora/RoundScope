@@ -9,6 +9,7 @@ import com.certora.wala.cast.solidity.loader.FunctionType;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.tree.SolidityMappingType;
+import com.certora.wala.cast.solidity.tree.SolidityTupleType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.ir.ssa.AstInstructionFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
@@ -19,6 +20,7 @@ import com.ibm.wala.cast.tree.CAstNodeTypeMap;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
+import com.ibm.wala.cast.tree.visit.CAstVisitor;
 import com.ibm.wala.cast.types.AstMethodReference;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
@@ -196,7 +198,8 @@ public class SolidityAstTranslator extends AstTranslator {
 		} else if (call.getChild(0).getKind() == CAstNode.PRIMITIVE &&
 				"revert".equals(call.getChild(0).getChild(0).getValue())) {
 			context.cfg().addInstruction(insts.ThrowInstruction(context.cfg().getCurrentInstruction(), arguments[0]));
-
+			context.cfg().addPreEdgeToExit(context.cfg().getCurrentBlock(), true);
+			
 		} else {
 			int argsAndSelf[] = new int[ arguments.length + 1 ];
 			argsAndSelf[0] = receiver;
@@ -267,8 +270,7 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void doThrow(WalkContext context, int exception) {
-		// TODO Auto-generated method stub
-
+		context.cfg().addPreEdgeToExit(context.cfg().getCurrentBlock(), true);
 	}
 
 	@Override
@@ -309,6 +311,25 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	protected boolean useDefaultInitValues() {
 		return false;
+	}
+
+	@Override
+	protected boolean doVisitAssignNodes(CAstNode n, WalkContext context, CAstNode v, CAstNode a,
+			CAstVisitor<WalkContext> visitor) {
+		visitor.visit(a, context, visitor);
+		if (n.getKind() == CAstNode.NEW && n.getChild(0).getValue() instanceof SolidityTupleType) {
+			SolidityTupleType t = (SolidityTupleType) n.getChild(0).getValue();
+			int rval = context.getValue(a);
+			for(int i = 1; i < n.getChildCount(); i++) {
+				if (n.getChild(i).getKind() == CAstNode.VAR) {
+					doLocalWrite(context, (String)n.getChild(i).getChild(0).getValue(), SolidityCAstType.getIRType(t.getElement(i-1)), rval);
+				}
+			}
+			
+			return true;
+		} else {
+			return super.doVisitAssignNodes(n, context, v, a, visitor);
+		}
 	}
 
 }

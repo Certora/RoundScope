@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
@@ -18,6 +19,10 @@ public class SolidityTupleType implements CAstType {
 		this.valueTypes = Arrays.asList(valueTypes);
 	}
 
+	public CAstType getElement(int i) {
+		return valueTypes.get(i);
+	}
+	
 	@Override
 	public String getName() {
 		return "tuple(" + valueTypes.stream().map(t -> t.getName()).reduce((a, b) -> a + "," + b).orElse("") + ")";
@@ -31,11 +36,11 @@ public class SolidityTupleType implements CAstType {
 	private static Map<List<CAstType>, SolidityTupleType> types = HashMapFactory.make();
 	
 	public static CAstType get(CAstType[] values) {
-		List<CAstType> typeKey = Arrays.asList(values);
+		List<CAstType> typeKey = Arrays.asList(values).stream().map(x -> x==null? SolidityCAstType.get("root"): x).collect(Collectors.toList());
 		if (types.containsKey(typeKey)) {
 			return types.get(typeKey);
 		} else {
-			SolidityTupleType type = new SolidityTupleType(values);
+			SolidityTupleType type = new SolidityTupleType(typeKey.toArray(new CAstType[typeKey.size()]));
 			
 			TypeReference irType = TypeReference.findOrCreate(SolidityTypes.solidity, type.getName());
 			
