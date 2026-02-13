@@ -673,9 +673,17 @@ jobject Translator::getSelfPtr() {
 bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::langutil::SourceLocation const& loc) {
     if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(decl)) {
         if (var->isStateVariable()) {
-            jobject selfPtr = getSelfPtr();
-            ret(record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
-            return true;
+            if (var->isConstant() && var->value()) {
+                std::cout << "####found a constant for " << var->name() << std::endl;
+                var->value()->accept(*this);
+                print(last());
+                ret(record(last(), loc, decl->type()));
+                return true;
+            } else {
+                jobject selfPtr = getSelfPtr();
+                ret(record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
+                return true;
+            }
         } else if (var->isLocalVariable()) {
             ret(record(cast.makeNode(cast.VAR, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
             return true;
@@ -822,20 +830,32 @@ bool Translator::visit(const Mapping &_node) {
 bool Translator::visit(const MemberAccess &_node) {
     std::cout << "***" << typeid(_node.annotation().referencedDeclaration).name() << std::endl;
 
+    if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
+        std::cout << "####found a var for " << var->name() << std::endl;
+        if (var->isConstant() && var->value()) {
+            std::cout << "####found a constant for " << var->name() << std::endl;
+            var->value()->accept(*this);
+            print(last());
+            ret(record(last(), _node.location()));
+            return false;
+        }
+    }
+    
     _node.expression().accept(*this);
     jobject obj = last();
     
     jobject elt = cast.makeConstant( _node.memberName().c_str() );
     jobject ref = cast.makeNode(cast.OBJECT_REF, obj, elt);
-   if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
+    if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
        std::cout << "got here " << var->name() << std::endl;
         jobject fun = getSolidityFunctionType(var, false);
        cast.setAstNodeType(context->entity(), ref, fun);
        ret(record(ref, _node.location()));
+       return false;
     } else {
         ret(record(ref, _node.location(), _node.annotation().type));
+        return false;
     }
-    return false;
 }
 
 bool Translator::visit(const ModifierDefinition &_node) {

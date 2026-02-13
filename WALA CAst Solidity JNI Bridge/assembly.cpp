@@ -27,6 +27,8 @@ jobject Translator::visitAssemblyExpression(yul::Dialect const& dialect, std::ma
                         return cast.makeNode(cast.BINARY_EXPR, cast.OP_ADD, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
                     } else if (fun.name == "div") {
                         return cast.makeNode(cast.BINARY_EXPR, cast.OP_DIV, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                    } else if (fun.name == "mul") {
+                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_MUL, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
                     } else if (fun.name == "gt") {
                         return cast.makeNode(cast.IF_EXPR, cast.makeNode(cast.BINARY_EXPR, cast.OP_GT, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), cast.makeConstant(1), cast.makeConstant(0));
                     } else if (fun.name == "iszero") {
