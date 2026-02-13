@@ -16,6 +16,7 @@ import com.ibm.wala.fixpoint.UnaryOperator;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrike.shrikeBT.IShiftInstruction;
 import com.ibm.wala.shrike.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
@@ -423,8 +424,8 @@ public class RoundingEstimator {
 			
 		}
 		
-		private class RoundUpDetestionOperator extends BinaryOperator {
-			RoundUpDetestionOperator(SSAInstruction inst) {
+		private class RoundUpDetectingAddOperator extends BinaryOperator {
+			RoundUpDetectingAddOperator(SSAInstruction inst) {
 				super(false, Direction.Neither, inst);
 			}
 			
@@ -505,13 +506,14 @@ public class RoundingEstimator {
 					return result;
 				}
 
+				
 				@Override
 				public void visitBinaryOp(SSABinaryOpInstruction instruction) {
 					IBinaryOpInstruction.IOperator op = instruction.getOperator();
 					if (op == IBinaryOpInstruction.Operator.ADD) {
-						result = new RoundUpDetestionOperator(instruction);
+						result = new RoundUpDetectingAddOperator(instruction);
 						
-					} else if (op == IBinaryOpInstruction.Operator.MUL) {
+					} else if (op == IBinaryOpInstruction.Operator.MUL || op == IShiftInstruction.Operator.SHL) {
 						result = new BinaryOperator(false, Direction.Neither);
 						
 					} else if (op == IBinaryOpInstruction.Operator.DIV) {

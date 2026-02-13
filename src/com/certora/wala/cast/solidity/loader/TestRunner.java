@@ -15,6 +15,8 @@ import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
@@ -137,7 +139,8 @@ public class TestRunner {
 
  			rounding.entrySet().forEach(x -> {
 				if (x.getValue() != RoundingEstimator.Direction.Neither) {
-					System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue());
+					DebuggingInformation dbg = ((AstMethod)x.getKey().getMethod()).debugInfo();
+					System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue() + " " +  dbg.getCodeNamePosition().getURL() + ":" + dbg.getCodeNamePosition());
 				}
 			});
 			
