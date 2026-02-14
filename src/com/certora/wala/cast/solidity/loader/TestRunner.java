@@ -10,6 +10,7 @@ import com.certora.certoraprover.cvl.Ast;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.analysis.rounding.RoundingEstimator.RoundingInference;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
+import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
@@ -54,7 +55,7 @@ public class TestRunner {
 			Conf conf = Configuration.getConf(confFile);
 			try {
 				getSpecRules(conf);
-			} catch (IllegalStateException e) {
+			} catch (Exception | Error e) {
 
 			}
 
@@ -63,7 +64,22 @@ public class TestRunner {
 			AnalysisScope s = new CAstAnalysisScope(conf.getFiles().toArray(new Module[conf.getFiles().size()]), sl,
 					Collections.singleton(SolidityLoader.solidity));
 
+			System.out.println(s);
+			
 			IClassHierarchy cha = ClassHierarchyFactory.make(s, sl);
+
+			SolidityLoader solidityLoader = (SolidityLoader)cha.getLoader(SolidityTypes.solidity);
+			solidityLoader.getModulesWithParseErrors().forEachRemaining(m -> { 
+				solidityLoader.getMessages(m).forEach(msg -> { 
+					System.err.println(msg);
+				});
+			});
+
+			solidityLoader.getModulesWithWarnings().forEachRemaining(m -> { 
+				solidityLoader.getMessages(m).forEach(msg -> { 
+					System.err.println(msg);
+				});
+			});
 
 			System.out.println(cha);
 

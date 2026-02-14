@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="Create Runnable Jar for Project com.certora.wala.cast.solidity">
+    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+    <!--ANT 1.7 is required                                        -->
+    <!--define folder properties-->
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.workspace" value="/Users/julian/soliidity-workspace"/>
+    <property name="dir.jarfile" value="${dir.buildfile}"/>
+    <target name="create_run_jar">
+        <jar destfile="${dir.jarfile}/roundScope.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="com.certora.wala.cast.solidity.loader.TestRunner"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="/Users/julian/git/WALA CAst Solidity/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.cast.java/1.6.13-SNAPSHOT/com.ibm.wala.cast.java-1.6.13-SNAPSHOT.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.cast.java.ecj/1.6.13-SNAPSHOT/com.ibm.wala.cast.java.ecj-1.6.13-SNAPSHOT.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.cast/1.6.13-SNAPSHOT/com.ibm.wala.cast-1.6.13-SNAPSHOT.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.util/1.6.13-SNAPSHOT/com.ibm.wala.util-1.6.13-SNAPSHOT.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.core/1.6.13-SNAPSHOT/com.ibm.wala.core-1.6.13-SNAPSHOT.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.shrike/1.6.13-SNAPSHOT/com.ibm.wala.shrike-1.6.13-SNAPSHOT.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/git/EVMVerifier/build/libs/emv-0.4-jar-with-dependencies.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/git/EVMVerifier/lib/Shared/build/libs/Shared-0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/git/EVMVerifier/lib/GeneralUtils/build/libs/GeneralUtils-0.4.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/git/WALA/dalvik/build/unpackAndroidSdkInstaller/cmdline-tools/lib/external/com/google/guava/guava/30.1-jre/guava-30.1-jre.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/.m2/repository/org/json/json/20251224/json-20251224.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="/Users/julian/Downloads/javacup-11c.jar"/>
+        </jar>
+    </target>
+</project>
