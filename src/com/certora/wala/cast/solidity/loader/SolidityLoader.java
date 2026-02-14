@@ -111,7 +111,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass event = new CoreClass(SolidityTypes.event.getName(), codeBody.getName(), this,
 			null);
 
-	private final IClass interfce = new CoreClass(SolidityTypes.interfce.getName(), codeBody.getName(), this,
+	private final IClass interfce = new CoreClass(SolidityTypes.contract.getName(), codeBody.getName(), this,
 			null);
 	
 	private final IClass library = new CoreClass(SolidityTypes.library.getName(), root.getName(), this,
@@ -509,9 +509,10 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			superClass = supers.iterator().next();
 		} else {
 			superClass = 
-				type.getType() instanceof ContractType? contract.getName(): 
-					type.getType() instanceof LibraryType? library.getName():
-						struct.getName();
+				type.getType() instanceof InterfaceType? interfce.getName(): 
+					type.getType() instanceof ContractType? contract.getName(): 
+						type.getType() instanceof LibraryType? library.getName():
+							struct.getName();
 			si = supers;
 		}
 		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass);
