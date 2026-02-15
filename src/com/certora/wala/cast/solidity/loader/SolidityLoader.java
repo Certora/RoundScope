@@ -111,7 +111,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass event = new CoreClass(SolidityTypes.event.getName(), codeBody.getName(), this,
 			null);
 
-	private final IClass interfce = new CoreClass(SolidityTypes.contract.getName(), codeBody.getName(), this,
+	private final IClass interfce = new CoreClass(SolidityTypes.interfce.getName(), contract.getName(), this,
 			null);
 	
 	private final IClass library = new CoreClass(SolidityTypes.library.getName(), root.getName(), this,

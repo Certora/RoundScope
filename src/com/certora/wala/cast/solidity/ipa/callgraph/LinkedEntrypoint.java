@@ -62,8 +62,9 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<Atom,TypeReference>,TypeReference> linkage, IClassHierarchy cha) {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
+		IClass interfaceClass = cha.lookupClass(SolidityTypes.interfce);
 		cha.forEach(cl -> { 
-			if (cl != contractClass && cha.isSubclassOf(cl, contractClass)) {
+			if (cl != contractClass && (cha.isAssignableFrom(contractClass, cl))) {
 				cl.getDeclaredInstanceFields().forEach(m -> { 
 					IClass fieldClass = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, m.getName().toString()));
 					if (fieldClass != null && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {

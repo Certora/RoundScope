@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.certora.certoraprover.cvl.Ast;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
+import com.certora.wala.analysis.rounding.RoundingEstimator.Direction;
 import com.certora.wala.analysis.rounding.RoundingEstimator.RoundingInference;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
@@ -33,6 +34,7 @@ import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.impl.Util;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
@@ -43,6 +45,7 @@ import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 
@@ -115,14 +118,16 @@ public class TestRunner {
 
 			CallGraph cg = cgBuilder.makeCallGraph(options, null);
 
-			SDG<InstanceKey> sdg = new SDG<>(cg, cgBuilder.getPointerAnalysis(),
+			PointerAnalysis<InstanceKey> PA = cgBuilder.getPointerAnalysis();
+			SDG<InstanceKey> sdg = new SDG<>(cg, PA,
 					Slicer.DataDependenceOptions.NO_BASE_NO_HEAP, Slicer.ControlDependenceOptions.NO_EXCEPTIONAL_EDGES);
 
 			System.out.println(sdg);
 			System.out.println(cg);
 
-			Map<CGNode, RoundingEstimator.Direction> rounding = HashMapFactory.make();
 			boolean changed;
+			/*
+			Map<CGNode, RoundingEstimator.Direction> rounding = HashMapFactory.make();
 			do {
 				changed = false;
 				for (CGNode n : cg) {
@@ -139,24 +144,27 @@ public class TestRunner {
 					System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue());
 				}
 			});
+			*/
 			
-			rounding = HashMapFactory.make();
+			Map<CGNode, Map<FieldReference, Direction>> rounding2 = HashMapFactory.make();
 			do {
 				changed = false;
 				for (CGNode n : cg) {
-					RoundingInference ri = new RoundingEstimator(n).new RoundingInference(cg, rounding, n);
-					RoundingEstimator.Direction d = ri.getResult();
-					System.err.println(n + "\n" + ri);
-					if (rounding.put(n, d) != d) {
+					RoundingInference ri = new RoundingEstimator(n).new RoundingInference(cg, rounding2, n);
+					Map<FieldReference, Direction> d = ri.getResultOrResults();
+					Map<FieldReference, Direction> x = rounding2.put(n, d);
+					if (x == null || !x.equals(d)) {
 						changed = true;
 					}
 				}
 			} while (changed);
 
- 			rounding.entrySet().forEach(x -> {
-				if (x.getValue() != RoundingEstimator.Direction.Neither) {
-					DebuggingInformation dbg = ((AstMethod)x.getKey().getMethod()).debugInfo();
-					System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue() + " " +  dbg.getCodeNamePosition().getURL() + ":" + dbg.getCodeNamePosition());
+			rounding2.entrySet().forEach(x -> {
+				if (x.getKey().getMethod() instanceof AstMethod) {
+				DebuggingInformation dbg = ((AstMethod)x.getKey().getMethod()).debugInfo();
+				if (x.getValue().values().stream().anyMatch(d -> d != Direction.Neither)) {
+					System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue().values() + " " +  dbg.getCodeNamePosition().getURL() + ":" + dbg.getCodeNamePosition());
+				}
 				}
 			});
 			

@@ -263,8 +263,14 @@ public class SolidityAstTranslator extends AstTranslator {
 	
 	@Override
 	protected void doNewObject(WalkContext context, CAstNode newNode, int result, Object type, int[] arguments) {
-		// TODO Auto-generated method stub
-
+		if (newNode.getChildCount() >= 1 && newNode.getChild(0).getValue() instanceof SolidityTupleType) {
+			SolidityTupleType tt = (SolidityTupleType) newNode.getChild(0).getValue(); 
+			context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), result, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.tuple)));
+			for(int i = 1; i < newNode.getChildCount(); i++) {
+				TypeReference t =SolidityCAstType.getIRType(tt.getElement(i-1));
+				context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, context.getValue(newNode.getChild(i)), FieldReference.findOrCreate(SolidityTypes.tuple, Atom.findOrCreateUnicodeAtom(""+(i-1)), t)));
+			}
+		}
 	}
 
 	@Override

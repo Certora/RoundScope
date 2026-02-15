@@ -3,16 +3,17 @@ package com.certora.wala.analysis.rounding;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.certora.wala.analysis.defuse.DefUseGraph;
+import com.certora.wala.analysis.rounding.RoundingEstimator.Direction;
 import com.ibm.wala.dataflow.ssa.SSAInference;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.fixpoint.AbstractVariable;
 import com.ibm.wala.fixpoint.IVariable;
-import com.ibm.wala.fixpoint.UnaryOperator;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
@@ -26,9 +27,12 @@ import com.ibm.wala.ssa.SSACheckCastInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SSAPiInstruction;
+import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.ssa.SSAUnaryOpInstruction;
+import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.impl.GraphInverter;
@@ -492,7 +496,7 @@ public class RoundingEstimator {
 		
 		private Set<RoundingVariable> result = HashSetFactory.make();
 
-		public RoundingInference(CallGraph CG, Map<CGNode, Direction> directionalCalls, CGNode n) throws CancelException {
+		public RoundingInference(CallGraph CG, Map<CGNode, Map<FieldReference, Direction>> directionalCalls, CGNode n) throws CancelException {
 			IR ir = n.getIR();
 			DefUse du = n.getDU();
 			
@@ -582,8 +586,8 @@ public class RoundingEstimator {
 						Direction d = Direction.Neither;
 						for (CGNode cgn : CG.getPossibleTargets(n,
 								((SSAAbstractInvokeInstruction) du.getDef(valueNumber)).getCallSite())) {
-							if (directionalCalls.containsKey(cgn)) {
-								d = d.meet(directionalCalls.get(cgn));
+							if (directionalCalls.containsKey(cgn) && directionalCalls.get(cgn).containsKey(null)) {
+								d = d.meet(directionalCalls.get(cgn).get(null));
 							}
 						}
 						v = new RoundingVariable(valueNumber, d, du.getDef(valueNumber));
@@ -635,6 +639,56 @@ public class RoundingEstimator {
 			return result.stream().filter(x -> x.state != null).map(x -> x.state).reduce(Direction::meet).orElse(Direction.Neither);
 		}
 
+		private Map<FieldReference, Direction> unpackTuple(RoundingVariable x) {
+			int maybeTuple = x.vn;
+			Map<FieldReference,Direction> result = HashMapFactory.make();
+			ir.iterateAllInstructions().forEachRemaining(inst -> { 
+				if (inst instanceof SSAPutInstruction) {
+					SSAPutInstruction p = (SSAPutInstruction)inst;
+					if (p.getRef() == maybeTuple) {
+						Direction d = getVariable(p.getVal()).state;
+						if (d != null) {
+						if (result.containsKey(p.getDeclaredField())) {
+							result.put(p.getDeclaredField(), d.meet(result.get(p.getDeclaredField())));
+						} else {
+							result.put(p.getDeclaredField(), d);
+						}
+						}
+					}
+				}
+			});
+			return result;
+		}
+
+		private Map<FieldReference, Direction> reduceTuples(Map<FieldReference, Direction> l, Map<FieldReference, Direction> r) {
+			Map<FieldReference,Direction> result = HashMapFactory.make();
+			for(FieldReference lk : l.keySet()) {
+				if (! r.containsKey(lk)) {
+					result.put(lk,  l.get(lk));
+				} else {
+					result.put(lk,  l.get(lk).meet(r.get(lk)));					
+				}
+			}
+			for(FieldReference rk : r.keySet()) {
+				if (! l.containsKey(rk)) {
+					result.put(rk, r.get(rk));
+				}
+			}
+			return result;
+		}
+		
+		public Map<FieldReference, Direction> getResults() {
+			return result.stream().map(this::unpackTuple).reduce(this::reduceTuples).orElse(Collections.emptyMap());
+		}
+		
+		public Map<FieldReference, Direction> getResultOrResults() {
+			Map<FieldReference, Direction> result = getResults();
+			if (result.isEmpty()) {
+				result = Collections.singletonMap(null, getResult());
+			}
+			return result;
+		}
+		
 		@Override
 		public String toString() {
 			return super.toString() + "returning " + result;
