@@ -128,109 +128,6 @@ jobject Translator::getType(Type const* type) {
     }
 }
 
-bool Translator::visitNode(ASTNode const&_node) {
-    level++;
-    indent();
-    std::cout << _node.location() << " " << _node.id() << " " << typeid(_node).name() << std::endl;
-    showStackTrace();
-    jobject nothing = cast.makeNode(cast.EMPTY);
-    ret(nothing);
-    return true;
-}
-
-void Translator::endVisitNode(ASTNode const&_node) {
-    level--;
-}
-
-bool Translator::visit(const SourceUnit &_node) {
-    std::vector<ASTPointer<ASTNode>> nodes = _node.nodes();
-    int len = (int)nodes.size();
-    jclass cnc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode");
-    jobjectArray children = jniEnv->NewObjectArray(len, cnc, NULL);
-
-    int i = 0;
-    for (std::vector<ASTPointer<ASTNode>>::iterator t=nodes.begin();
-         t != nodes.end();
-         ++t, i++)
-    {
-        t->get()->accept(*this);
-        jobject stmts = last();
-        if (stmts == NULL) {
-            stmts = cast.makeNode(cast.EMPTY);
-        }
-        jniEnv->SetObjectArrayElement(children, i, stmts);
-        CheckExceptions(cast);
-    }
-    
-    ret(cast.makeNode(cast.BLOCK_STMT, children));
-    return false;
-}
-
-class ContractContext : public virtual VariableContainerContext, public virtual FunctionContainerContext {
-private:
-    jobject supersSet;
-    jobject _type;
-    JNIEnv *jniEnv;
-    
-public:
-    ContractContext(DelegatingContext *parent, JNIEnv *jniEnv, jobject supersSet, jobject type) : DelegatingContext(parent), FunctionContainerContext(parent), VariableContainerContext(parent), jniEnv(jniEnv), supersSet(supersSet), _type(type){
-        
-    }
-    
-    virtual jobject type() override {
-        return _type;
-    }
-    
-    virtual void addSuperclass(std::string type) override {
-        jclass sCls = jniEnv->FindClass("java/util/HashSet");
-        jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
-        jniEnv->CallBooleanMethod(supersSet, add, jniEnv->NewStringUTF(type.c_str()));
-    }
-    
-    virtual jobject& superClasses() override {
-        return supersSet;
-    }
-};
-
-bool Translator::visit(const ContractDefinition &_node) {
-    jobject contractType = findOrCreateType(jniEnv, _node);
-    context = new ContractContext(context, jniEnv, supers[contractType], contractType);
-    return true;
-}
-
-void Translator::endVisit(const ContractDefinition &_node) {
-    std::string contractName = ((TypeType*)_node.type())->actualType()->toString(true);
- 
-    jobject contractType = types[contractName] ;
-    
-    jclass sCls = jniEnv->FindClass("java/util/HashSet");
-    jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
-    jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
-    jobject entitiesSet = jniEnv->NewObject(sCls, sCtor);
-    std::map<jstring, jobject>& functions = context->functions();
-    for (std::map<jstring,jobject>::iterator t=functions.begin();
-         t != functions.end();
-         ++t)
-    {
-        jniEnv->CallBooleanMethod(entitiesSet, add, t->second);
-    }
-    std::map<jstring, jobject>& fields = context->variables();
-    for (std::map<jstring,jobject>::iterator t=fields.begin();
-         t != fields.end();
-         ++t)
-    {
-        jniEnv->CallBooleanMethod(entitiesSet, add, t->second);
-    }
-
-    jclass ceCls = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/ContractEntity");
-    jmethodID ceCtor = jniEnv->GetMethodID(ceCls, "<init>", "(Lcom/ibm/wala/cast/tree/CAstType$Class;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Ljava/util/Set;)V");
-    jobject contractEntity = jniEnv->NewObject(ceCls, ceCtor, contractType, makePosition(_node.location()), makePosition(_node.nameLocation()), entitiesSet);
-    
-    context = context->parent();
-    
-    cast.addChildEntity(context->entity(), NULL, contractEntity);
-}
-
 jobject translateOpcode(CAstWrapper& cast, Token t) {
     switch(t) {
         case Token::Not: return cast.OP_NOT;
@@ -258,6 +155,154 @@ jobject translateOpcode(CAstWrapper& cast, Token t) {
             return NULL;
     }
  }
+
+class CodeContext : public virtual VariableContainerContext, public virtual EntityContext {
+public:
+    CodeContext(jobject entity, DelegatingContext *parent) : DelegatingContext(parent), EntityContext(entity, parent), VariableContainerContext(parent) {}
+};
+
+class ContractContext : public virtual VariableContainerContext, public virtual FunctionContainerContext {
+private:
+    jobject supersSet;
+    jobject _type;
+    JNIEnv *jniEnv;
+    
+public:
+    ContractContext(DelegatingContext *parent, JNIEnv *jniEnv, jobject supersSet, jobject type) : DelegatingContext(parent), FunctionContainerContext(parent), VariableContainerContext(parent), jniEnv(jniEnv), supersSet(supersSet), _type(type){
+        
+    }
+    
+    virtual jobject type() override {
+        return _type;
+    }
+    
+    virtual void addSuperclass(std::string type) override {
+        jclass sCls = jniEnv->FindClass("java/util/HashSet");
+        jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
+        jniEnv->CallBooleanMethod(supersSet, add, jniEnv->NewStringUTF(type.c_str()));
+    }
+    
+    virtual jobject& superClasses() override {
+        return supersSet;
+    }
+};
+
+bool Translator::visitNode(ASTNode const&_node) {
+    level++;
+    indent();
+    std::cout << _node.location() << " " << _node.id() << " " << typeid(_node).name() << std::endl;
+    showStackTrace();
+    jobject nothing = cast.makeNode(cast.EMPTY);
+    ret(nothing);
+    return true;
+}
+
+void Translator::endVisitNode(ASTNode const&_node) {
+    level--;
+}
+
+jobjectArray Translator::getCAstTypes(const std::vector<ASTPointer<VariableDeclaration>>& ts) {
+        jobjectArray result = jniEnv->NewObjectArray(ts.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType"), NULL);
+        int i = 0;
+        for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t=ts.begin();
+             t != ts.end();
+             ++t, i++)
+        {
+            jobject pt = getType(t->get()->type());
+            jniEnv->SetObjectArrayElement(result, i, pt);
+            CheckExceptions(cast);
+        }
+        
+        return result;
+}
+
+jobject Translator::getSelfType() {
+    jobject methodType = cast.getEntityType(context->entity());
+    jclass mtc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType$Method");
+    jmethodID gdc = jniEnv->GetMethodID(mtc, "getDeclaringType", "()Lcom/ibm/wala/cast/tree/CAstType;");
+    return jniEnv->CallObjectMethod(methodType, gdc);
+}
+
+jobject Translator::getSolidityFunctionType(const char *name, jobject declType, jobjectArray params, jobjectArray returns, bool event) {
+    print(declType);
+    jclass sfc = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
+    jmethodID sfctor = jniEnv->GetStaticMethodID(sfc, "findOrCreate", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)Lcom/certora/wala/cast/solidity/loader/FunctionType;");
+    return jniEnv->CallStaticObjectMethod(sfc, sfctor, jniEnv->NewStringUTF(name), declType, returns, params);
+}
+
+jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool event) {
+    jobjectArray ps = getCAstTypes(var->parameters());
+    jobjectArray rs = !event && var->returnParameters().size() > 0? getCAstTypes(var->returnParameters()): NULL;
+    const char *nm = var->name().c_str();
+    const ContractDefinition *cls = var->annotation().contract;
+    const Type *tt = ((TypeType*)cls->type())->actualType();
+    std::cout << "!!! " << cls->type()->toString(true) << " " << tt->toString(true) << std::endl;
+    jobject declType = getType(tt);
+    print(declType);
+    return getSolidityFunctionType(nm, declType, ps, rs, event);
+}
+
+jobject Translator::getSelfPtr() {
+    jobject thisPtr = cast.makeNode(cast.THIS);
+    jobject methodType = cast.getEntityType(context->entity());
+    cast.setAstNodeType(context->entity(), thisPtr, methodType);
+    jobject selfPtr = cast.makeNode(cast.OBJECT_REF, thisPtr, cast.makeConstant("self"));
+    cast.setAstNodeType(context->entity(), selfPtr, getSelfType());
+    return selfPtr;
+}
+
+bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::langutil::SourceLocation const& loc) {
+    if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(decl)) {
+        if (var->isStateVariable()) {
+            if (var->isConstant() && var->value()) {
+                std::cout << "####found a constant for " << var->name() << std::endl;
+                var->value()->accept(*this);
+                print(last());
+                ret(record(last(), loc, decl->type()));
+                return true;
+            } else {
+                jobject selfPtr = getSelfPtr();
+                ret(record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
+                return true;
+            }
+        } else if (var->isLocalVariable()) {
+            ret(record(cast.makeNode(cast.VAR, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
+            return true;
+        }
+        
+    } else if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(decl)) {
+        jobject fun = getSolidityFunctionType(var, false);
+        jobject selfPtr = getSelfPtr();
+        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
+        cast.setAstNodeType(context->entity(), retVal, fun);
+        ret(retVal);
+        return true;
+        
+    } else if (CallableDeclaration const* var = dynamic_cast<CallableDeclaration const*>(decl)) {
+        jobject fun = getSolidityFunctionType(var, true);
+        jobject selfPtr = getSelfPtr();
+        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
+        cast.setAstNodeType(context->entity(), retVal, fun);
+        ret(retVal);
+        return true;
+        
+    } else if (MagicVariableDeclaration const* var = dynamic_cast<MagicVariableDeclaration const*>(decl)) {
+        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(decl->name().c_str())), loc, var->type()));
+        return true;
+        
+    } else if (ContractDefinition const* var = dynamic_cast<ContractDefinition const*>(decl)) {
+        const Type *ct = ((TypeType*)var->type())->actualType();
+        ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(ct->toString(true).c_str())), loc, var->type()));
+        return true;
+        
+    } else if (StructDefinition const* var = dynamic_cast<StructDefinition const*>(decl)) {
+        const Type *ct = ((TypeType*)var->type())->actualType();
+        ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(ct->toString(true).c_str())), loc, var->type()));
+        return true;
+    }
+        
+    return false;
+}
 
 bool Translator::visit(const Assignment &_node) {
     _node.leftHandSide().accept(*this);
@@ -316,6 +361,45 @@ bool Translator::visit(const Block &_node) {
     ret(record(cast.makeNode(cast.BLOCK_STMT, children), _node.location()));
     return false;
  }
+
+bool Translator::visit(const ContractDefinition &_node) {
+    jobject contractType = findOrCreateType(jniEnv, _node);
+    context = new ContractContext(context, jniEnv, supers[contractType], contractType);
+    return true;
+}
+
+void Translator::endVisit(const ContractDefinition &_node) {
+    std::string contractName = ((TypeType*)_node.type())->actualType()->toString(true);
+ 
+    jobject contractType = types[contractName] ;
+    
+    jclass sCls = jniEnv->FindClass("java/util/HashSet");
+    jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
+    jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
+    jobject entitiesSet = jniEnv->NewObject(sCls, sCtor);
+    std::map<jstring, jobject>& functions = context->functions();
+    for (std::map<jstring,jobject>::iterator t=functions.begin();
+         t != functions.end();
+         ++t)
+    {
+        jniEnv->CallBooleanMethod(entitiesSet, add, t->second);
+    }
+    std::map<jstring, jobject>& fields = context->variables();
+    for (std::map<jstring,jobject>::iterator t=fields.begin();
+         t != fields.end();
+         ++t)
+    {
+        jniEnv->CallBooleanMethod(entitiesSet, add, t->second);
+    }
+
+    jclass ceCls = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/ContractEntity");
+    jmethodID ceCtor = jniEnv->GetMethodID(ceCls, "<init>", "(Lcom/ibm/wala/cast/tree/CAstType$Class;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Ljava/util/Set;)V");
+    jobject contractEntity = jniEnv->NewObject(ceCls, ceCtor, contractType, makePosition(_node.location()), makePosition(_node.nameLocation()), entitiesSet);
+    
+    context = context->parent();
+    
+    cast.addChildEntity(context->entity(), NULL, contractEntity);
+}
 
 bool Translator::visit(const ElementaryTypeName &_node) {
     ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(_node.typeName().toString(true).c_str())), _node.location()));
@@ -524,11 +608,6 @@ bool Translator::visit(const FunctionCall &_node) {
     return false;
 }
 
-class CodeContext : public virtual VariableContainerContext, public virtual EntityContext {
-public:
-    CodeContext(jobject entity, DelegatingContext *parent) : DelegatingContext(parent), EntityContext(entity, parent), VariableContainerContext(parent) {}
-};
-
 bool Translator::visit(const FunctionDefinition &_node) {
     jobject retType = NULL;
     const std::vector<ASTPointer<VariableDeclaration>> rets = _node.returnParameters();
@@ -618,110 +697,8 @@ void Translator::endVisit(const FunctionDefinition &_node) {
     
     jstring funName = jniEnv->NewStringUTF(_node.isConstructor()? "<init>": _node.name().c_str());
     context->registerFunction(funName, funEntity);
- }
-
-jobjectArray Translator::getCAstTypes(const std::vector<ASTPointer<VariableDeclaration>>& ts) {
-        jobjectArray result = jniEnv->NewObjectArray(ts.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType"), NULL);
-        int i = 0;
-        for (std::vector<ASTPointer<VariableDeclaration>>::const_iterator t=ts.begin();
-             t != ts.end();
-             ++t, i++)
-        {
-            jobject pt = getType(t->get()->type());
-            jniEnv->SetObjectArrayElement(result, i, pt);
-            CheckExceptions(cast);
-        }
-        
-        return result;
 }
 
-jobject Translator::getSelfType() {
-    jobject methodType = cast.getEntityType(context->entity());
-    jclass mtc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType$Method");
-    jmethodID gdc = jniEnv->GetMethodID(mtc, "getDeclaringType", "()Lcom/ibm/wala/cast/tree/CAstType;");
-    return jniEnv->CallObjectMethod(methodType, gdc);
-}
-
-jobject Translator::getSolidityFunctionType(const char *name, jobject declType, jobjectArray params, jobjectArray returns, bool event) {
-    print(declType);
-    jclass sfc = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
-    jmethodID sfctor = jniEnv->GetStaticMethodID(sfc, "findOrCreate", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)Lcom/certora/wala/cast/solidity/loader/FunctionType;");
-    return jniEnv->CallStaticObjectMethod(sfc, sfctor, jniEnv->NewStringUTF(name), declType, returns, params);
-}
-
-jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool event) {
-    jobjectArray ps = getCAstTypes(var->parameters());
-    jobjectArray rs = !event && var->returnParameters().size() > 0? getCAstTypes(var->returnParameters()): NULL;
-    const char *nm = var->name().c_str();
-    const ContractDefinition *cls = var->annotation().contract;
-    const Type *tt = ((TypeType*)cls->type())->actualType();
-    std::cout << "!!! " << cls->type()->toString(true) << " " << tt->toString(true) << std::endl;
-    jobject declType = getType(tt);
-    print(declType);
-    return getSolidityFunctionType(nm, declType, ps, rs, event);
-}
-
-jobject Translator::getSelfPtr() {
-    jobject thisPtr = cast.makeNode(cast.THIS);
-    jobject methodType = cast.getEntityType(context->entity());
-    cast.setAstNodeType(context->entity(), thisPtr, methodType);
-    jobject selfPtr = cast.makeNode(cast.OBJECT_REF, thisPtr, cast.makeConstant("self"));
-    cast.setAstNodeType(context->entity(), selfPtr, getSelfType());
-    return selfPtr;
-}
-
-bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::langutil::SourceLocation const& loc) {
-    if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(decl)) {
-        if (var->isStateVariable()) {
-            if (var->isConstant() && var->value()) {
-                std::cout << "####found a constant for " << var->name() << std::endl;
-                var->value()->accept(*this);
-                print(last());
-                ret(record(last(), loc, decl->type()));
-                return true;
-            } else {
-                jobject selfPtr = getSelfPtr();
-                ret(record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
-                return true;
-            }
-        } else if (var->isLocalVariable()) {
-            ret(record(cast.makeNode(cast.VAR, cast.makeConstant(decl->name().c_str())), loc, decl->type()));
-            return true;
-        }
-        
-    } else if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(decl)) {
-        jobject fun = getSolidityFunctionType(var, false);
-        jobject selfPtr = getSelfPtr();
-        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
-        cast.setAstNodeType(context->entity(), retVal, fun);
-        ret(retVal);
-        return true;
-        
-    } else if (CallableDeclaration const* var = dynamic_cast<CallableDeclaration const*>(decl)) {
-        jobject fun = getSolidityFunctionType(var, true);
-        jobject selfPtr = getSelfPtr();
-        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
-        cast.setAstNodeType(context->entity(), retVal, fun);
-        ret(retVal);
-        return true;
-        
-    } else if (MagicVariableDeclaration const* var = dynamic_cast<MagicVariableDeclaration const*>(decl)) {
-        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(decl->name().c_str())), loc, var->type()));
-        return true;
-        
-    } else if (ContractDefinition const* var = dynamic_cast<ContractDefinition const*>(decl)) {
-        const Type *ct = ((TypeType*)var->type())->actualType();
-        ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(ct->toString(true).c_str())), loc, var->type()));
-        return true;
-        
-    } else if (StructDefinition const* var = dynamic_cast<StructDefinition const*>(decl)) {
-        const Type *ct = ((TypeType*)var->type())->actualType();
-        ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(ct->toString(true).c_str())), loc, var->type()));
-        return true;
-    }
-        
-    return false;
-}
 
 bool Translator::visit(const Identifier &_node) {
     if (! handleIdentifierDeclaration(_node.annotation().referencedDeclaration, _node.location())) {
@@ -917,6 +894,30 @@ bool Translator::visit(const Return &_node) {
 bool Translator::visit(const RevertStatement &_node) {
     _node.errorCall().accept(*this);
     ret(record(cast.makeNode(cast.THROW, last()), _node.location()));
+    return false;
+}
+
+bool Translator::visit(const SourceUnit &_node) {
+    std::vector<ASTPointer<ASTNode>> nodes = _node.nodes();
+    int len = (int)nodes.size();
+    jclass cnc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode");
+    jobjectArray children = jniEnv->NewObjectArray(len, cnc, NULL);
+
+    int i = 0;
+    for (std::vector<ASTPointer<ASTNode>>::iterator t=nodes.begin();
+         t != nodes.end();
+         ++t, i++)
+    {
+        t->get()->accept(*this);
+        jobject stmts = last();
+        if (stmts == NULL) {
+            stmts = cast.makeNode(cast.EMPTY);
+        }
+        jniEnv->SetObjectArrayElement(children, i, stmts);
+        CheckExceptions(cast);
+    }
+    
+    ret(cast.makeNode(cast.BLOCK_STMT, children));
     return false;
 }
 

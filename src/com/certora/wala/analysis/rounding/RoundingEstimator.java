@@ -3,13 +3,11 @@ package com.certora.wala.analysis.rounding;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.certora.wala.analysis.defuse.DefUseGraph;
-import com.certora.wala.analysis.rounding.RoundingEstimator.Direction;
 import com.ibm.wala.dataflow.ssa.SSAInference;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.fixpoint.AbstractVariable;
@@ -102,11 +100,10 @@ public class RoundingEstimator {
 	}
 
 	/*
-	private Set<SSAInstruction> getQuotientRelated(SSABinaryOpInstruction div) {
-		return getDerived(div);
-	}
-    */
-	
+	 * private Set<SSAInstruction> getQuotientRelated(SSABinaryOpInstruction div) {
+	 * return getDerived(div); }
+	 */
+
 	private static MutableIntSet getRelatedValues(int startValue, Set<SSAInstruction> related, boolean forward) {
 		return IntSetUtil.make(IntStream
 				.concat(related.stream()
@@ -205,6 +202,7 @@ public class RoundingEstimator {
 			int vn;
 			Direction state;
 			SSAInstruction wrt;
+
 			public RoundingVariable(int vn, Direction state, SSAInstruction wrt) {
 				this.vn = vn;
 				this.wrt = wrt;
@@ -213,9 +211,9 @@ public class RoundingEstimator {
 
 			public RoundingVariable(int vn) {
 				this.vn = vn;
-				
+
 			}
-			
+
 			@Override
 			public void copyState(RoundingVariable v) {
 				state = v.state;
@@ -226,38 +224,39 @@ public class RoundingEstimator {
 			public String toString() {
 				return "<" + state + "(" + wrt + ")>";
 			}
-			
+
 		}
 
 		private final AbstractOperator<RoundingVariable> phiOperator = new AbstractOperator<RoundingVariable>() {
 			@Override
 			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
-				boolean up = rhs[0].state==Direction.Up;
+				boolean up = rhs[0].state == Direction.Up;
 				SSAInstruction upHack = rhs[0].wrt;
-				if (upHack != null) check: {
-					for (int i = 1; i < rhs.length; i++) {
-						if (rhs[i].wrt != upHack) {
-							break check;
+				if (upHack != null)
+					check: {
+						for (int i = 1; i < rhs.length; i++) {
+							if (rhs[i].wrt != upHack) {
+								break check;
+							}
+							up |= (rhs[i].state == Direction.Up);
 						}
-						up |= (rhs[i].state == Direction.Up);
-					}
-					
-					if (up) {
-						if (lhs.state != Direction.Up) {
-							lhs.state = Direction.Up;
-							lhs.wrt = rhs[0].wrt;
-							return CHANGED;
+
+						if (up) {
+							if (lhs.state != Direction.Up) {
+								lhs.state = Direction.Up;
+								lhs.wrt = rhs[0].wrt;
+								return CHANGED;
+							}
 						}
 					}
-				}
-				
+
 				SSAInstruction wrt = rhs[0].wrt;
 				Direction d = rhs[0].state;
 				if (d == null) {
 					d = Direction.Neither;
 				}
 				for (int i = 1; i < rhs.length; i++) {
-					d = d.meet(rhs[i].state == null? Direction.Neither: rhs[i].state);
+					d = d.meet(rhs[i].state == null ? Direction.Neither : rhs[i].state);
 					if (rhs[i].wrt != wrt) {
 						wrt = null;
 					}
@@ -328,7 +327,7 @@ public class RoundingEstimator {
 						lhs.state = d;
 						lhs.wrt = rhs[0].wrt;
 						return CHANGED;
-					} 
+					}
 				}
 				return NOT_CHANGED;
 			}
@@ -381,7 +380,7 @@ public class RoundingEstimator {
 			private final boolean flipRight;
 			private final Direction init;
 			protected final SSAInstruction inst;
-			
+
 			public BinaryOperator(boolean flipRight, Direction init, SSAInstruction inst) {
 				this.flipRight = flipRight;
 				this.init = init;
@@ -396,47 +395,46 @@ public class RoundingEstimator {
 			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
 				if (rhs[0].state != null && rhs[1].state != null) {
 					Direction d = rhs[0].state;
-					d = d==null? d: d.meet(flipRight? rhs[1].state.flip(): rhs[1].state);
-					d = d==null? init: init.meet(d);
-				
+					d = d == null ? d : d.meet(flipRight ? rhs[1].state.flip() : rhs[1].state);
+					d = d == null ? init : init.meet(d);
+
 					if (d != lhs.state || (rhs[0].wrt == rhs[1].wrt && rhs[0].wrt != lhs.wrt)) {
 						lhs.state = d;
-						lhs.wrt = init!=Direction.Neither? inst:rhs[0].wrt == rhs[1].wrt? rhs[0].wrt: null;
+						lhs.wrt = init != Direction.Neither ? inst : rhs[0].wrt == rhs[1].wrt ? rhs[0].wrt : null;
 						return CHANGED;
-					} 
+					}
 				}
-				
-				return NOT_CHANGED;	
+
+				return NOT_CHANGED;
 			}
 
 			@Override
 			public int hashCode() {
-				return 6745836 * init.hashCode() * (flipRight? 1: -1);
+				return 6745836 * init.hashCode() * (flipRight ? 1 : -1);
 			}
 
 			@Override
 			public boolean equals(Object o) {
-				return o.getClass() == this.getClass() && 
-					init==((BinaryOperator)o).init &&
-					flipRight==((BinaryOperator)o).flipRight;
+				return o.getClass() == this.getClass() && init == ((BinaryOperator) o).init
+						&& flipRight == ((BinaryOperator) o).flipRight;
 			}
 
 			@Override
 			public String toString() {
 				return "rounding bin op " + init + " " + flipRight;
 			}
-			
+
 		}
-		
+
 		private class RoundUpDetectingAddOperator extends BinaryOperator {
 			RoundUpDetectingAddOperator(SSAInstruction inst) {
 				super(false, Direction.Neither, inst);
 			}
-			
+
 			boolean isDivDown(RoundingVariable v) {
-				return v != null && v.state == Direction.Down && v.wrt != null && v.wrt.getDef()==v.vn;
+				return v != null && v.state == Direction.Down && v.wrt != null && v.wrt.getDef() == v.vn;
 			}
-			
+
 			@Override
 			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
 				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither) {
@@ -454,14 +452,14 @@ public class RoundingEstimator {
 				} else {
 					return super.evaluate(lhs, rhs);
 				}
-				
+
 				return NOT_CHANGED;
 			}
 		}
-		
+
 		class ConstantOperator extends AbstractOperator<RoundingVariable> {
 			private final Direction d;
-			
+
 			public ConstantOperator(Direction d) {
 				this.d = d;
 			}
@@ -478,14 +476,12 @@ public class RoundingEstimator {
 
 			@Override
 			public int hashCode() {
-				return d.hashCode()*668976;
+				return d.hashCode() * 668976;
 			}
 
 			@Override
 			public boolean equals(Object o) {
-				return o != null && 
-					getClass() == o.getClass() &&
-					d.equals(((ConstantOperator)o).d);
+				return o != null && getClass() == o.getClass() && d.equals(((ConstantOperator) o).d);
 			}
 
 			@Override
@@ -493,13 +489,14 @@ public class RoundingEstimator {
 				return "constant " + d;
 			}
 		};
-		
+
 		private Set<RoundingVariable> result = HashSetFactory.make();
 
-		public RoundingInference(CallGraph CG, Map<CGNode, Map<FieldReference, Direction>> directionalCalls, CGNode n) throws CancelException {
+		public RoundingInference(CallGraph CG, Map<CGNode, Map<FieldReference, Direction>> directionalCalls, CGNode n)
+				throws CancelException {
 			IR ir = n.getIR();
 			DefUse du = n.getDU();
-			
+
 			class RoundingOperatorFactory extends SSAInstruction.Visitor implements OperatorFactory<RoundingVariable> {
 				private AbstractOperator<RoundingVariable> result;
 
@@ -510,30 +507,29 @@ public class RoundingEstimator {
 					return result;
 				}
 
-				
 				@Override
 				public void visitBinaryOp(SSABinaryOpInstruction instruction) {
 					IBinaryOpInstruction.IOperator op = instruction.getOperator();
 					if (op == IBinaryOpInstruction.Operator.ADD) {
 						result = new RoundUpDetectingAddOperator(instruction);
-						
+
 					} else if (op == IBinaryOpInstruction.Operator.MUL || op == IShiftInstruction.Operator.SHL) {
 						result = new BinaryOperator(false, Direction.Neither);
-						
+
 					} else if (op == IBinaryOpInstruction.Operator.DIV) {
 						Set<SSAInstruction> divisor = getDivisorRelated(instruction);
 						Set<SSAInstruction> dividend = getDividendRelated(instruction);
 
 						MutableIntSet bothValues = getRelatedValues(instruction.getUse(1), divisor, false);
 						bothValues.intersectWith(getRelatedValues(instruction.getUse(0), dividend, false));
-						Direction d = bothValues.isEmpty()? Direction.Down: Direction.Up;
+						Direction d = bothValues.isEmpty() ? Direction.Down : Direction.Up;
 
 						result = new BinaryOperator(true, d, instruction);
 
 					} else if (op == IBinaryOpInstruction.Operator.SUB) {
-						
+
 						result = new BinaryOperator(true, Direction.Neither);
-					
+
 					} else {
 						result = new ConstantOperator(Direction.Neither);
 					}
@@ -568,38 +564,42 @@ public class RoundingEstimator {
 			class RoundingVariableFactory implements VariableFactory<RoundingVariable> {
 				private boolean hasReturn(int vn) {
 					Iterator<SSAInstruction> is = du.getUses(vn);
-					while(is.hasNext()) {
+					while (is.hasNext()) {
 						if (is.next() instanceof SSAReturnInstruction) {
 							return true;
 						}
- 					}
+					}
 					return false;
 				}
-				
+
 				@Override
 				public IVariable<RoundingVariable> makeVariable(int valueNumber) {
 					RoundingVariable v;
-					if (ir.getSymbolTable().isConstant(valueNumber) || valueNumber <= ir.getSymbolTable().getNumberOfParameters()) {
+					if (ir.getSymbolTable().isConstant(valueNumber)
+							|| valueNumber <= ir.getSymbolTable().getNumberOfParameters()) {
 						v = new RoundingVariable(valueNumber, Direction.Neither, null);
 
-					} else if (du.getDef(valueNumber) instanceof SSAAbstractInvokeInstruction && ((SSAAbstractInvokeInstruction)du.getDef(valueNumber)).hasDef()) {
-						Direction d = Direction.Neither;
-						for (CGNode cgn : CG.getPossibleTargets(n,
-								((SSAAbstractInvokeInstruction) du.getDef(valueNumber)).getCallSite())) {
-							if (directionalCalls.containsKey(cgn) && directionalCalls.get(cgn).containsKey(null)) {
-								d = d.meet(directionalCalls.get(cgn).get(null));
-							}
-						}
-						v = new RoundingVariable(valueNumber, d, du.getDef(valueNumber));
-
 					} else {
-						v = new RoundingVariable(valueNumber);
+						SSAInstruction inst = du.getDef(valueNumber);
+						if (inst instanceof SSAAbstractInvokeInstruction && inst.hasDef()) {
+							SSAAbstractInvokeInstruction call = (SSAAbstractInvokeInstruction) inst;
+							Direction d = Direction.Neither;
+							for (CGNode cgn : CG.getPossibleTargets(n, call.getCallSite())) {
+								if (directionalCalls.containsKey(cgn) && directionalCalls.get(cgn).containsKey(null)) {
+									d = d.meet(directionalCalls.get(cgn).get(null));
+								}
+							}
+							v = new RoundingVariable(valueNumber, d, du.getDef(valueNumber));
+
+						} else {
+							v = new RoundingVariable(valueNumber);
+						}
 					}
-					
+
 					if (hasReturn(valueNumber)) {
 						result.add(v);
 					}
-					
+
 					return v;
 				}
 
@@ -636,23 +636,24 @@ public class RoundingEstimator {
 		}
 
 		public Direction getResult() {
-			return result.stream().filter(x -> x.state != null).map(x -> x.state).reduce(Direction::meet).orElse(Direction.Neither);
+			return result.stream().filter(x -> x.state != null).map(x -> x.state).reduce(Direction::meet)
+					.orElse(Direction.Neither);
 		}
 
 		private Map<FieldReference, Direction> unpackTuple(RoundingVariable x) {
 			int maybeTuple = x.vn;
-			Map<FieldReference,Direction> result = HashMapFactory.make();
-			ir.iterateAllInstructions().forEachRemaining(inst -> { 
+			Map<FieldReference, Direction> result = HashMapFactory.make();
+			ir.iterateAllInstructions().forEachRemaining(inst -> {
 				if (inst instanceof SSAPutInstruction) {
-					SSAPutInstruction p = (SSAPutInstruction)inst;
+					SSAPutInstruction p = (SSAPutInstruction) inst;
 					if (p.getRef() == maybeTuple) {
 						Direction d = getVariable(p.getVal()).state;
 						if (d != null) {
-						if (result.containsKey(p.getDeclaredField())) {
-							result.put(p.getDeclaredField(), d.meet(result.get(p.getDeclaredField())));
-						} else {
-							result.put(p.getDeclaredField(), d);
-						}
+							if (result.containsKey(p.getDeclaredField())) {
+								result.put(p.getDeclaredField(), d.meet(result.get(p.getDeclaredField())));
+							} else {
+								result.put(p.getDeclaredField(), d);
+							}
 						}
 					}
 				}
@@ -660,27 +661,28 @@ public class RoundingEstimator {
 			return result;
 		}
 
-		private Map<FieldReference, Direction> reduceTuples(Map<FieldReference, Direction> l, Map<FieldReference, Direction> r) {
-			Map<FieldReference,Direction> result = HashMapFactory.make();
-			for(FieldReference lk : l.keySet()) {
-				if (! r.containsKey(lk)) {
-					result.put(lk,  l.get(lk));
+		private Map<FieldReference, Direction> reduceTuples(Map<FieldReference, Direction> l,
+				Map<FieldReference, Direction> r) {
+			Map<FieldReference, Direction> result = HashMapFactory.make();
+			for (FieldReference lk : l.keySet()) {
+				if (!r.containsKey(lk)) {
+					result.put(lk, l.get(lk));
 				} else {
-					result.put(lk,  l.get(lk).meet(r.get(lk)));					
+					result.put(lk, l.get(lk).meet(r.get(lk)));
 				}
 			}
-			for(FieldReference rk : r.keySet()) {
-				if (! l.containsKey(rk)) {
+			for (FieldReference rk : r.keySet()) {
+				if (!l.containsKey(rk)) {
 					result.put(rk, r.get(rk));
 				}
 			}
 			return result;
 		}
-		
+
 		public Map<FieldReference, Direction> getResults() {
 			return result.stream().map(this::unpackTuple).reduce(this::reduceTuples).orElse(Collections.emptyMap());
 		}
-		
+
 		public Map<FieldReference, Direction> getResultOrResults() {
 			Map<FieldReference, Direction> result = getResults();
 			if (result.isEmpty()) {
@@ -688,7 +690,7 @@ public class RoundingEstimator {
 			}
 			return result;
 		}
-		
+
 		@Override
 		public String toString() {
 			return super.toString() + "returning " + result;
