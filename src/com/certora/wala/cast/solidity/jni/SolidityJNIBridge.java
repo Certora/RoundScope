@@ -6,8 +6,11 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
@@ -42,10 +45,18 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 	public class SolidityFileTranslator extends NativeBridge implements TranslatorToCAst {
 		private final int id = SolidityJNIBridge.this.id;
 		private final String fileName;
+		private final int[] linePositionMap;
 		
-		public SolidityFileTranslator(String fileName) {
+		public SolidityFileTranslator(String fileName) throws IOException {
 			super(SolidityJNIBridge.this.Ast);
 			this.fileName = fileName;
+			String[] lines = loadFile("source", fileName).split("\n");
+			linePositionMap = new int[ lines.length+1 ];
+			int total = 0;
+			for(int i = 0; i < lines.length; i++) {
+				linePositionMap[i+1] = total;
+				total += lines[i].length();
+			}
 		}
 
 		final CAstEntity fileEntity = new AbstractEntity() {
@@ -127,7 +138,71 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 		};
 		
 		public Position makePosition(String fileName, int startOffset, int endOffset) {
-			return SolidityJNIBridge.this.makePosition(fileName, startOffset, endOffset);
+			return new Position() {
+				private int getLine(int offset) {
+					return IntStream.range(0, linePositionMap.length).filter(i -> linePositionMap[i] > offset).findFirst().orElse(linePositionMap.length);
+				}
+				
+				private int getColumn(int offset) {
+					int line = IntStream.range(0, linePositionMap.length).filter(i -> linePositionMap[i] > offset).findFirst().orElse(linePositionMap.length);
+					return offset - linePositionMap[line-1];
+				}
+				
+				@Override
+				public int getFirstCol() {
+					return getColumn(startOffset);
+				}
+
+				@Override
+				public int getFirstLine() {
+					return getLine(startOffset);
+				}
+
+				@Override
+				public int getFirstOffset() {
+					return startOffset;
+				}
+
+				@Override
+				public int getLastCol() {
+					return getColumn(endOffset);
+				}
+
+				@Override
+				public int getLastLine() {
+					return getLine(endOffset);
+				}
+
+				@Override
+				public int getLastOffset() {
+					return endOffset;
+				}
+
+				@Override
+				public int compareTo(SourcePosition o) {
+					return o.getFirstOffset() - getFirstOffset();
+				}
+
+				@Override
+				public Reader getReader() throws IOException {
+					return new FileReader(fileName);
+				}
+
+				@Override
+				public URL getURL() {
+					try {
+						return URI.create("file:" + fileName).toURL();
+					} catch (MalformedURLException e) {
+						assert false : e;
+						return null;
+					}
+				}
+				
+				@Override
+				public String toString() {
+					return "[" + getFirstOffset() + "-" + getLastOffset() + "]";
+				}
+			};
 		}
 		
 		void record(CAstNode node, Position pos) {
@@ -164,65 +239,6 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 		posMap.setPosition(node, pos);
 	}
 	
-	public Position makePosition(String fileName, int startOffset, int endOffset) {
-		return new Position() {
-			@Override
-			public int getFirstCol() {
-				return -1;
-			}
-
-			@Override
-			public int getFirstLine() {
-				return -1;
-			}
-
-			@Override
-			public int getFirstOffset() {
-				return startOffset;
-			}
-
-			@Override
-			public int getLastCol() {
-				return -1;
-			}
-
-			@Override
-			public int getLastLine() {
-				return -1;
-			}
-
-			@Override
-			public int getLastOffset() {
-				return endOffset;
-			}
-
-			@Override
-			public int compareTo(SourcePosition o) {
-				return o.getFirstOffset() - getFirstOffset();
-			}
-
-			@Override
-			public Reader getReader() throws IOException {
-				return new FileReader(fileName);
-			}
-
-			@Override
-			public URL getURL() {
-				try {
-					return URI.create("file:" + fileName).toURL();
-				} catch (MalformedURLException e) {
-					assert false : e;
-					return null;
-				}
-			}
-			
-			@Override
-			public String toString() {
-				return "[" + getFirstOffset() + "-" + getLastOffset() + "]";
-			}
-		};
-	}
-
 	public SolidityJNIBridge(SolidityLoader loader) {
 		super(new CAstImpl());
 		this.loader = loader;

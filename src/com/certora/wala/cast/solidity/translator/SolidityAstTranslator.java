@@ -177,10 +177,17 @@ public class SolidityAstTranslator extends AstTranslator {
 		}
 		int instNum = context.cfg().getCurrentInstruction();
 		context.cfg().addInstruction(insts.ArrayLoadInstruction(instNum, result, arrayValue, dimValues[0], eltType));
+	
+		Position[] operandPos =new Position[1 + dimValues.length];
+		operandPos[0] = context.getSourceMap().getPosition(arrayRef.getChild(0));
+		for(int i = 0; i < dimValues.length; i++) {
+			operandPos[i+1] = context.getSourceMap().getPosition(arrayRef.getChild(i+2));			
+		}
+		context.cfg().noteOperands(instNum, operandPos);
 	}
 
 	@Override
-	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, int[] dimValues, int rval) {
+	public void doArrayWrite(WalkContext context, int arrayValue, CAstNode arrayRef, CAstNode rvalNode, int[] dimValues, int rval) {
 		CAstType t = context.top().getNodeTypeMap().getNodeType(arrayRef.getChild(0));
 		TypeReference eltType;
 		if (t instanceof SolidityMappingType) {
@@ -189,7 +196,16 @@ public class SolidityAstTranslator extends AstTranslator {
 		} else {
 			eltType = SolidityTypes.bytes;
 		}
-		context.cfg().addInstruction(insts.ArrayStoreInstruction(context.cfg().getCurrentInstruction(), arrayValue, dimValues[0], rval, eltType));
+		int instNum = context.cfg().getCurrentInstruction();
+		context.cfg().addInstruction(insts.ArrayStoreInstruction(instNum, arrayValue, dimValues[0], rval, eltType));
+
+		Position[] operandPos = new Position[2 + dimValues.length];
+		operandPos[0] = context.getSourceMap().getPosition(arrayRef.getChild(0));
+		operandPos[operandPos.length-1] = context.getSourceMap().getPosition(rvalNode);
+		for(int i = 0; i < dimValues.length; i++) {
+			operandPos[i+1] = context.getSourceMap().getPosition(arrayRef.getChild(i+2));			
+		}
+		context.cfg().noteOperands(instNum, operandPos);
 	}
 	
 	@Override
@@ -230,8 +246,16 @@ public class SolidityAstTranslator extends AstTranslator {
 			} else {
 				m = ((SolidityLoader)loader).getReference((FunctionType) recCAstType);
 			}
-			CallSiteReference csr = CallSiteReference.make(context.cfg().getCurrentInstruction(), m, Dispatch.VIRTUAL);
-			context.cfg().addInstruction(insts.InvokeInstruction(context.cfg().getCurrentInstruction(), m.getReturnType() == TypeReference.Void? -1: result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
+			int instNum = context.cfg().getCurrentInstruction();
+			CallSiteReference csr = CallSiteReference.make(instNum, m, Dispatch.VIRTUAL);
+			context.cfg().addInstruction(insts.InvokeInstruction(instNum, m.getReturnType() == TypeReference.Void? -1: result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
+		
+			Position[] operandPos = new Position[ arguments.length + 1 ];
+			operandPos[0] = context.getSourceMap().getPosition(call.getChild(0));
+			for(int i = 1; i < operandPos.length; i++) {
+				operandPos[i] = context.getSourceMap().getPosition(call.getChild(i+1));
+			}
+			context.cfg().noteOperands(instNum, operandPos);
 		}
 	}
 
@@ -250,19 +274,33 @@ public class SolidityAstTranslator extends AstTranslator {
 			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), objType);
 			context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, receiver, self));
 		} else {
-			context.cfg().addInstruction(insts.GetInstruction(context.cfg().getCurrentInstruction(), result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom(elt.getValue().toString()), eltType)));
+			int instNum = context.cfg().getCurrentInstruction();
+			context.cfg().addInstruction(insts.GetInstruction(instNum, result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom(elt.getValue().toString()), eltType)));
+		
+			Position[] operandPos = new Position[2];
+			operandPos[0] = context.getSourceMap().getPosition(parent.getChild(0));
+			operandPos[1] = context.getSourceMap().getPosition(elt);
+			context.cfg().noteOperands(instNum, operandPos);
+
 		}
 	}
 
 	@Override
-	protected void doFieldWrite(WalkContext context, int receiver, CAstNode elt, CAstNode parent, int rval) {
+	protected void doFieldWrite(WalkContext context, int receiver, CAstNode elt, CAstNode parent, CAstNode rvalNode, int rval) {
 		CAstEntity code = context.top();
 		CAstNodeTypeMap typeMap = code.getNodeTypeMap();
 		CAstType objCAstType = typeMap.getNodeType(parent.getChild(0));
 		CAstType eltCAstType = typeMap.getNodeType(parent);	
 		TypeReference objType = objCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(objCAstType);
 		TypeReference eltType = eltCAstType==null? SolidityTypes.root: SolidityCAstType.getIRType(eltCAstType);
-		context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), eltType)));
+		int instNum = context.cfg().getCurrentInstruction();
+		context.cfg().addInstruction(insts.PutInstruction(instNum, receiver, rval, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom((String)elt.getValue()), eltType)));
+
+		Position[] operandPos = new Position[3];
+		operandPos[0] = context.getSourceMap().getPosition(parent.getChild(0));
+		operandPos[1] = context.getSourceMap().getPosition(elt);
+		operandPos[2] = context.getSourceMap().getPosition(rvalNode);
+		context.cfg().noteOperands(instNum, operandPos);
 	}
 	
 	@Override

@@ -5,13 +5,16 @@ import java.util.Set;
 
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.loader.AstFunctionClass;
+import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.classLoader.IField;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.impl.AbstractRootMethod;
 import com.ibm.wala.ipa.callgraph.impl.DefaultEntrypoint;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSANewInstruction;
 import com.ibm.wala.types.FieldReference;
@@ -38,11 +41,27 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 	}
 
 	@Override
+	protected int makeArgument(AbstractRootMethod m, int i) {
+		TypeReference r = this.method.getParameterType(i);
+		if (r != SolidityTypes.address) {
+			return super.makeArgument(m, i);
+		} else {
+			return m.addInvocation(new int[0], CallSiteReference.make(i, MethodReference.findOrCreate(SolidityAddressInstantiator.aiRef, SolidityAddressInstantiator.aiSel), Dispatch.STATIC)).getDef();
+		}
+	}
+
+	@Override
 	public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
 		SSAAbstractInvokeInstruction call = super.addCall(m);
 		int functionSelf = call.getUse(0);
 		int objSelf = m.addAllocation(selfType.getReference()).getDef();
 		m.addSetInstance(FieldReference.findOrCreate(call.getDeclaredTarget().getDeclaringClass(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference()), functionSelf, objSelf);
+		for(IField f : selfType.getAllInstanceFields()) {
+			if (f.getFieldTypeReference().equals(SolidityTypes.mapping)) {
+				SSANewInstruction alloc = m.addAllocation(SolidityTypes.mapping);
+				m.addSetInstance(f.getReference(), objSelf, alloc.getDef());
+			}
+		}
 		linkage.forEach((x, y) -> { 
 			if (selfType.getReference().equals(x.snd)) {
 				FieldReference fr = FieldReference.findOrCreate(x.snd, x.fst, y);
@@ -62,7 +81,6 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<Atom,TypeReference>,TypeReference> linkage, IClassHierarchy cha) {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
-		IClass interfaceClass = cha.lookupClass(SolidityTypes.interfce);
 		cha.forEach(cl -> { 
 			if (cl != contractClass && (cha.isAssignableFrom(contractClass, cl))) {
 				cl.getDeclaredInstanceFields().forEach(m -> { 
