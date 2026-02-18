@@ -11,12 +11,15 @@ import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.analysis.rounding.RoundingEstimator.Direction;
 import com.certora.wala.analysis.rounding.RoundingEstimator.RoundingInference;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
+import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
+import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
+import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
@@ -37,6 +40,7 @@ import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.cfa.DelegatingSSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
@@ -73,6 +77,8 @@ public class TestRunner {
 
 			IClassHierarchy cha = ClassHierarchyFactory.make(s, sl);
 
+			new SolidityAddressInstantiator(cha);
+			
 			SolidityLoader solidityLoader = (SolidityLoader) cha.getLoader(SolidityTypes.solidity);
 			solidityLoader.getModulesWithParseErrors().forEachRemaining(m -> {
 				solidityLoader.getMessages(m).forEach(msg -> {
@@ -96,6 +102,7 @@ public class TestRunner {
 
 			IRFactory<IMethod> f = AstIRFactory.makeDefaultFactory();
 			cha.forEach(c -> {
+				if (c instanceof AstClass) {
 				c.getDeclaredMethods().forEach(m -> {
 					try {
 						System.out.println(f.makeIR(m, Everywhere.EVERYWHERE, SSAOptions.defaultOptions()));
@@ -103,12 +110,14 @@ public class TestRunner {
 						System.err.println(e);
 					}
 				});
+				}
 			});
 
 			Util.setNativeSpec(null);
 			AnalysisOptions options = new AnalysisOptions();
-			options.setEntrypoints(es);
 			AnalysisCache analysisCache = new AnalysisCacheImpl(f);
+			options.setEntrypoints(es);
+
 			Util.addDefaultSelectors(options, cha);
 			Util.addDefaultBypassLogic(options, Util.class.getClassLoader(), cha);
 			ContextSelector appSelector = null;
@@ -116,7 +125,11 @@ public class TestRunner {
 			SSAPropagationCallGraphBuilder cgBuilder = new nCFABuilder(2,
 					SolidityLoader.solidity.getFakeRootMethod(cha, options, analysisCache), options, analysisCache,
 					appSelector, appInterpreter);
-			cgBuilder.setContextInterpreter(new AstContextInsensitiveSSAContextInterpreter(options, analysisCache));
+			
+			cgBuilder.setContextInterpreter(
+				new DelegatingSSAContextInterpreter(
+		              new FactoryBypassInterpreter(options, analysisCache), 
+		              new AstContextInsensitiveSSAContextInterpreter(options, analysisCache)));
 
 			CallGraph cg = cgBuilder.makeCallGraph(options, null);
 
@@ -159,6 +172,7 @@ public class TestRunner {
 						Map<FieldReference, Direction> x = rounding.put(n, d);
 						if (x == null || !x.equals(d)) {
 							changed = true;
+							System.out.println(ri.getRoundingResult());
 						}
 					}
 				} while (changed);
@@ -167,7 +181,7 @@ public class TestRunner {
 					if (x.getKey().getMethod() instanceof AstMethod) {
 						DebuggingInformation dbg = ((AstMethod) x.getKey().getMethod()).debugInfo();
 						if (x.getValue().values().stream().anyMatch(d -> d != Direction.Neither)) {
-							System.err.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> "
+							System.out.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> "
 									+ x.getValue().values() + " " + dbg.getCodeNamePosition().getURL() + ":"
 									+ dbg.getCodeNamePosition());
 						}

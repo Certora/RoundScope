@@ -43,6 +43,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 	static {
 		for(Object[] nm : new Object[][] {
 			{"root", SolidityTypes.root, null},
+			{"mapping", SolidityTypes.mapping, null},
 			{"tuple", SolidityTypes.tuple, null},
 			{"library", SolidityTypes.library, null},
 			{"contract", SolidityTypes.contract, null},

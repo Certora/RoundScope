@@ -470,28 +470,33 @@ jobject Translator::visitCallableDefinition(const CallableDeclaration &_node, jo
     }
     std::cout << "ft 5:" << _node.name().c_str() << std::endl;
 
-    jobject qual;
+    jclass sCls = jniEnv->FindClass("java/util/HashSet");
+    jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
+    jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
+    jobject qualSet = jniEnv->NewObject(sCls, sCtor);
+
     if (isCtor) {
-        qual = cast.PUBLIC;
+        jniEnv->CallBooleanMethod(qualSet, add, cast.PUBLIC);
     } else {
         switch (_node.visibility()) {
             case Visibility::Default:
             case Visibility::Private:
-                qual = cast.PRIVATE;
+                jniEnv->CallBooleanMethod(qualSet, add, cast.PRIVATE);
                 break;
             case Visibility::Internal:
-                qual = cast.PROTECTED;
-                break;
-            case Visibility::Public:
+                jniEnv->CallBooleanMethod(qualSet, add, cast.PROTECTED);
+               break;
             case Visibility::External:
-                qual = cast.PUBLIC;
-        }
+                jniEnv->CallBooleanMethod(qualSet, add, cast.EXTERNAL);
+            case Visibility::Public:
+                jniEnv->CallBooleanMethod(qualSet, add, cast.PUBLIC);
+       }
     }
  
     jclass sfet = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/FunctionEntity");
-    jmethodID sfeCtor = jniEnv->GetMethodID(sfet, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType$Function;[Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;[Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstQualifier;Lcom/ibm/wala/cast/tree/CAstNode;)V");
+    jmethodID sfeCtor = jniEnv->GetMethodID(sfet, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType$Function;[Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;[Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Ljava/util/Collection;Lcom/ibm/wala/cast/tree/CAstNode;)V");
     
-    return jniEnv->NewObject(sfet, sfeCtor, funName, funType, argNames, loc, nameLoc, argLocations,qual, NULL);
+    return jniEnv->NewObject(sfet, sfeCtor, funName, funType, argNames, loc, nameLoc, argLocations,qualSet, NULL);
 }
 
 bool Translator::visit(const EnumDefinition &_node) {

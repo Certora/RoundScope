@@ -182,4 +182,6 @@ public class SolidityTypes {
 
 	public static TypeReference tuple = TypeReference.findOrCreate(solidity, "Ltuple");
 
+	public static TypeReference mapping = TypeReference.findOrCreate(solidity, "Lmapping");
+
 }

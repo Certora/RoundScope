@@ -1,5 +1,6 @@
 package com.certora.wala.analysis.rounding;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
@@ -8,6 +9,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.certora.wala.analysis.defuse.DefUseGraph;
+import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.dataflow.ssa.SSAInference;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.fixpoint.AbstractVariable;
@@ -694,6 +698,78 @@ public class RoundingEstimator {
 		@Override
 		public String toString() {
 			return super.toString() + "returning " + result;
+		}
+		
+		interface Result {
+			Direction[][] getOperandRounding();
+			Direction[][] getResultRounding();
+		}
+		
+		public Result getRoundingResult() {
+			Direction[][] operands = new Direction[ir.getInstructions().length][];
+			Direction[][] results = new Direction[ir.getInstructions().length][];
+			ir.iterateNormalInstructions().forEachRemaining(inst -> { 
+				Direction[] uses = operands[inst.iIndex()] = new Direction[inst.getNumberOfUses()];
+				for(int i = 0; i < uses.length; i++) {
+					uses[i] = getVariable(inst.getUse(i)).state;
+				}
+				Direction[] defs = results[inst.iIndex()] = new Direction[inst.getNumberOfDefs()];
+				for(int i = 0; i < defs.length; i++) {
+					defs[i] = getVariable(inst.getDef(i)).state;
+				}
+			});
+			return new Result() {
+				@Override
+				public Direction[][] getOperandRounding() {
+					return operands;
+				}
+
+				@Override
+				public Direction[][] getResultRounding() {
+					return results;
+				}
+				
+				@Override
+				public String toString() {
+					StringBuffer sb = new StringBuffer();
+					sb.append("result for " + ir.getMethod()).append('\n');
+					for(int i = 0; i < operands.length; i++) {
+						if (operands[i] != null) {
+							for(int j = 0; j < operands[i].length; j++) {
+								if (operands[i][j] != null && operands[i][j] != Direction.Neither) {
+									if (ir.getMethod() instanceof AstMethod) {
+										Position p = ((AstMethod)ir.getMethod()).debugInfo().getOperandPosition(i, j);
+										if (p != null) {
+											try {
+												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + operands[i][j] + " (use in " + new SourceBuffer(((AstMethod)ir.getMethod()).debugInfo().getInstructionPosition(i)) + ")\n");
+											} catch (IOException e) {
+												assert false : e;
+											}
+										}
+									}
+								}
+							}
+						}
+						if (results[i] != null) {
+							for(int j = 0; j < results[i].length; j++) {
+								if (results[i][j] != null && results[i][j] != Direction.Neither) {
+									if (ir.getMethod() instanceof AstMethod) {
+										Position p = ((AstMethod)ir.getMethod()).debugInfo().getInstructionPosition(i);
+										if (p != null) {
+											try {
+												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + results[i][j] + '\n');
+											} catch (IOException e) {
+												assert false : e;
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+					return sb.toString();
+				}
+			};
 		}
 	}
 

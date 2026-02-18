@@ -120,6 +120,14 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass enm = new CoreClass(SolidityTypes.enm.getName(), root.getName(), this,
 			null);
 
+	private final IClass mapping = new CoreClass(SolidityTypes.mapping.getName(), root.getName(), this,
+			null) {
+				@Override
+				public boolean isArrayClass() {
+					return true;
+				}
+	};
+
 	private final File confFile;
 
 	private final Map<String, File> includePath;
@@ -225,7 +233,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		return getLanguage().instructionFactory();
 	}
 
-	static final Language solidity = new LanguageImpl() {
+	public static final Language solidity = new LanguageImpl() {
 
 		@Override
 		public TypeReference[] getArrayInterfaces() {
