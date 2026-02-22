@@ -48,7 +48,7 @@ import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 
 public class RoundingAnalysis {
-	private static final boolean DEBUG = false;
+	private static final boolean DEBUG = true;
 	
 	
 	private final CallGraph CG;
@@ -761,7 +761,7 @@ public class RoundingAnalysis {
 											try {
 												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + operands[i][j] + " (use in " + new SourceBuffer(dbg.getInstructionPosition(i)) + ")");
 												if (DEBUG) {
-													sb.append(" " + i + "," + j + ")");
+													sb.append(" (" + i + "," + j + ")");
 												}
 												sb.append("\n");
 											} catch (IOException e) {
@@ -769,7 +769,7 @@ public class RoundingAnalysis {
 											}
 										} else {
 											if (DEBUG) {
-												sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+												sb.append("no source operand position for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + ", " + j + "\n");
 											}
 										}
 									} else {
