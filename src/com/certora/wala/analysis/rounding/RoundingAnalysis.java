@@ -676,6 +676,8 @@ public class RoundingAnalysis {
 		public interface Result {
 			Direction[][] getOperandRounding();
 			Direction[][] getResultRounding();
+			String toString(Set<SSAInstruction> ongoing);
+			String toString();
 		}
 		
 		public Result getRoundingResult() {
@@ -706,6 +708,10 @@ public class RoundingAnalysis {
 				
 				@Override
 				public String toString() {
+					return toString(HashSetFactory.make());
+				}
+				
+				public String toString(Set<SSAInstruction> ongoing) {
 					StringBuffer sb = new StringBuffer();
 					sb.append("result for " + ir.getMethod());
 					DebuggingInformation dbg = ((AstMethod)ir.getMethod()).debugInfo();
@@ -753,15 +759,23 @@ public class RoundingAnalysis {
 										Position p = dbg.getOperandPosition(i, j);
 										if (p != null) {
 											try {
-												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + operands[i][j] + " (use in " + new SourceBuffer(dbg.getInstructionPosition(i)) + ") (" + i + "," + j + ")\n");
+												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + operands[i][j] + " (use in " + new SourceBuffer(dbg.getInstructionPosition(i)) + ")");
+												if (DEBUG) {
+													sb.append(" " + i + "," + j + ")");
+												}
+												sb.append("\n");
 											} catch (IOException e) {
 												assert false : e;
 											}
 										} else {
-											sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+											if (DEBUG) {
+												sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+											}
 										}
 									} else {
-										sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+										if (DEBUG) {
+											sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+										}
 									}
 								}
 							}
@@ -778,10 +792,14 @@ public class RoundingAnalysis {
 												assert false : e;
 											}
 										} else {
-											sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
+											if (DEBUG) {
+												sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
+											}
 										}
 									} else {
-										sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
+										if (DEBUG) {
+											sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
+										}
 									}	
 								}
 							}
@@ -790,7 +808,9 @@ public class RoundingAnalysis {
 					sb.append("returning " + getResultOrResults() + "\n");
 					
 					ir.iterateAllInstructions().forEachRemaining(inst -> { 
-						if (inst instanceof SSAInvokeInstruction) {
+						if (inst instanceof SSAInvokeInstruction && !ongoing.contains(inst)) {
+							Set<SSAInstruction> x = HashSetFactory.make(ongoing);
+							x.add(inst);
 							List<Direction> args = new ArrayList<>(inst.getNumberOfUses());
 							for(int i = 0; i < inst.getNumberOfUses(); i++) {
 								args.add(getVariable(inst.getUse(i)).state);
@@ -803,7 +823,7 @@ public class RoundingAnalysis {
 								Pair<CGNode,List<Direction>> key = Pair.make(callee, args);
 								if (rawResults.containsKey(key)) {
 									gotSomething = true;
-									String child = rawResults.get(key).toString();
+									String child = rawResults.get(key).toString(x);
 									if (child.contains("--> Up") || child.contains("--> Down") || child.contains("--> Either")
 										|| child.contains("=Up") || child.contains("=Down") || child.contains("=Either")) {
 										sb.append("\n" + child);

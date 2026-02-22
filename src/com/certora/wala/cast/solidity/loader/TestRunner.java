@@ -170,7 +170,7 @@ public class TestRunner {
 					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
 				    String res = ri.getRoundingResult().toString();
 				    if (res.contains("--> Up") || res.contains("--> Down") || res.contains("--> Either")) {
-						System.out.println("looking at " + n);
+						System.out.println("looking at " + n + " --> " + ri.getResultOrResults());
 				    	System.out.println(res);
 				    }
 				}
