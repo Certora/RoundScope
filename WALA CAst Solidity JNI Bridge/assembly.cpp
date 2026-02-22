@@ -22,27 +22,34 @@ jobject Translator::visitAssemblyExpression(yul::Dialect const& dialect, std::ma
                 if constexpr (std::is_same_v<V, yul::Identifier>) {
                     return visitAssemblyExpression(dialect, info, fn);
                 } else if constexpr (std::is_same_v<V, yul::BuiltinName>) {
+                    std::cout << "source " << *expr.debugData->originLocation.sourceName << std::endl;
                     BuiltinFunction const& fun = dialect.builtin(fn.handle);
                     if (fun.name == "add") {
-                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_ADD, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_ADD, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
                     } else if (fun.name == "div") {
-                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_DIV, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_DIV, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
+                    } else if (fun.name == "eq") {
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_EQ, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
                     } else if (fun.name == "mul") {
-                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_MUL, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_MUL, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
+                    } else if (fun.name == "mod") {
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_MOD, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
                     } else if (fun.name == "gt") {
-                        return cast.makeNode(cast.IF_EXPR, cast.makeNode(cast.BINARY_EXPR, cast.OP_GT, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), cast.makeConstant(1), cast.makeConstant(0));
+                        return cast.makeNode(cast.IF_EXPR, record(cast.makeNode(cast.BINARY_EXPR, cast.OP_GT, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation), cast.makeConstant(1), cast.makeConstant(0));
                     } else if (fun.name == "iszero") {
-                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_EQ, visitAssemblyExpression(dialect, info, args[0]), cast.makeConstant(0));
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_EQ, visitAssemblyExpression(dialect, info, args[0]), cast.makeConstant(0)), expr.debugData->originLocation);
+                    } else if (fun.name == "not") {
+                        return record(cast.makeNode(cast.UNARY_EXPR, cast.OP_NOT, visitAssemblyExpression(dialect, info, args[0])), expr.debugData->originLocation);
                     } else if (fun.name == "lt") {
-                        return cast.makeNode(cast.IF_EXPR, cast.makeNode(cast.BINARY_EXPR, cast.OP_LT, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), cast.makeConstant(1), cast.makeConstant(0));
+                        return cast.makeNode(cast.IF_EXPR, record(cast.makeNode(cast.BINARY_EXPR, cast.OP_LT, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation), cast.makeConstant(1), cast.makeConstant(0));
                    } else if (fun.name == "mulmod") {
-                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_MOD, cast.makeNode(cast.BINARY_EXPR, cast.OP_MUL, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), visitAssemblyExpression(dialect, info, args[2]));
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_MOD, cast.makeNode(cast.BINARY_EXPR, cast.OP_MUL, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), visitAssemblyExpression(dialect, info, args[2])), expr.debugData->originLocation);
                    } else if (fun.name == "or") {
-                       return cast.makeNode(cast.BINARY_EXPR, cast.OP_BIT_OR, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                       return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_BIT_OR, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
                    } else if (fun.name == "shr") {
-                       return cast.makeNode(cast.BINARY_EXPR, cast.OP_RSH, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                       return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_RSH, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
                     } else if (fun.name == "sub") {
-                        return cast.makeNode(cast.BINARY_EXPR, cast.OP_SUB, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1]));
+                        return record(cast.makeNode(cast.BINARY_EXPR, cast.OP_SUB, visitAssemblyExpression(dialect, info, args[0]), visitAssemblyExpression(dialect, info, args[1])), expr.debugData->originLocation);
                     } else {
                         std::cout << "builtin assembly function " << fun.name << std::endl;
                         return cast.makeNode(cast.EMPTY);
@@ -62,9 +69,9 @@ jobject Translator::visitAssemblyExpression(yul::Dialect const& dialect, std::ma
                  if (x >= 0) {
                      std::string obj = p.substr(0, x);
                      std::string field = p.substr(x+1);
-                     return cast.makeNode(cast.OBJECT_REF,
+                     return record(cast.makeNode(cast.OBJECT_REF,
                         cast.makeNode(cast.VAR, cast.makeConstant(obj.c_str())),
-                        cast.makeConstant(field.c_str()));
+                        cast.makeConstant(field.c_str())), expr.debugData->originLocation);
                  }
              }
             return cast.makeNode(cast.VAR, cast.makeConstant(expr.name.str().c_str()));

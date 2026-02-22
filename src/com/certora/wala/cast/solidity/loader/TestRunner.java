@@ -3,13 +3,16 @@ package com.certora.wala.cast.solidity.loader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import com.certora.certoraprover.cvl.Ast;
+import com.certora.wala.analysis.rounding.Direction;
+import com.certora.wala.analysis.rounding.RoundingAnalysis;
+import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
-import com.certora.wala.analysis.rounding.RoundingEstimator.Direction;
-import com.certora.wala.analysis.rounding.RoundingEstimator.RoundingInference;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
@@ -20,8 +23,6 @@ import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterprete
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstClass;
-import com.ibm.wala.cast.loader.AstMethod;
-import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
@@ -49,9 +50,9 @@ import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
 import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
-import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 public class TestRunner {
 
@@ -143,12 +144,12 @@ public class TestRunner {
 			boolean changed;
 
 			if (useOldAnalysis) {
-				Map<CGNode, RoundingEstimator.Direction> rounding = HashMapFactory.make();
+				Map<CGNode, Direction> rounding = HashMapFactory.make();
 				do {
 					changed = false;
 					for (CGNode n : cg) {
 						RoundingEstimator re = new RoundingEstimator(n);
-						RoundingEstimator.Direction d = re.analyze(cg, rounding);
+						Direction d = re.analyze(cg, rounding);
 						if (rounding.put(n, d) != d) {
 							changed = true;
 						}
@@ -156,37 +157,23 @@ public class TestRunner {
 				} while (changed);
 
 				rounding.entrySet().forEach(x -> {
-					if (x.getValue() != RoundingEstimator.Direction.Neither) {
+					if (x.getValue() != Direction.Neither) {
 						System.err
 								.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> " + x.getValue());
 					}
 				});
 				
 			} else {
-				Map<CGNode, Map<FieldReference, Direction>> rounding = HashMapFactory.make();
-				do {
-					changed = false;
-					for (CGNode n : cg) {
-						RoundingInference ri = new RoundingEstimator(n).new RoundingInference(cg, rounding, n);
-						Map<FieldReference, Direction> d = ri.getResultOrResults();
-						Map<FieldReference, Direction> x = rounding.put(n, d);
-						if (x == null || !x.equals(d)) {
-							changed = true;
-							System.out.println(ri.getRoundingResult());
-						}
-					}
-				} while (changed);
-
-				rounding.entrySet().forEach(x -> {
-					if (x.getKey().getMethod() instanceof AstMethod) {
-						DebuggingInformation dbg = ((AstMethod) x.getKey().getMethod()).debugInfo();
-						if (x.getValue().values().stream().anyMatch(d -> d != Direction.Neither)) {
-							System.out.println(x.getKey().getMethod().getDeclaringClass().getName() + " --> "
-									+ x.getValue().values() + " " + dbg.getCodeNamePosition().getURL() + ":"
-									+ dbg.getCodeNamePosition());
-						}
-					}
-				});
+				RoundingAnalysis ra = new RoundingAnalysis(cg);
+				for(CGNode n : cg.getEntrypointNodes()) {
+					List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
+					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
+				    String res = ri.getRoundingResult().toString();
+				    if (res.contains("--> Up") || res.contains("--> Down") || res.contains("--> Either")) {
+						System.out.println("looking at " + n);
+				    	System.out.println(res);
+				    }
+				}
 			}
 		} catch (RuntimeException | CancelException e) {
 			assert false : e;

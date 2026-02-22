@@ -185,7 +185,7 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 
 				@Override
 				public Reader getReader() throws IOException {
-					return new FileReader(fileName);
+					return new FileReader(loader.getFile(fileName).fst);
 				}
 
 				@Override

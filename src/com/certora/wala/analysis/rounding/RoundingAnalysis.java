@@ -1,0 +1,825 @@
+package com.certora.wala.analysis.rounding;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import com.certora.wala.analysis.defuse.DefUseGraph;
+import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.cast.util.SourceBuffer;
+import com.ibm.wala.dataflow.ssa.SSAInference;
+import com.ibm.wala.fixpoint.AbstractOperator;
+import com.ibm.wala.fixpoint.AbstractVariable;
+import com.ibm.wala.fixpoint.IVariable;
+import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
+import com.ibm.wala.shrike.shrikeBT.IShiftInstruction;
+import com.ibm.wala.shrike.shrikeBT.IUnaryOpInstruction;
+import com.ibm.wala.ssa.DefUse;
+import com.ibm.wala.ssa.IR;
+import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSABinaryOpInstruction;
+import com.ibm.wala.ssa.SSACheckCastInstruction;
+import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInvokeInstruction;
+import com.ibm.wala.ssa.SSAPhiInstruction;
+import com.ibm.wala.ssa.SSAPiInstruction;
+import com.ibm.wala.ssa.SSAPutInstruction;
+import com.ibm.wala.ssa.SSAReturnInstruction;
+import com.ibm.wala.ssa.SSAUnaryOpInstruction;
+import com.ibm.wala.types.FieldReference;
+import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.graph.NumberedGraph;
+import com.ibm.wala.util.graph.impl.GraphInverter;
+import com.ibm.wala.util.graph.traverse.DFS;
+import com.ibm.wala.util.intset.IntSetUtil;
+import com.ibm.wala.util.intset.MutableIntSet;
+
+public class RoundingAnalysis {
+	private static final boolean DEBUG = false;
+	
+	
+	private final CallGraph CG;
+	private final Map<Pair<CGNode, List<Direction>>, RoundingInference.Result> rawResults = HashMapFactory.make();
+	private final Map<Pair<CGNode,List<Direction>>,Map<FieldReference, Direction>> directionalCalls = HashMapFactory.make();
+
+	
+	public RoundingAnalysis(CallGraph CG) {
+		this.CG = CG;
+	}
+
+	public class RoundingInference extends SSAInference<RoundingInference.RoundingVariable> {
+		private final Set<RoundingInference.RoundingVariable> result = HashSetFactory.make();
+
+		private class RoundingVariable extends AbstractVariable<RoundingVariable> {
+			int vn;
+			Direction state;
+			SSAInstruction wrt;
+
+			public RoundingVariable(int vn, Direction state, SSAInstruction wrt) {
+				this.vn = vn;
+				this.wrt = wrt;
+				this.state = state;
+			}
+
+			@Override
+			public void copyState(RoundingVariable v) {
+				state = v.state;
+				wrt = v.wrt;
+			}
+
+			@Override
+			public String toString() {
+				return "<" + state + "(" + wrt + ")>";
+			}
+		}
+
+		private final AbstractOperator<RoundingVariable> phiOperator = new AbstractOperator<RoundingVariable>() {
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				boolean up = rhs[0].state == Direction.Up;
+				SSAInstruction upHack = rhs[0].wrt;
+				if (upHack != null) {
+					check: {
+						for (int i = 1; i < rhs.length; i++) {
+							if (rhs[i].wrt != upHack) {
+								break check;
+							}
+							up |= (rhs[i].state == Direction.Up);
+						}
+
+						if (up) {
+							if (lhs.state != Direction.Up) {
+								lhs.state = Direction.Up;
+								lhs.wrt = rhs[0].wrt;
+								return CHANGED;
+							}
+						}
+					}
+				}
+				
+				SSAInstruction wrt = rhs[0].wrt;
+				Direction d = rhs[0].state;
+				if (d == null) {
+					d = Direction.Neither;
+				}
+				for (int i = 1; i < rhs.length; i++) {
+					d = d.meet(rhs[i].state == null ? Direction.Neither : rhs[i].state);
+					if (rhs[i].wrt != wrt) {
+						wrt = null;
+					}
+				}
+
+				if (d != lhs.state || wrt != lhs.wrt) {
+					lhs.state = d;
+					lhs.wrt = wrt;
+					return CHANGED;
+				} else {
+					return NOT_CHANGED;
+				}
+			}
+
+			@Override
+			public int hashCode() {
+				return 34659878;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o == this;
+			}
+
+			@Override
+			public String toString() {
+				return "rounding phi operator";
+			}
+		};
+
+		private final AbstractOperator<RoundingVariable> piOperator = new AbstractOperator<RoundingVariable>() {
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				Direction d = rhs[0].state;
+
+				if (d != lhs.state || lhs.wrt != rhs[0].wrt) {
+					lhs.state = d;
+					lhs.wrt = rhs[0].wrt;
+					return CHANGED;
+				} else {
+					return NOT_CHANGED;
+				}
+			}
+
+			@Override
+			public int hashCode() {
+				return 763469878;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o == this;
+			}
+
+			@Override
+			public String toString() {
+				return "rounding phi operator";
+			}
+		};
+
+		private final AbstractOperator<RoundingVariable> flipOperator = new AbstractOperator<RoundingVariable>() {
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				if (rhs[0] != null && rhs[0].state != null) {
+					Direction d = rhs[0].state.flip();
+
+					if (d != lhs.state || lhs.wrt != rhs[0].wrt) {
+						lhs.state = d;
+						lhs.wrt = rhs[0].wrt;
+						return CHANGED;
+					}
+				}
+				return NOT_CHANGED;
+			}
+
+			@Override
+			public int hashCode() {
+				return 234235346;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o == this;
+			}
+
+			@Override
+			public String toString() {
+				return "rounding flip operator";
+			}
+		};
+
+		private AbstractOperator<RoundingVariable> assignOperator = new AbstractOperator<RoundingVariable>() {
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				if (lhs.state != rhs[0].state || lhs.wrt != rhs[0].wrt) {
+					lhs.state = rhs[0].state;
+					lhs.wrt = rhs[0].wrt;
+					return CHANGED;
+				} else {
+					return NOT_CHANGED;
+				}
+			}
+
+			@Override
+			public int hashCode() {
+				return 87798708;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o == this;
+			}
+
+			@Override
+			public String toString() {
+				return "rounding assign operator";
+			}
+
+		};
+
+		private class BinaryOperator extends AbstractOperator<RoundingVariable> {
+			private final boolean flipRight;
+			private final Direction init;
+			protected final SSAInstruction inst;
+
+			public BinaryOperator(boolean flipRight, Direction init, SSAInstruction inst) {
+				this.flipRight = flipRight;
+				this.init = init;
+				this.inst = inst;
+			}
+
+			public BinaryOperator(boolean flipRight, Direction init) {
+				this(flipRight, init, null);
+			}
+
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				if (rhs[0].state != null && rhs[1].state != null) {
+					Direction d = rhs[0].state;
+					d = d == null ? d : d.combine(flipRight ? rhs[1].state.flip() : rhs[1].state);
+					d = d == null ? init : init.combine(d);
+
+					if (d != lhs.state || (rhs[0].wrt == rhs[1].wrt && rhs[0].wrt != lhs.wrt)) {
+						lhs.state = d;
+						lhs.wrt = init != Direction.Neither ? inst : rhs[0].wrt == rhs[1].wrt ? rhs[0].wrt : null;
+						return CHANGED;
+					}
+				}
+
+				return NOT_CHANGED;
+			}
+
+			@Override
+			public int hashCode() {
+				return 6745836 * init.hashCode() * (flipRight ? 1 : -1);
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o.getClass() == this.getClass() && init == ((BinaryOperator) o).init
+						&& flipRight == ((BinaryOperator) o).flipRight;
+			}
+
+			@Override
+			public String toString() {
+				return "rounding bin op " + init + " " + flipRight;
+			}
+
+		}
+
+		private class RoundUpDetectingAddOperator extends BinaryOperator {
+			RoundUpDetectingAddOperator(SSAInstruction inst) {
+				super(false, Direction.Neither, inst);
+			}
+
+			boolean isDivDown(RoundingVariable v) {
+				return v != null 
+						&& v.state == Direction.Down
+						&& v.wrt != null 
+						&& v.wrt.getDef() == v.vn 
+						&& du.getDef(v.vn) instanceof SSABinaryOpInstruction 
+						&& ((SSABinaryOpInstruction)du.getDef(v.vn)).getOperator() == IBinaryOpInstruction.Operator.DIV;
+			}
+
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither) {
+					if (lhs.state != Direction.Up) {
+						lhs.state = Direction.Up;
+						lhs.wrt = rhs[0].wrt;
+						return CHANGED;
+					}
+				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither) {
+					if (lhs.state != Direction.Up) {
+						lhs.state = Direction.Up;
+						lhs.wrt = rhs[1].wrt;
+						return CHANGED;
+					}
+				} else {
+					return super.evaluate(lhs, rhs);
+				}
+
+				return NOT_CHANGED;
+			}
+		}
+
+		class ConstantOperator extends AbstractOperator<RoundingVariable> {
+			private final Direction d;
+
+			public ConstantOperator(Direction d) {
+				this.d = d;
+			}
+
+			@Override
+			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+				if (lhs.state != d) {
+					lhs.state = d;
+					return CHANGED;
+				} else {
+					return NOT_CHANGED;
+				}
+			}
+
+			@Override
+			public int hashCode() {
+				return d.hashCode() * 668976;
+			}
+
+			@Override
+			public boolean equals(Object o) {
+				return o != null && getClass() == o.getClass() && d.equals(((ConstantOperator) o).d);
+			}
+
+			@Override
+			public String toString() {
+				return "constant " + d;
+			}
+		};		
+
+		private final CGNode n;
+		private final IR ir;
+		private final DefUse du;
+		private final DefUseGraph dug;
+
+		private Set<SSAInstruction> getRelevant(SSAInstruction inst, NumberedGraph<Integer> g) {
+			if (inst == null) {
+				return Collections.emptySet();
+			} else if (inst.hasDef()) {
+				int v = inst.getDef();
+				return DFS.getReachableNodes(g, Collections.singleton(v)).stream().map(i -> dug.du().getDef(i))
+						.filter(instr -> instr != null).collect(Collectors.toSet());
+			} else {
+				return Collections.emptySet();
+			}
+		}
+
+		private Set<SSAInstruction> getDeriving(SSAInstruction inst) {
+			return getRelevant(inst, GraphInverter.invert(dug));
+		}
+
+		private Set<SSAInstruction> getDivisorRelated(SSABinaryOpInstruction div) {
+			return getDeriving(dug.du().getDef(div.getUse(1)));
+		}
+
+		private Set<SSAInstruction> getDividendRelated(SSABinaryOpInstruction div) {
+			return getDeriving(dug.du().getDef(div.getUse(0)));
+		}
+
+		/*
+		 * private Set<SSAInstruction> getQuotientRelated(SSABinaryOpInstruction div) {
+		 * return getDerived(div); }
+		 */
+
+		private static MutableIntSet getRelatedValues(int startValue, Set<SSAInstruction> related, boolean forward) {
+			return IntSetUtil.make(IntStream
+					.concat(related.stream()
+							.map(inst -> (forward ? IntStream.of(inst.getDef()).filter(i -> i > 0)
+									: IntStream.range(0, inst.getNumberOfUses()).map(i -> inst.getUse(i))))
+							.reduce((a, b) -> IntStream.concat(a, b)).orElse(IntStream.empty()), IntStream.of(startValue))
+					.distinct().toArray());
+		}
+
+		public RoundingInference(List<Direction> parameters,
+				Set<Pair<CGNode,List<Direction>>> ongoing,
+				CGNode n)
+				throws CancelException {
+			ir = n.getIR();
+			du = n.getDU();
+			this.n = n;
+			this.dug = new DefUseGraph(ir);
+
+			class CallOperator extends AbstractOperator<RoundingVariable> {
+				private final SSAInvokeInstruction callInst;
+				
+				
+				public CallOperator(SSAInvokeInstruction inst) {
+					this.callInst = inst;
+				}
+
+
+				@Override
+				public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
+					List<Direction> args = new ArrayList<>(callInst.getNumberOfUses());
+					for(int i = 0; i < callInst.getNumberOfUses(); i++) {
+						args.add(getVariable(callInst.getUse(i)).state);
+					}
+					
+					Direction d = Direction.Neither;
+					for (CGNode cgn : CG.getPossibleTargets(n, callInst.getCallSite())) {
+						Pair<CGNode, List<Direction>> key = Pair.make(cgn, args);
+						if (! ongoing.contains(key)) {
+							if (! directionalCalls.containsKey(key) ) {
+								Set<Pair<CGNode,List<Direction>>> x = HashSetFactory.make(ongoing);
+								x.add(key);
+								try {
+									RoundingInference child = new RoundingInference(args, x, cgn);
+								} catch (CancelException e) {
+									assert false : e;
+								}
+							}
+							if (directionalCalls.containsKey(key) && directionalCalls.get(key).containsKey(null)) {
+								d = d.meet(directionalCalls.get(key).get(null));
+							}
+						}
+					}
+					
+					if (d != lhs.state) {
+						lhs.state = d;
+						return CHANGED;
+					} else {
+						return NOT_CHANGED;
+					}
+				}
+
+				@Override
+				public int hashCode() {
+					return callInst.hashCode() * 17;
+				}
+
+				@Override
+				public boolean equals(Object o) {
+					return o != null && o.getClass() == getClass() && callInst.equals(((CallOperator)o).callInst);
+				}
+
+				@Override
+				public String toString() {
+					return "call " + callInst;
+				}
+				
+			}
+
+			class RoundingOperatorFactory extends SSAInstruction.Visitor implements OperatorFactory<RoundingVariable> {
+				private AbstractOperator<RoundingVariable> result;
+
+				@Override
+				public AbstractOperator<RoundingVariable> get(SSAInstruction instruction) {
+					result = null;
+					instruction.visit(this);
+					return result;
+				}
+
+				@Override
+				public void visitBinaryOp(SSABinaryOpInstruction instruction) {
+					IBinaryOpInstruction.IOperator op = instruction.getOperator();
+					if (op == IBinaryOpInstruction.Operator.ADD) {
+						result = new RoundUpDetectingAddOperator(instruction);
+
+					} else if (op == IBinaryOpInstruction.Operator.MUL || op == IShiftInstruction.Operator.SHL) {
+						result = new BinaryOperator(false, Direction.Neither);
+
+					} else if (op == IBinaryOpInstruction.Operator.DIV) {
+						Set<SSAInstruction> divisor = getDivisorRelated(instruction);
+						Set<SSAInstruction> dividend = getDividendRelated(instruction);
+
+						MutableIntSet bothValues = getRelatedValues(instruction.getUse(1), divisor, false);
+						bothValues.intersectWith(getRelatedValues(instruction.getUse(0), dividend, false));
+						Direction d = bothValues.isEmpty() ? Direction.Down : Direction.Up;
+
+						result = new BinaryOperator(true, d, instruction);
+
+					} else if (op == IBinaryOpInstruction.Operator.SUB) {
+
+						result = new BinaryOperator(true, Direction.Neither);
+
+					} else {
+						result = new ConstantOperator(Direction.Neither);
+					}
+				}
+
+				@Override
+				public void visitUnaryOp(SSAUnaryOpInstruction instruction) {
+					IUnaryOpInstruction.IOperator op = instruction.getOpcode();
+					if (op == IUnaryOpInstruction.Operator.NEG) {
+						result = flipOperator;
+					} else {
+						result = assignOperator;
+					}
+				}
+
+				@Override
+				public void visitCheckCast(SSACheckCastInstruction instruction) {
+					result = piOperator;
+				}
+
+				@Override
+				public void visitPhi(SSAPhiInstruction instruction) {
+					result = phiOperator;
+				}
+
+				@Override
+				public void visitPi(SSAPiInstruction instruction) {
+					result = piOperator;
+				}
+
+				@Override
+				public void visitInvoke(SSAInvokeInstruction inst) {
+					if (inst.hasDef() ) {
+						result = new CallOperator(inst);
+					}
+				}
+				
+				
+			}
+
+			class RoundingVariableFactory implements VariableFactory<RoundingVariable> {
+				private boolean hasReturn(int vn) {
+					Iterator<SSAInstruction> is = du.getUses(vn);
+					while (is.hasNext()) {
+						if (is.next() instanceof SSAReturnInstruction) {
+							return true;
+						}
+					}
+					return false;
+				}
+
+				@Override
+				public IVariable<RoundingVariable> makeVariable(int valueNumber) {
+					RoundingVariable v;
+					if (ir.getSymbolTable().isConstant(valueNumber)) {
+						v = new RoundingVariable(valueNumber, Direction.Neither, null);
+						
+					} else if (valueNumber <= ir.getSymbolTable().getNumberOfParameters()) {
+						v = new RoundingVariable(valueNumber, parameters.get(valueNumber-1), null);
+
+					} else if (du.getDef(valueNumber) instanceof SSAAbstractInvokeInstruction) {
+						v = new RoundingVariable(valueNumber, Direction.Neither, du.getDef(valueNumber));
+
+					} else {
+						v = new RoundingVariable(valueNumber, Direction.Neither, null);
+					}
+
+					if (hasReturn(valueNumber)) {
+						result.add(v);
+					}
+
+					return v;
+				}
+
+			}
+
+			init(ir, new RoundingVariableFactory(), new RoundingOperatorFactory());
+			solve(null);
+
+			Pair<CGNode,List<Direction>> key = Pair.make(n, parameters);
+			rawResults.put(key, getRoundingResult());
+			directionalCalls.put(key, getResultOrResults());
+
+		}
+
+		@Override
+		protected RoundingVariable[] makeStmtRHS(int size) {
+			return new RoundingVariable[size];
+		}
+
+		@Override
+		protected void initializeVariables() {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		protected void initializeWorkList() {
+			addAllStatementsToWorkList();
+		}
+
+		@Override
+		public int hashCode() {
+			return ir.getMethod().hashCode();
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			return o == this;
+		}
+
+		public Direction getResult() {
+			return result.stream().filter(x -> x.state != null).map(x -> x.state).reduce(Direction::meet)
+					.orElse(Direction.Neither);
+		}
+
+		private Map<FieldReference, Direction> unpackTuple(RoundingVariable x) {
+			int maybeTuple = x.vn;
+			Map<FieldReference, Direction> result = HashMapFactory.make();
+			ir.iterateAllInstructions().forEachRemaining(inst -> {
+				if (inst instanceof SSAPutInstruction) {
+					SSAPutInstruction p = (SSAPutInstruction) inst;
+					if (p.getRef() == maybeTuple) {
+						Direction d = getVariable(p.getVal()).state;
+						if (d != null) {
+							if (result.containsKey(p.getDeclaredField())) {
+								result.put(p.getDeclaredField(), d.meet(result.get(p.getDeclaredField())));
+							} else {
+								result.put(p.getDeclaredField(), d);
+							}
+						}
+					}
+				}
+			});
+			return result;
+		}
+
+		private Map<FieldReference, Direction> reduceTuples(Map<FieldReference, Direction> l,
+				Map<FieldReference, Direction> r) {
+			Map<FieldReference, Direction> result = HashMapFactory.make();
+			for (FieldReference lk : l.keySet()) {
+				if (!r.containsKey(lk)) {
+					result.put(lk, l.get(lk));
+				} else {
+					result.put(lk, l.get(lk).meet(r.get(lk)));
+				}
+			}
+			for (FieldReference rk : r.keySet()) {
+				if (!l.containsKey(rk)) {
+					result.put(rk, r.get(rk));
+				}
+			}
+			return result;
+		}
+
+		public Map<FieldReference, Direction> getResults() {
+			return result.stream().map(this::unpackTuple).reduce(this::reduceTuples).orElse(Collections.emptyMap());
+		}
+
+		public Map<FieldReference, Direction> getResultOrResults() {
+			Map<FieldReference, Direction> result = getResults();
+			if (result.isEmpty()) {
+				result = Collections.singletonMap(null, getResult());
+			}
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return super.toString() + "returning " + result;
+		}
+		
+		public interface Result {
+			Direction[][] getOperandRounding();
+			Direction[][] getResultRounding();
+		}
+		
+		public Result getRoundingResult() {
+			Direction[][] operands = new Direction[ir.getInstructions().length][];
+			Direction[][] results = new Direction[ir.getInstructions().length][];
+			for(SSAInstruction inst : ir.getInstructions()) {
+				if (inst != null) {
+					Direction[] uses = operands[inst.iIndex()] = new Direction[inst.getNumberOfUses()];
+					for(int i = 0; i < uses.length; i++) {
+						uses[i] = getVariable(inst.getUse(i)).state;
+					}
+					Direction[] defs = results[inst.iIndex()] = new Direction[inst.getNumberOfDefs()];
+					for(int i = 0; i < defs.length; i++) {
+						defs[i] = getVariable(inst.getDef(i)).state;
+					}
+				}
+			}
+			return new Result() {
+				@Override
+				public Direction[][] getOperandRounding() {
+					return operands;
+				}
+
+				@Override
+				public Direction[][] getResultRounding() {
+					return results;
+				}
+				
+				@Override
+				public String toString() {
+					StringBuffer sb = new StringBuffer();
+					sb.append("result for " + ir.getMethod());
+					DebuggingInformation dbg = ((AstMethod)ir.getMethod()).debugInfo();
+					if (ir.getMethod() instanceof AstMethod) {
+						sb.append("(").append(dbg.getCodeBodyPosition().getURL().getFile() + ":" + dbg.getCodeBodyPosition()).append(")");
+					}
+					sb.append("\n");
+					if (DEBUG) {
+					sb.append(ir.toString());
+					sb.append("\n");
+					for(int i = 0; i < operands.length; i++) {
+						if (operands[i] != null) {
+							sb.append("instruction ").append(i).append(": ");
+							for(int j = 0; j < operands[i].length; j++) {
+								sb.append(operands[i][j]).append(" ");
+							}
+							sb.append("\n");
+						}
+					}
+					for(int i = 0; i < results.length; i++) {
+						if (results[i] != null) {
+							sb.append("instruction ").append(i).append(": ");
+							for(int j = 0; j < results[i].length; j++) {
+								sb.append(results[i][j]).append(" ");
+							}
+							sb.append("\n");
+						}
+					}
+					}
+					for(int i = 0; i < ir.getNumberOfParameters(); i++) {
+						try {
+							Position pos = dbg.getParameterPosition(i);
+							if (pos != null) {
+								sb.append("  argument " + new SourceBuffer(pos) + " --> " + getVariable(i+1).state + "\n");
+							}
+						} catch (IOException e) {
+							assert false : e;
+						}
+					}
+					for(int i = 0; i < operands.length; i++) {
+						if (operands[i] != null) {
+							for(int j = 0; j < operands[i].length; j++) {
+								if (operands[i][j] != null && operands[i][j] != Direction.Neither) {
+									if (ir.getMethod() instanceof AstMethod) {
+										Position p = dbg.getOperandPosition(i, j);
+										if (p != null) {
+											try {
+												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + operands[i][j] + " (use in " + new SourceBuffer(dbg.getInstructionPosition(i)) + ") (" + i + "," + j + ")\n");
+											} catch (IOException e) {
+												assert false : e;
+											}
+										} else {
+											sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+										}
+									} else {
+										sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
+									}
+								}
+							}
+						}
+						if (results[i] != null) {
+							for(int j = 0; j < results[i].length; j++) {
+								if (results[i][j] != null && results[i][j] != Direction.Neither) {
+									if (ir.getMethod() instanceof AstMethod) {
+										Position p = ((AstMethod)ir.getMethod()).getSourcePosition(i);
+										if (p != null) {
+											try {
+												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + results[i][j] + '\n');
+											} catch (IOException e) {
+												assert false : e;
+											}
+										} else {
+											sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
+										}
+									} else {
+										sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
+									}	
+								}
+							}
+						}
+					}
+					sb.append("returning " + getResultOrResults() + "\n");
+					
+					ir.iterateAllInstructions().forEachRemaining(inst -> { 
+						if (inst instanceof SSAInvokeInstruction) {
+							List<Direction> args = new ArrayList<>(inst.getNumberOfUses());
+							for(int i = 0; i < inst.getNumberOfUses(); i++) {
+								args.add(getVariable(inst.getUse(i)).state);
+							}
+
+							boolean haveTarget = false;
+							boolean gotSomething = false;
+							for(CGNode callee : CG.getPossibleTargets(n, ((SSAInvokeInstruction)inst).getCallSite())) {
+								haveTarget = true;
+								Pair<CGNode,List<Direction>> key = Pair.make(callee, args);
+								if (rawResults.containsKey(key)) {
+									gotSomething = true;
+									String child = rawResults.get(key).toString();
+									if (child.contains("--> Up") || child.contains("--> Down") || child.contains("--> Either")
+										|| child.contains("=Up") || child.contains("=Down") || child.contains("=Either")) {
+										sb.append("\n" + child);
+									}
+								}
+							}
+							if (haveTarget && !gotSomething) {
+								System.err.println("*** " + inst);
+							}
+							 
+						}
+					});
+					return sb.toString();
+				}
+			};
+		}
+	}
+
+}
