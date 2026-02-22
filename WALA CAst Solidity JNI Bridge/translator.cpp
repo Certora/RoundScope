@@ -674,7 +674,9 @@ void Translator::endVisit(const FunctionDefinition &_node) {
         {
             if (t->get()->name().c_str() != NULL && strlen(t->get()->name().c_str()) > 0) {
                 jobject type = getType(t->get()->type());
-                retvals.push_back(cast.makeNode(cast.VAR, cast.makeConstant(t->get()->name().c_str())));
+                jobject rv = cast.makeNode(cast.VAR, cast.makeConstant(t->get()->name().c_str()));
+                record(rv, t->get()->location());
+                retvals.push_back(rv);
                 jobject symbol = cast.makeSymbol(t->get()->name().c_str(), type, false);
                 ast = cast.makeNode(cast.BLOCK_STMT,
                                     record(cast.makeNode(cast.DECL_STMT, cast.makeConstant(symbol)), t->get()->location()),
@@ -695,7 +697,7 @@ void Translator::endVisit(const FunctionDefinition &_node) {
                 jniEnv->SetObjectArrayElement(args, i, *t);
             }
             
-            ast = cast.makeNode(cast.BLOCK_STMT, ast, cast.makeNode(cast.RETURN, args));
+            ast = cast.makeNode(cast.BLOCK_STMT, ast, record(cast.makeNode(cast.RETURN, args), _node.returnParameterList()->location()));
         }
         
         jclass ace = jniEnv->FindClass("com/ibm/wala/cast/ir/translator/AbstractCodeEntity");
