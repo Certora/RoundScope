@@ -81,4 +81,11 @@ public abstract class CallableEntity extends AbstractCodeEntity {
 		}
 	}
 
+	 public void setNodePosition(CAstNode n, Position pos) {
+		 if (n.toString().contains("%")) {
+			 System.err.println(n);
+		 }
+		 super.setNodePosition(n, pos);
+	 }
+
 }

@@ -106,15 +106,15 @@ public class SolidityAstTranslator extends AstTranslator {
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
 		context.currentScope().declare(new CAstSymbolImpl("assert", CAstType.DYNAMIC), v);
 
-		context.currentScope().allocateTempValue();
+		v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.msg)));
 		context.currentScope().declare(new CAstSymbolImpl("tx", CAstType.DYNAMIC), v);
 
-		context.currentScope().allocateTempValue();
+		v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
 		context.currentScope().declare(new CAstSymbolImpl("blockhash", CAstType.DYNAMIC), v);
 
-		context.currentScope().allocateTempValue();
+		v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
 		context.currentScope().declare(new CAstSymbolImpl("sha256", CAstType.DYNAMIC), v);
 
@@ -144,9 +144,6 @@ public class SolidityAstTranslator extends AstTranslator {
 			AbstractCFG<SSAInstruction, ? extends IBasicBlock<SSAInstruction>> cfg, SymbolTable symtab,
 			boolean hasCatchBlock, Map<IBasicBlock<SSAInstruction>, Set<TypeReference>> catchTypes,
 			boolean hasMonitorOp, AstLexicalInformation lexicalInfo, DebuggingInformation debugInfo) {
-		if (N.getName().contains("hasRole")) {
-			System.err.println(N);
-		}
 		String clsName = composeEntityName(definingContext, N);
 		((SolidityLoader)loader).defineFunctionBody(clsName, N, definingContext, cfg, symtab, hasCatchBlock, catchTypes, hasMonitorOp, lexicalInfo, debugInfo);
 	}
@@ -235,26 +232,53 @@ public class SolidityAstTranslator extends AstTranslator {
 
 			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
 			MethodReference m;
+			if (call.toString().contains("maxUnwindExerciseOther")) {
+				System.err.println (call);
+			}
+			if (call.toString().contains("MathUtils")) {
+				System.err.println (call);
+			}
 			if (! (recCAstType instanceof FunctionType)) {
 				TypeReference retType = SolidityCAstType.getIRType(recCAstType);
 				TypeName[] argTypes = new TypeName[ arguments.length ];
 				for(int i = 0; i < argTypes.length; i++) {
 					argTypes[i] = SolidityTypes.root.getName();
-					}
+				}
 				Descriptor d = Descriptor.findOrCreate(argTypes, retType.getName());
 				m = MethodReference.findOrCreate(SolidityTypes.root, AstMethodReference.fnAtom, d);
 			} else {
 				m = ((SolidityLoader)loader).getReference((FunctionType) recCAstType);
 			}
+			
 			int instNum = context.cfg().getCurrentInstruction();
 			CallSiteReference csr = CallSiteReference.make(instNum, m, Dispatch.VIRTUAL);
+
+			Position[] operandPos;
+			if (m.getNumberOfParameters() == argsAndSelf.length && call.getChild(0).getKind() == CAstNode.OBJECT_REF) {
+				int[] newArgs = new int[ argsAndSelf.length + 1 ];
+				newArgs[0] = receiver;
+				newArgs[1] = context.getValue(call.getChild(0).getChild(0));
+				if (arguments.length > 0) {
+					System.arraycopy(arguments, 0, newArgs, 2, arguments.length);
+				}
+				argsAndSelf = newArgs;
+
+				operandPos = new Position[ arguments.length + 2 ];
+				operandPos[1] = context.getSourceMap().getPosition(call.getChild(0).getChild(0));
+				for(int i = 2; i < operandPos.length; i++) {
+					operandPos[i] = context.getSourceMap().getPosition(call.getChild(i));
+				}
+
+			} else {
+				operandPos = new Position[ arguments.length + 1 ];
+				for(int i = 1; i < operandPos.length; i++) {
+					operandPos[i] = context.getSourceMap().getPosition(call.getChild(i+1));
+				}
+			}
+			operandPos[0] = context.getSourceMap().getPosition(call.getChild(0));
+			
 			context.cfg().addInstruction(insts.InvokeInstruction(instNum, m.getReturnType() == TypeReference.Void? -1: result, argsAndSelf, context.currentScope().allocateTempValue(), csr, null));			
 		
-			Position[] operandPos = new Position[ arguments.length + 1 ];
-			operandPos[0] = context.getSourceMap().getPosition(call.getChild(0));
-			for(int i = 1; i < operandPos.length; i++) {
-				operandPos[i] = context.getSourceMap().getPosition(call.getChild(i+1));
-			}
 			context.cfg().noteOperands(instNum, operandPos);
 		}
 	}

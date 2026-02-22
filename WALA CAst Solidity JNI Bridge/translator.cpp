@@ -413,6 +413,8 @@ bool Translator::visit(const ElementaryTypeNameExpression &_node) {
 
 bool Translator::visit(const EmitStatement &_node) {
     _node.eventCall().accept(*this);
+    jobject stmt = last();
+    ret(record(stmt, _node.location()));
     return false;
 }
 
@@ -636,6 +638,11 @@ bool Translator::visit(const FunctionDefinition &_node) {
     } else if (_node.stateMutability() == StateMutability::View) {
         jniEnv->CallVoidMethod(funEntity, feaq, cast.CONST);
     }
+    
+    if (_node.libraryFunction()) {
+        jniEnv->CallVoidMethod(funEntity, feaq, cast.STATIC);
+    }
+    
     std::cout << "got here 1" << std::endl;
     
     context = new CodeContext(funEntity, context);

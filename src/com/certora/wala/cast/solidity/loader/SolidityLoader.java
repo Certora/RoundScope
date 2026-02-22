@@ -732,7 +732,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 									@Override
 									public boolean isStatic() {
-										// TODO Auto-generated method stub
 										return false;
 									}
 
