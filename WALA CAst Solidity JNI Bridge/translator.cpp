@@ -369,10 +369,8 @@ bool Translator::visit(const ContractDefinition &_node) {
 }
 
 void Translator::endVisit(const ContractDefinition &_node) {
-    std::string contractName = ((TypeType*)_node.type())->actualType()->toString(true);
- 
-    jobject contractType = types[contractName] ;
-    
+    jobject contractType = findOrCreateType(jniEnv, _node);
+
     jclass sCls = jniEnv->FindClass("java/util/HashSet");
     jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
     jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");

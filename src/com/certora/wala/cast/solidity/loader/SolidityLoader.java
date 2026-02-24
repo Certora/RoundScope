@@ -90,13 +90,16 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 	private final IClass root = new CoreClass(SolidityTypes.root.getName(), null, this, null);
 
+	private final IClass address = new CoreClass(SolidityTypes.address.getName(), root.getName(), this,
+			null);
+
 	private final IClass codeBody = new CoreClass(SolidityTypes.codeBody.getName(), root.getName(), this,
 			null);
 
-	private final IClass contract = new CoreClass(SolidityTypes.contract.getName(), root.getName(), this,
+	private final IClass contract = new CoreClass(SolidityTypes.contract.getName(), address.getName(), this,
 			null);
 
-	private final IClass struct = new CoreClass(SolidityTypes.struct.getName(), root.getName(), this,
+	private final IClass struct = new CoreClass(SolidityTypes.struct.getName(), address.getName(), this,
 			null);
 
 	private final IClass msg = new CoreClass(SolidityTypes.msg.getName(), root.getName(), this,
@@ -375,21 +378,22 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			return null;
 		}
 
-		@Override
-		public <T extends InstanceKey> ModVisitor<T, ? extends ExtendedHeapModel> makeModVisitor(CGNode n,
-				Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h,
-				boolean ignoreAllocHeapDefs) {
-			// TODO Auto-generated method stub
-			return null;
-		}
+		  @Override
+		  public <T extends InstanceKey> RefVisitor<T, ? extends ExtendedHeapModel> makeRefVisitor(
+		      CGNode n, Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
+		    return new RefVisitor<>(n, result, pa, h);
+		  }
 
-		@Override
-		public <T extends InstanceKey> RefVisitor<T, ? extends ExtendedHeapModel> makeRefVisitor(CGNode n,
-				Collection<PointerKey> result, PointerAnalysis<T> pa, ExtendedHeapModel h) {
-			// TODO Auto-generated method stub
-			return null;
-		}
-
+		  @Override
+		  public <T extends InstanceKey> ModVisitor<T, ? extends ExtendedHeapModel> makeModVisitor(
+		      CGNode n,
+		      Collection<PointerKey> result,
+		      PointerAnalysis<T> pa,
+		      ExtendedHeapModel h,
+		      boolean ignoreAllocHeapDefs) {
+		    return new ModVisitor<>(n, result, h, pa, ignoreAllocHeapDefs);
+		  }
+		  
 		@Override
 		public boolean methodsHaveDeclaredParameterTypes() {
 			return true;
@@ -437,8 +441,8 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	class SolidityClass extends AstClass {
 
 		protected SolidityClass(Position sourcePosition, TypeName typeName, Map<Atom, IField> declaredFields,
-				Map<Selector, IMethod> declaredMethods, Collection<TypeName> supers, TypeName superClass) {
-			super(sourcePosition, typeName, SolidityLoader.this, (short) 0, declaredFields, declaredMethods);
+				Map<Selector, IMethod> declaredMethods, Collection<TypeName> supers, TypeName superClass, boolean isInterface) {
+			super(sourcePosition, typeName, SolidityLoader.this, (short) (isInterface? ACC_INTERFACE: 0), declaredFields, declaredMethods);
 			this.supers = supers;
 			this.superClass = superClass;
 		}
@@ -523,7 +527,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 							struct.getName();
 			si = supers;
 		}
-		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass);
+		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass, type.getType() instanceof InterfaceType);
 		types.put(typeName, newClass);
 		makeFields(type, newClass, fields);
 		return newClass;

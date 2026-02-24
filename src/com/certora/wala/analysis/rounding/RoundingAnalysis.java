@@ -10,6 +10,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.certora.wala.analysis.defuse.DefUseGraph;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
@@ -41,21 +44,20 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.impl.GraphInverter;
+import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.graph.traverse.DFS;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 
 public class RoundingAnalysis {
-	private static final boolean DEBUG = true;
-	
-	
 	private final CallGraph CG;
 	private final Map<Pair<CGNode, List<Direction>>, RoundingInference.Result> rawResults = HashMapFactory.make();
-	private final Map<Pair<CGNode,List<Direction>>,Map<FieldReference, Direction>> directionalCalls = HashMapFactory.make();
+	private final Map<Pair<CGNode, List<Direction>>, Map<FieldReference, Direction>> directionalCalls = HashMapFactory
+			.make();
 
-	
 	public RoundingAnalysis(CallGraph CG) {
 		this.CG = CG;
 	}
@@ -109,7 +111,7 @@ public class RoundingAnalysis {
 						}
 					}
 				}
-				
+
 				SSAInstruction wrt = rhs[0].wrt;
 				Direction d = rhs[0].state;
 				if (d == null) {
@@ -293,12 +295,10 @@ public class RoundingAnalysis {
 			}
 
 			boolean isDivDown(RoundingVariable v) {
-				return v != null 
-						&& v.state == Direction.Down
-						&& v.wrt != null 
-						&& v.wrt.getDef() == v.vn 
-						&& du.getDef(v.vn) instanceof SSABinaryOpInstruction 
-						&& ((SSABinaryOpInstruction)du.getDef(v.vn)).getOperator() == IBinaryOpInstruction.Operator.DIV;
+				return v != null && v.state == Direction.Down && v.wrt != null && v.wrt.getDef() == v.vn
+						&& du.getDef(v.vn) instanceof SSABinaryOpInstruction
+						&& ((SSABinaryOpInstruction) du.getDef(v.vn))
+								.getOperator() == IBinaryOpInstruction.Operator.DIV;
 			}
 
 			@Override
@@ -354,12 +354,13 @@ public class RoundingAnalysis {
 			public String toString() {
 				return "constant " + d;
 			}
-		};		
+		};
 
 		private final CGNode n;
 		private final IR ir;
 		private final DefUse du;
 		private final DefUseGraph dug;
+		private final List<Direction> parameters;
 
 		private Set<SSAInstruction> getRelevant(SSAInstruction inst, NumberedGraph<Integer> g) {
 			if (inst == null) {
@@ -391,45 +392,42 @@ public class RoundingAnalysis {
 		 */
 
 		private static MutableIntSet getRelatedValues(int startValue, Set<SSAInstruction> related, boolean forward) {
-			return IntSetUtil.make(IntStream
-					.concat(related.stream()
+			return IntSetUtil.make(IntStream.concat(
+					related.stream()
 							.map(inst -> (forward ? IntStream.of(inst.getDef()).filter(i -> i > 0)
 									: IntStream.range(0, inst.getNumberOfUses()).map(i -> inst.getUse(i))))
-							.reduce((a, b) -> IntStream.concat(a, b)).orElse(IntStream.empty()), IntStream.of(startValue))
-					.distinct().toArray());
+							.reduce((a, b) -> IntStream.concat(a, b)).orElse(IntStream.empty()),
+					IntStream.of(startValue)).distinct().toArray());
 		}
 
-		public RoundingInference(List<Direction> parameters,
-				Set<Pair<CGNode,List<Direction>>> ongoing,
-				CGNode n)
+		public RoundingInference(List<Direction> parameters, Set<Pair<CGNode, List<Direction>>> ongoing, CGNode n)
 				throws CancelException {
 			ir = n.getIR();
 			du = n.getDU();
+			this.parameters = parameters;
 			this.n = n;
 			this.dug = new DefUseGraph(ir);
 
 			class CallOperator extends AbstractOperator<RoundingVariable> {
 				private final SSAInvokeInstruction callInst;
-				
-				
+
 				public CallOperator(SSAInvokeInstruction inst) {
 					this.callInst = inst;
 				}
 
-
 				@Override
 				public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
 					List<Direction> args = new ArrayList<>(callInst.getNumberOfUses());
-					for(int i = 0; i < callInst.getNumberOfUses(); i++) {
+					for (int i = 0; i < callInst.getNumberOfUses(); i++) {
 						args.add(getVariable(callInst.getUse(i)).state);
 					}
-					
+
 					Direction d = Direction.Neither;
 					for (CGNode cgn : CG.getPossibleTargets(n, callInst.getCallSite())) {
 						Pair<CGNode, List<Direction>> key = Pair.make(cgn, args);
-						if (! ongoing.contains(key)) {
-							if (! directionalCalls.containsKey(key) ) {
-								Set<Pair<CGNode,List<Direction>>> x = HashSetFactory.make(ongoing);
+						if (!ongoing.contains(key)) {
+							if (!directionalCalls.containsKey(key)) {
+								Set<Pair<CGNode, List<Direction>>> x = HashSetFactory.make(ongoing);
 								x.add(key);
 								try {
 									RoundingInference child = new RoundingInference(args, x, cgn);
@@ -442,7 +440,7 @@ public class RoundingAnalysis {
 							}
 						}
 					}
-					
+
 					if (d != lhs.state) {
 						lhs.state = d;
 						return CHANGED;
@@ -458,14 +456,14 @@ public class RoundingAnalysis {
 
 				@Override
 				public boolean equals(Object o) {
-					return o != null && o.getClass() == getClass() && callInst.equals(((CallOperator)o).callInst);
+					return o != null && o.getClass() == getClass() && callInst.equals(((CallOperator) o).callInst);
 				}
 
 				@Override
 				public String toString() {
 					return "call " + callInst;
 				}
-				
+
 			}
 
 			class RoundingOperatorFactory extends SSAInstruction.Visitor implements OperatorFactory<RoundingVariable> {
@@ -533,12 +531,11 @@ public class RoundingAnalysis {
 
 				@Override
 				public void visitInvoke(SSAInvokeInstruction inst) {
-					if (inst.hasDef() ) {
+					if (inst.hasDef()) {
 						result = new CallOperator(inst);
 					}
 				}
-				
-				
+
 			}
 
 			class RoundingVariableFactory implements VariableFactory<RoundingVariable> {
@@ -557,9 +554,9 @@ public class RoundingAnalysis {
 					RoundingVariable v;
 					if (ir.getSymbolTable().isConstant(valueNumber)) {
 						v = new RoundingVariable(valueNumber, Direction.Neither, null);
-						
+
 					} else if (valueNumber <= ir.getSymbolTable().getNumberOfParameters()) {
-						v = new RoundingVariable(valueNumber, parameters.get(valueNumber-1), null);
+						v = new RoundingVariable(valueNumber, parameters.get(valueNumber - 1), null);
 
 					} else if (du.getDef(valueNumber) instanceof SSAAbstractInvokeInstruction) {
 						v = new RoundingVariable(valueNumber, Direction.Neither, du.getDef(valueNumber));
@@ -580,10 +577,9 @@ public class RoundingAnalysis {
 			init(ir, new RoundingVariableFactory(), new RoundingOperatorFactory());
 			solve(null);
 
-			Pair<CGNode,List<Direction>> key = Pair.make(n, parameters);
+			Pair<CGNode, List<Direction>> key = Pair.make(n, parameters);
 			rawResults.put(key, getRoundingResult());
 			directionalCalls.put(key, getResultOrResults());
-
 		}
 
 		@Override
@@ -672,25 +668,28 @@ public class RoundingAnalysis {
 		public String toString() {
 			return super.toString() + "returning " + result;
 		}
-		
+
 		public interface Result {
 			Direction[][] getOperandRounding();
+
 			Direction[][] getResultRounding();
-			String toString(Set<SSAInstruction> ongoing);
-			String toString();
+
+			JSONObject toJSON();
+
+			JSONObject toGraph(Graph<JSONObject> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar);
 		}
-		
+
 		public Result getRoundingResult() {
 			Direction[][] operands = new Direction[ir.getInstructions().length][];
 			Direction[][] results = new Direction[ir.getInstructions().length][];
-			for(SSAInstruction inst : ir.getInstructions()) {
+			for (SSAInstruction inst : ir.getInstructions()) {
 				if (inst != null) {
 					Direction[] uses = operands[inst.iIndex()] = new Direction[inst.getNumberOfUses()];
-					for(int i = 0; i < uses.length; i++) {
+					for (int i = 0; i < uses.length; i++) {
 						uses[i] = getVariable(inst.getUse(i)).state;
 					}
 					Direction[] defs = results[inst.iIndex()] = new Direction[inst.getNumberOfDefs()];
-					for(int i = 0; i < defs.length; i++) {
+					for (int i = 0; i < defs.length; i++) {
 						defs[i] = getVariable(inst.getDef(i)).state;
 					}
 				}
@@ -705,141 +704,156 @@ public class RoundingAnalysis {
 				public Direction[][] getResultRounding() {
 					return results;
 				}
-				
+
 				@Override
 				public String toString() {
-					return toString(HashSetFactory.make());
+					NumberedGraph<JSONObject> out = SlowSparseNumberedGraph.make();
+					toGraph(out, HashMapFactory.make());
+					StringBuffer sb = new StringBuffer();		
+					out.forEach(n -> { 
+						sb.append(out.getNumber(n) + ": function " + n.getString("method"));
+						if (n.has("methodPosition")) {
+							sb.append(n.getString("methodPosition"));
+						}
+						sb.append('\n');
+						
+						JSONArray parameters = n.getJSONArray("parameters");
+						for(int i = 0; i < parameters.length(); i++) {
+							JSONObject p = parameters.getJSONObject(i);
+							if (p.has("source")) {
+								sb.append("   ").append(p.getString("position")).append(" ").append(p.getString("source")).append(" --> ").append(p.get("rounding")).append('\n');
+							}
+						}
+						
+						JSONObject roundings = n.getJSONObject("roundings");
+						for(String pos : roundings.keySet()) {
+							JSONObject r = roundings.getJSONObject(pos);
+							if (Direction.Neither != r.get("rounding")) {
+								sb.append(" ").append(pos).append(": ").append(r.get("source")).append(" --> ").append(r.get("rounding"));
+								if (r.has("expr")) {
+									sb.append(" (use in ").append(r.get("expr")).append(")");
+								}
+								sb.append('\n');
+							}
+						}
+
+						if (n.has("return")) {
+							sb.append(" return " + n.get("return"));
+							sb.append("\n");
+						}
+						
+						if (out.getSuccNodeCount(n) > 0) {
+							sb.append(" --> ").append(out.getSuccNodeNumbers(n));
+						}
+						
+						sb.append("\n");
+					});
+					
+					return sb.toString();
 				}
-				
-				public String toString(Set<SSAInstruction> ongoing) {
-					StringBuffer sb = new StringBuffer();
-					sb.append("result for " + ir.getMethod());
-					DebuggingInformation dbg = ((AstMethod)ir.getMethod()).debugInfo();
+
+				private String toLocalPos(Position p) {
+					return "[" + p.getFirstLine() + "," + p.getFirstCol() + "-" + p.getLastLine() + "," + p.getLastCol()
+							+ "]";
+				}
+
+				public JSONObject toJSON() {
+					JSONObject o = new JSONObject();
+					o.put("method", ir.getMethod().toString());
+					DebuggingInformation dbg = ((AstMethod) ir.getMethod()).debugInfo();
 					if (ir.getMethod() instanceof AstMethod) {
-						sb.append("(").append(dbg.getCodeBodyPosition().getURL().getFile() + ":" + dbg.getCodeBodyPosition()).append(")");
+						o.put("methodPosition", toLocalPos(dbg.getCodeBodyPosition()));
 					}
-					sb.append("\n");
-					if (DEBUG) {
-					sb.append(ir.toString());
-					sb.append("\n");
-					for(int i = 0; i < operands.length; i++) {
-						if (operands[i] != null) {
-							sb.append("instruction ").append(i).append(": ");
-							for(int j = 0; j < operands[i].length; j++) {
-								sb.append(operands[i][j]).append(" ");
-							}
-							sb.append("\n");
-						}
-					}
-					for(int i = 0; i < results.length; i++) {
-						if (results[i] != null) {
-							sb.append("instruction ").append(i).append(": ");
-							for(int j = 0; j < results[i].length; j++) {
-								sb.append(results[i][j]).append(" ");
-							}
-							sb.append("\n");
-						}
-					}
-					}
-					for(int i = 0; i < ir.getNumberOfParameters(); i++) {
+					JSONArray params;
+					o.put("parameters", params = new JSONArray(ir.getNumberOfParameters()));
+					for (int i = 0; i < ir.getNumberOfParameters(); i++) {
 						try {
+							JSONObject p = new JSONObject();
+							p.put("rounding", getVariable(i + 1).state);
+							params.put(p);
 							Position pos = dbg.getParameterPosition(i);
 							if (pos != null) {
-								sb.append("  argument " + new SourceBuffer(pos) + " --> " + getVariable(i+1).state + "\n");
+								p.put("position", toLocalPos(pos));
+								p.put("source", new SourceBuffer(pos).toString());
 							}
 						} catch (IOException e) {
 							assert false : e;
 						}
 					}
-					for(int i = 0; i < operands.length; i++) {
+					JSONObject roundings = new JSONObject();
+					o.put("roundings", roundings);
+					for (int i = 0; i < operands.length; i++) {
 						if (operands[i] != null) {
-							for(int j = 0; j < operands[i].length; j++) {
-								if (operands[i][j] != null && operands[i][j] != Direction.Neither) {
-									if (ir.getMethod() instanceof AstMethod) {
-										Position p = dbg.getOperandPosition(i, j);
-										if (p != null) {
-											try {
-												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + operands[i][j] + " (use in " + new SourceBuffer(dbg.getInstructionPosition(i)) + ")");
-												if (DEBUG) {
-													sb.append(" (" + i + "," + j + ")");
-												}
-												sb.append("\n");
-											} catch (IOException e) {
-												assert false : e;
-											}
-										} else {
-											if (DEBUG) {
-												sb.append("no source operand position for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + ", " + j + "\n");
-											}
-										}
-									} else {
-										if (DEBUG) {
-											sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + operands[i][j] + "\n");
-										}
-									}
+							for (int j = 0; j < operands[i].length; j++) {
+								if (operands[i][j] != null) {
+									expressionToJSON(operands, dbg, roundings, i, j, true);
 								}
 							}
 						}
 						if (results[i] != null) {
-							for(int j = 0; j < results[i].length; j++) {
-								if (results[i][j] != null && results[i][j] != Direction.Neither) {
-									if (ir.getMethod() instanceof AstMethod) {
-										Position p = ((AstMethod)ir.getMethod()).getSourcePosition(i);
-										if (p != null) {
-											try {
-												sb.append(p + " " + new SourceBuffer(p).toString() + " --> " + results[i][j] + '\n');
-											} catch (IOException e) {
-												assert false : e;
-											}
-										} else {
-											if (DEBUG) {
-												sb.append("no source position for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
-											}
-										}
-									} else {
-										if (DEBUG) {
-											sb.append("not an AstMethod for " + ir.getInstructions()[i]+  " --> " + results[i][j] + "\n");
-										}
-									}	
+							for (int j = 0; j < results[i].length; j++) {
+								if (results[i][j] != null) {
+									expressionToJSON(results, dbg, roundings, i, j, false);
 								}
 							}
 						}
 					}
-					sb.append("returning " + getResultOrResults() + "\n");
-					
-					ir.iterateAllInstructions().forEachRemaining(inst -> { 
-						if (inst instanceof SSAInvokeInstruction && !ongoing.contains(inst)) {
-							Set<SSAInstruction> x = HashSetFactory.make(ongoing);
-							x.add(inst);
-							List<Direction> args = new ArrayList<>(inst.getNumberOfUses());
-							for(int i = 0; i < inst.getNumberOfUses(); i++) {
-								args.add(getVariable(inst.getUse(i)).state);
-							}
+					Map<FieldReference, Direction> ret = getResultOrResults();
+					o.put("return", ret.containsKey(null)? ret.get(null): ret);
 
-							boolean haveTarget = false;
-							boolean gotSomething = false;
-							for(CGNode callee : CG.getPossibleTargets(n, ((SSAInvokeInstruction)inst).getCallSite())) {
-								haveTarget = true;
-								Pair<CGNode,List<Direction>> key = Pair.make(callee, args);
-								if (rawResults.containsKey(key)) {
-									gotSomething = true;
-									String child = rawResults.get(key).toString(x);
-									if (child.contains("--> Up") || child.contains("--> Down") || child.contains("--> Either")
-										|| child.contains("=Up") || child.contains("=Down") || child.contains("=Either")) {
-										sb.append("\n" + child);
+					return o;
+				}
+
+				public JSONObject toGraph(Graph<JSONObject> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar) {
+					Pair<CGNode, List<Direction>> me = Pair.make(n, parameters);
+					if (!startedSoFar.containsKey(me)) {
+						JSONObject thisOne = toJSON();
+						startedSoFar.put(me, thisOne);
+						g.addNode(thisOne);
+
+						ir.iterateAllInstructions().forEachRemaining(inst -> {
+							if (inst instanceof SSAInvokeInstruction) {
+								List<Direction> args = new ArrayList<>(inst.getNumberOfUses());
+								for (int i = 0; i < inst.getNumberOfUses(); i++) {
+									args.add(getVariable(inst.getUse(i)).state);
+								}
+								for (CGNode callee : CG.getPossibleTargets(n,
+										((SSAInvokeInstruction) inst).getCallSite())) {
+									Pair<CGNode, List<Direction>> key = Pair.make(callee, args);
+									if (rawResults.containsKey(key) && !startedSoFar.containsKey(key)) {
+									  g.addEdge(thisOne, rawResults.get(key).toGraph(g, startedSoFar));
 									}
 								}
 							}
-							if (haveTarget && !gotSomething) {
-								System.err.println("*** " + inst);
+						});
+						return thisOne;
+					} else { 
+						return startedSoFar.get(me);
+					}
+					
+				}
+
+				private void expressionToJSON(Direction[][] operands, DebuggingInformation dbg, JSONObject roundings,
+						int i, int j, boolean use) {
+					if (ir.getMethod() instanceof AstMethod) {
+						Position p = use? dbg.getOperandPosition(i, j): dbg.getInstructionPosition(i);
+						if (p != null) {
+							try {
+								String k = toLocalPos(p);
+								JSONObject x = new JSONObject();
+								roundings.put(k, x);
+								x.put("rounding", operands[i][j]);
+								x.put("source", new SourceBuffer(p).toString());
+								if (use) {
+									x.put("expr", new SourceBuffer(dbg.getInstructionPosition(i)).toString());
+								}
+							} catch (IOException e) {
+								assert false : e;
 							}
-							 
 						}
-					});
-					return sb.toString();
+					}
 				}
 			};
 		}
 	}
-
 }

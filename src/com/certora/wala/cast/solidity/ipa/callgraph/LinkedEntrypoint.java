@@ -20,6 +20,7 @@ import com.ibm.wala.ssa.SSANewInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 
@@ -43,32 +44,44 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 	@Override
 	protected int makeArgument(AbstractRootMethod m, int i) {
 		TypeReference r = this.method.getParameterType(i);
-		if (r != SolidityTypes.address) {
+		if (r != SolidityTypes.address && !(r.isReferenceType() && getCha().lookupClass(r).isInterface())) {
 			return super.makeArgument(m, i);
 		} else {
 			return m.addInvocation(new int[0], CallSiteReference.make(i, MethodReference.findOrCreate(SolidityAddressInstantiator.aiRef, SolidityAddressInstantiator.aiSel), Dispatch.STATIC)).getDef();
 		}
 	}
 
+	static Map<TypeReference,Integer> selfMap = HashMapFactory.make();
+	
+	private int selfForType(IClass selfType, AbstractRootMethod m) {
+		if (selfMap.containsKey(selfType.getReference())) {
+			return selfMap.get(selfType.getReference());
+		} else {
+			int objSelf = m.addAllocation(selfType.getReference()).getDef();
+			for(IField f : selfType.getAllInstanceFields()) {
+				if (f.getFieldTypeReference().isArrayType()) {
+					SSANewInstruction alloc = m.add1DArrayAllocation(f.getFieldTypeReference(), 1);
+					m.addSetInstance(f.getReference(), objSelf, alloc.getDef());
+				}
+			}
+			linkage.forEach((x, y) -> { 
+				if (selfType.getReference().equals(x.snd)) {
+					FieldReference fr = FieldReference.findOrCreate(x.snd, x.fst, y);
+					SSANewInstruction alloc = m.addAllocation(y);
+					m.addSetInstance(fr, objSelf, alloc.getDef());
+				}
+			});
+			selfMap.put(selfType.getReference(), objSelf);
+			return objSelf;
+		}
+	}
+	
 	@Override
 	public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
 		SSAAbstractInvokeInstruction call = super.addCall(m);
 		int functionSelf = call.getUse(0);
-		int objSelf = m.addAllocation(selfType.getReference()).getDef();
+		int objSelf = selfForType(selfType, m);
 		m.addSetInstance(FieldReference.findOrCreate(call.getDeclaredTarget().getDeclaringClass(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference()), functionSelf, objSelf);
-		for(IField f : selfType.getAllInstanceFields()) {
-			if (f.getFieldTypeReference().equals(SolidityTypes.mapping)) {
-				SSANewInstruction alloc = m.addAllocation(SolidityTypes.mapping);
-				m.addSetInstance(f.getReference(), objSelf, alloc.getDef());
-			}
-		}
-		linkage.forEach((x, y) -> { 
-			if (selfType.getReference().equals(x.snd)) {
-				FieldReference fr = FieldReference.findOrCreate(x.snd, x.fst, y);
-				SSANewInstruction alloc = m.addAllocation(y);
-				m.addSetInstance(fr, objSelf, alloc.getDef());
-			}
-		});
 		
 		return call;
 	}
@@ -82,7 +95,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
 		cha.forEach(cl -> { 
-			if (cl != contractClass && (cha.isAssignableFrom(contractClass, cl))) {
+			if (cl != contractClass && cha.isAssignableFrom(contractClass, cl) && !cl.isInterface()) {
 				cl.getDeclaredInstanceFields().forEach(m -> { 
 					IClass fieldClass = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, m.getName().toString()));
 					if (fieldClass != null && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
