@@ -30,7 +30,12 @@ public enum Direction {
 
 		@Override
 		Direction combine(Direction d) {
-			return Inconsistent;
+			switch (d) {
+			case Neither:
+				return Either;
+			default:
+				return Inconsistent;
+			}
 		}
 	},
 	Neither {

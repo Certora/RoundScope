@@ -21,6 +21,7 @@ import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
@@ -42,6 +43,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DelegatingSSAContextInterpreter;
+import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
@@ -132,6 +134,8 @@ public class TestRunner {
 		              new FactoryBypassInterpreter(options, analysisCache), 
 		              new AstContextInsensitiveSSAContextInterpreter(options, analysisCache)));
 
+			cgBuilder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, cgBuilder.getContextInterpreter(), ZeroXInstanceKeys.ALLOCATIONS));
+			
 			CallGraph cg = cgBuilder.makeCallGraph(options, null);
 
 			PointerAnalysis<InstanceKey> PA = cgBuilder.getPointerAnalysis();
@@ -139,10 +143,11 @@ public class TestRunner {
 					Slicer.ControlDependenceOptions.NO_EXCEPTIONAL_EDGES);
 
 			System.out.println(sdg);
-			System.out.println(cg);
 
+			CAstCallGraphUtil.AVOID_DUMP.set(false);
+			CAstCallGraphUtil.dumpCG(cgBuilder.getCFAContextInterpreter(), PA, cg);
+			
 			boolean changed;
-
 			if (useOldAnalysis) {
 				Map<CGNode, Direction> rounding = HashMapFactory.make();
 				do {

@@ -23,7 +23,7 @@ public class SolidityMappingType implements Function {
 
 	@Override
 	public String getName() {
-		return "mapping(" + keyType.getName() + " => " + valueType.getName();
+		return "mapping<" + keyType.getName() + "->" + valueType.getName() + ">";
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class SolidityMappingType implements Function {
 		} else {
 			SolidityMappingType type = new SolidityMappingType(key, value);
 			
-			TypeReference irType = TypeReference.findOrCreate(SolidityTypes.solidity, "mapping<" + key.getName() + "#" + value.getName() + ">");
+			TypeReference irType = SolidityCAstType.getIRType(value).getArrayTypeForElementType();
 			
 			SolidityCAstType.record(type.getName(), type, irType);
 			types.put(typeKey, type);

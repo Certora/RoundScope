@@ -152,7 +152,7 @@ public class SolidityTypes {
 
 	public static TypeReference int256 = TypeReference.findOrCreate(solidity, "Pint256");
 	
-	public static TypeReference address = TypeReference.findOrCreate(solidity, "Paddress");
+	public static TypeReference address = TypeReference.findOrCreate(solidity, "Laddress");
 
 	public static TypeReference string = TypeReference.findOrCreate(solidity, "Pstring");
 
