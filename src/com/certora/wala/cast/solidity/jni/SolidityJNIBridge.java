@@ -55,7 +55,7 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 			int total = 0;
 			for(int i = 0; i < lines.length; i++) {
 				linePositionMap[i+1] = total;
-				total += lines[i].length();
+				total += (lines[i].length() + 1);
 			}
 		}
 
@@ -140,7 +140,7 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 		public Position makePosition(String fileName, int startOffset, int endOffset) {
 			return new Position() {
 				private int getLine(int offset) {
-					return IntStream.range(0, linePositionMap.length).filter(i -> linePositionMap[i] > offset).findFirst().orElse(linePositionMap.length);
+					return IntStream.range(0, linePositionMap.length).filter(i -> linePositionMap[i] > offset).findFirst().orElse(linePositionMap.length) - 1;
 				}
 				
 				private int getColumn(int offset) {
