@@ -142,17 +142,17 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		String v = null;
 		try {
 			if ((f = new File(b)).exists()) {
-				v = new String(Files.readAllBytes(Paths.get(new File(b).toURI())));
+				v = new String(Files.readAllBytes(Paths.get(new File(b).toURI())), "UTF-8");
 			} else {
 				f = Configuration.getFile(confFile.getParentFile(), b);
 				if (f != null) {
-					v = new String(Files.readAllBytes(Paths.get(f.toURI())));													
+					v = new String(Files.readAllBytes(Paths.get(f.toURI())), "UTF-8");													
 				} else {
 					outer: for(Map.Entry<String,File> e : includePath.entrySet()) {
 						if (b.startsWith(e.getKey() + "/")) {
 							f = new File(e.getValue(), b.substring(e.getKey().length() + 1));
 							if (f.exists()) {
-								v = new String(Files.readAllBytes(Paths.get(f.toURI())));							
+								v = new String(Files.readAllBytes(Paths.get(f.toURI())), "UTF-8");							
 								break outer;
 							}
 						}

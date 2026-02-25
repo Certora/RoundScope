@@ -31,11 +31,28 @@ public:
         jstring jb = currentEnv->NewStringUTF(b.c_str());
         jmethodID lf = currentEnv->GetMethodID(sjbCls, "loadFile", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
         jstring res = (jstring)currentEnv->CallObjectMethod(globalSelf, lf, ja, jb);
-        const char *buf = currentEnv->GetStringUTFChars(res, NULL);
-        
-        solidity::frontend::ReadCallback::Result r = {res!=NULL, std::string(buf)};
-        
-        return r;
+        if (res != NULL) {
+            const jclass stringClass = currentEnv->GetObjectClass(res);
+            const jmethodID getBytes = currentEnv->GetMethodID(stringClass, "getBytes", "(Ljava/lang/String;)[B");
+            const jbyteArray stringJbytes = (jbyteArray) currentEnv->CallObjectMethod(res, getBytes, currentEnv->NewStringUTF("ASCII"));
+            
+            size_t length = (size_t) currentEnv->GetArrayLength(stringJbytes);
+            jbyte* pBytes = currentEnv->GetByteArrayElements(stringJbytes, NULL);
+            
+            std::string ret = std::string((char *)pBytes, length);
+            currentEnv->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+            
+            currentEnv->DeleteLocalRef(stringJbytes);
+            currentEnv->DeleteLocalRef(stringClass);
+            
+            solidity::frontend::ReadCallback::Result r = {res!=NULL, ret};
+            
+            return r;
+        } else {
+            solidity::frontend::ReadCallback::Result r = {res!=NULL, std::string()};
+            
+            return r;
+        }
     }
 };
 

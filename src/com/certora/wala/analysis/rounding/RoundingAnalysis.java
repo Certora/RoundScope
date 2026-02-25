@@ -44,15 +44,17 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
-import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.impl.GraphInverter;
-import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
+import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
+import com.ibm.wala.util.graph.labeled.SlowSparseNumberedLabeledGraph;
 import com.ibm.wala.util.graph.traverse.DFS;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 
 public class RoundingAnalysis {
+	private final boolean IMPLICIT_NEITHER = true;
+	
 	private final CallGraph CG;
 	private final Map<Pair<CGNode, List<Direction>>, RoundingInference.Result> rawResults = HashMapFactory.make();
 	private final Map<Pair<CGNode, List<Direction>>, Map<FieldReference, Direction>> directionalCalls = HashMapFactory
@@ -60,6 +62,11 @@ public class RoundingAnalysis {
 
 	public RoundingAnalysis(CallGraph CG) {
 		this.CG = CG;
+	}
+
+	public static String toLocalPos(Position p) {
+		return "[" + p.getFirstLine() + "," + p.getFirstCol() + "-" + p.getLastLine() + "," + p.getLastCol()
+				+ "]";
 	}
 
 	public class RoundingInference extends SSAInference<RoundingInference.RoundingVariable> {
@@ -676,7 +683,9 @@ public class RoundingAnalysis {
 
 			JSONObject toJSON();
 
-			JSONObject toGraph(Graph<JSONObject> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar);
+			NumberedLabeledGraph<JSONObject, Position> toGraph();
+
+			JSONObject makeGraph(NumberedLabeledGraph<JSONObject,Position> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar);
 		}
 
 		public Result getRoundingResult() {
@@ -707,13 +716,13 @@ public class RoundingAnalysis {
 
 				@Override
 				public String toString() {
-					NumberedGraph<JSONObject> out = SlowSparseNumberedGraph.make();
-					toGraph(out, HashMapFactory.make());
+					NumberedLabeledGraph<JSONObject,Position> out = new SlowSparseNumberedLabeledGraph<>();
+					makeGraph(out, HashMapFactory.make());
 					StringBuffer sb = new StringBuffer();		
 					out.forEach(n -> { 
 						sb.append(out.getNumber(n) + ": function " + n.getString("method"));
 						if (n.has("methodPosition")) {
-							sb.append(n.getString("methodPosition"));
+							sb.append(" (").append(n.getString("methodPosition")).append(")");
 						}
 						sb.append('\n');
 						
@@ -752,17 +761,12 @@ public class RoundingAnalysis {
 					return sb.toString();
 				}
 
-				private String toLocalPos(Position p) {
-					return "[" + p.getFirstLine() + "," + p.getFirstCol() + "-" + p.getLastLine() + "," + p.getLastCol()
-							+ "]";
-				}
-
 				public JSONObject toJSON() {
 					JSONObject o = new JSONObject();
 					o.put("method", ir.getMethod().toString());
 					DebuggingInformation dbg = ((AstMethod) ir.getMethod()).debugInfo();
 					if (ir.getMethod() instanceof AstMethod) {
-						o.put("methodPosition", toLocalPos(dbg.getCodeBodyPosition()));
+						o.put("methodPosition", dbg.getCodeBodyPosition().getURL().getPath() + ":" + toLocalPos(dbg.getCodeBodyPosition()));
 					}
 					JSONArray params;
 					o.put("parameters", params = new JSONArray(ir.getNumberOfParameters()));
@@ -804,9 +808,16 @@ public class RoundingAnalysis {
 					return o;
 				}
 
-				public JSONObject toGraph(Graph<JSONObject> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar) {
+				public NumberedLabeledGraph<JSONObject,Position> toGraph() {
+					NumberedLabeledGraph<JSONObject,Position> out = new SlowSparseNumberedLabeledGraph<>();
+					makeGraph(out, HashMapFactory.make());
+					return out;
+				}
+					
+				public JSONObject makeGraph(NumberedLabeledGraph<JSONObject,Position> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar) {
 					Pair<CGNode, List<Direction>> me = Pair.make(n, parameters);
 					if (!startedSoFar.containsKey(me)) {
+						DebuggingInformation dbg = ((AstMethod) ir.getMethod()).debugInfo();
 						JSONObject thisOne = toJSON();
 						startedSoFar.put(me, thisOne);
 						g.addNode(thisOne);
@@ -821,7 +832,7 @@ public class RoundingAnalysis {
 										((SSAInvokeInstruction) inst).getCallSite())) {
 									Pair<CGNode, List<Direction>> key = Pair.make(callee, args);
 									if (rawResults.containsKey(key) && !startedSoFar.containsKey(key)) {
-									  g.addEdge(thisOne, rawResults.get(key).toGraph(g, startedSoFar));
+									  g.addEdge(thisOne, rawResults.get(key).makeGraph(g, startedSoFar), dbg.getInstructionPosition(inst.iIndex()));
 									}
 								}
 							}
@@ -833,16 +844,16 @@ public class RoundingAnalysis {
 					
 				}
 
-				private void expressionToJSON(Direction[][] operands, DebuggingInformation dbg, JSONObject roundings,
+				private void expressionToJSON(Direction[][] data, DebuggingInformation dbg, JSONObject roundings,
 						int i, int j, boolean use) {
 					if (ir.getMethod() instanceof AstMethod) {
 						Position p = use? dbg.getOperandPosition(i, j): dbg.getInstructionPosition(i);
-						if (p != null) {
+						if (p != null && (!IMPLICIT_NEITHER || data[i][j] != Direction.Neither)) {
 							try {
 								String k = toLocalPos(p);
 								JSONObject x = new JSONObject();
 								roundings.put(k, x);
-								x.put("rounding", operands[i][j]);
+								x.put("rounding", data[i][j]);
 								x.put("source", new SourceBuffer(p).toString());
 								if (use) {
 									x.put("expr", new SourceBuffer(dbg.getInstructionPosition(i)).toString());

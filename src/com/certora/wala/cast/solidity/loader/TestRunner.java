@@ -2,16 +2,22 @@ package com.certora.wala.cast.solidity.loader;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.certora.certoraprover.cvl.Ast;
 import com.certora.wala.analysis.rounding.Direction;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference;
+import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
@@ -25,6 +31,7 @@ import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
+import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
@@ -55,6 +62,11 @@ import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.graph.Graph;
+import com.ibm.wala.util.graph.JGF;
+import com.ibm.wala.util.graph.JGF.EntityTypes;
+import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
+import com.ibm.wala.util.graph.NumberedGraph;
 
 public class TestRunner {
 
@@ -169,18 +181,44 @@ public class TestRunner {
 				});
 				
 			} else {
-				RoundingAnalysis ra = new RoundingAnalysis(cg);
+				JSONArray graphs = new JSONArray();
 				for(CGNode n : cg.getEntrypointNodes()) {
+					RoundingAnalysis ra = new RoundingAnalysis(cg);
 					List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
 					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
-				    String res = ri.getRoundingResult().toString();
+				    Result G = ri.getRoundingResult();
+					String res = G.toString();
 				    if (res.contains("--> Up") || res.contains("--> Down") || res.contains("--> Either")) {
 						System.out.println("looking at " + n + " --> " + ri.getResultOrResults());
 				    	System.out.println(res);
 				    }
+				    NumberedLabeledGraph<JSONObject,Position> outGraph = G.toGraph();
+				    graphs.put(JGF.toJGF(outGraph, new EntityTypes<JSONObject>() {
+
+						@Override
+						public JSONObject obj(JSONObject entity) {
+							return entity;
+						}
+
+						@Override
+						public String label(Graph<JSONObject> entity) {
+							return "graph of " + n.getMethod().getReference();
+						}
+
+						@Override
+						public String label(JSONObject from, JSONObject to) {
+							Set<? extends Position> ps = outGraph.getEdgeLabels(from, to);
+							return ps.stream().map(p -> p.getURL().getFile() + ":" +  RoundingAnalysis.toLocalPos(p)).reduce((a, b) -> a + b).orElse("");
+						}
+
+				    }));
+				}
+				
+				try (FileWriter jo = new FileWriter(args[1])) {
+					graphs.write(jo, 4, 0);
 				}
 			}
-		} catch (RuntimeException | CancelException e) {
+		} catch (RuntimeException | CancelException | IOException e) {
 			assert false : e;
 		}
 	}
