@@ -55,11 +55,11 @@ Note that `[sl,sc-el,ec]` means a source code position as a string, written as a
 ## building the code
 
 ### RoundScope has some prerequisites that need to be installed first:
-1. cpptrace
+1. cpptrace:
 A utility to generate Java-like stack traces in C++.  Used in RoundScope development, this has greatly eased debugging for me.  On the Mac using [Homebrew](https://brew.sh/), a simple way to get this is `brew install cpptrace`
-2. Solidity
+2. Solidity:
 [build Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
-3. WALA
+3. WALA:
 While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.   These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the buiuld is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
 
 ### building RoundScope
