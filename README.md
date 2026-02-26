@@ -66,12 +66,13 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
 1. Get RoundScope: clone this repository into some dir, hereinafter called `RS`
    
 2. building the Java code
-In the RoundScope top-level directory, run `maven install`
+   1. `cd RS`
+   2. run `maven install`
 
-3. building the native code
-  1. cd `RS/WALA CAst Solidity JNI Bridge`
-  2. edit the Makefile: set `WALA` and `SOLIDITY` to the values chosen above.  Set `JAVA` to be the JDK home of a recent Java version.
-  3. run `make`
+4. building the native code
+   1. cd `RS/WALA CAst Solidity JNI Bridge`
+   2. edit the Makefile: set `WALA` and `SOLIDITY` to the values chosen above.  Set `JAVA` to be the JDK home of a recent Java version.
+   3. run `make`
 
 ### Running RoundScope
 1. cd into `RS/WALA CAst Solidity JNI Bridge`
