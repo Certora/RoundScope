@@ -7,7 +7,9 @@
 
 #include "solidityBridge.h"
 #include <jni.h>
+#ifdef RS_DEVEL
 #include <cpptrace/cpptrace.hpp>
+#endif
 
 #include "CAstWrapper.h"
 
