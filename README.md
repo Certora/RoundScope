@@ -60,7 +60,7 @@ A utility to generate Java-like stack traces in C++.  Used in RoundScope develop
 2. Solidity:
 [build Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
 3. WALA:
-While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.   These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the buiuld is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
+While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.   These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
 
 ### building RoundScope
 1. Get RoundScope: clone this repository into some dir, hereinafter called `RS`
