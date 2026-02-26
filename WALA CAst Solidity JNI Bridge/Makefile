@@ -11,6 +11,7 @@ SOLIDITY_DIRS=libevmasm liblangutil libsmtutil libsolc libsolidity libsolutil li
 SOLIDITY_INCLUDES=-I$(SOLIDITY) $(foreach dep,$(SOLIDITY_DEPS),-I$(SOLIDITY)/$(dep)/include)
 SOLIDITY_LIB_DIRS=$(foreach dir,$(SOLIDITY_DIRS),-L$(SOLIDITY)/build/$(dir))
 SOLIDITY_LIBS=$(foreach dir,$(SOLIDITY_DIRS),$(patsubst lib%,-l%,$(dir)))
+SOLIDITY_LIB_DEPS=$(foreach dep,$(SOLIDITY_DIRS),$(SOLIDITY)/build/$(dep)/$(dep).a)
 
 BREW_INCLUDES=-I/opt/homebrew/include
 
@@ -37,7 +38,7 @@ translator.o:	solidityBridge.h translator.h translator.cpp
 assembly.o:	solidityBridge.h translator.h assembly.cpp
 	$(CC) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) assembly.cpp
 
-libwalacastsolidity.jnilib:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o solidityBridge.o translator.o assembly.o
+libwalacastsolidity.jnilib:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o solidityBridge.o translator.o assembly.o $(SOLIDITY_LIB_DEPS)
 	$(CC) -dynamiclib -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) -lcpptrace -lstdc++ 
 
 clean:
