@@ -11,15 +11,6 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.cast/1.6.13-SNAPSHOT/com.ibm.wala.cast-1.6.13-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.util/1.6.13-SNAPSHOT/com.ibm.wala.util-1.6.13-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.core/1.6.13-SNAPSHOT/com.ibm.wala.core-1.6.13-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.shrike/1.6.13-SNAPSHOT/com.ibm.wala.shrike-1.6.13-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.cast.java/1.6.13-SNAPSHOT/com.ibm.wala.cast.java-1.6.13-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/com/ibm/wala/com.ibm.wala.cast.java.ecj/1.6.13-SNAPSHOT/com.ibm.wala.cast.java.ecj-1.6.13-SNAPSHOT.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/.m2/repository/org/json/json/20251224/json-20251224.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/git/EVMVerifier/lib/Shared/build/libs/Shared-0.4.jar"/>
-	<classpathentry kind="lib" path="/Users/julian/Downloads/javacup-11c.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-21">
 		<attributes>
 			<attribute name="module" value="true"/>
