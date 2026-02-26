@@ -58,7 +58,7 @@ Note that `[sl,sc-el,ec]` means a source code position as a string, written as a
 1. (optional) cpptrace:
 A utility to generate Java-like stack traces in C++.  Used in RoundScope development, this has greatly eased debugging for me.  On the Mac using [Homebrew](https://brew.sh/), a simple way to get this is `brew install cpptrace`.  To avoid using this, comment out RS_FLAGS and RS_DEVEL_LIBS in the Makefile.
 2. Solidity:
-[build Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
+[build the latest Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
 3. WALA:
 While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.   These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
 
