@@ -8,9 +8,14 @@
 
 using namespace solidity::frontend;
 
+#ifdef _RS_DEVEL
 void showStackTrace() {
     std::cout << cpptrace::generate_trace() << std::endl;
 }
+#else
+void showStackTrace() {
+}
+#endif
 
 std::map<std::string, jobject> types;
 std::map<jobject, jobject> supers;
