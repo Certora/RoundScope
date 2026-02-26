@@ -66,7 +66,6 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.JGF;
 import com.ibm.wala.util.graph.JGF.EntityTypes;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
-import com.ibm.wala.util.graph.NumberedGraph;
 
 public class TestRunner {
 
