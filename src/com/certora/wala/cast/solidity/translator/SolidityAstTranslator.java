@@ -232,12 +232,6 @@ public class SolidityAstTranslator extends AstTranslator {
 
 			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
 			MethodReference m;
-			if (call.toString().contains("maxUnwindExerciseOther")) {
-				System.err.println (call);
-			}
-			if (call.toString().contains("MathUtils")) {
-				System.err.println (call);
-			}
 			if (! (recCAstType instanceof FunctionType)) {
 				TypeReference retType = SolidityCAstType.getIRType(recCAstType);
 				TypeName[] argTypes = new TypeName[ arguments.length ];
