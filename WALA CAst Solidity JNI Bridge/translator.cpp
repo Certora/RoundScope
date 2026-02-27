@@ -78,13 +78,18 @@ jobject findOrCreateType(JNIEnv *jniEnv, const ContractDefinition& contract) {
         return contractType;
     }
 }
+
+jobject getArrayType(JNIEnv *jniEnv, jobject elt) {
+    jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityArrayType");
+    jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "(Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
+    return jniEnv->CallStaticObjectMethod(smt, gt, elt);
+}
+
 jobject Translator::getType(Type const* type) {
     if (type->category() == Type::Category::Array) {
         ArrayType const* arrayType = (ArrayType *)type;
         jobject elt = getType(arrayType->baseType());
-        jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityArrayType");
-        jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "(Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
-        return jniEnv->CallStaticObjectMethod(smt, gt, elt);
+        return getArrayType(jniEnv, elt);
 
     } else if (type->category() == Type::Category::Tuple) {
         TupleType const* tupleType = (TupleType const*)type;
@@ -229,21 +234,29 @@ jobject Translator::getSelfType() {
 }
 
 jobject Translator::getSolidityFunctionType(const char *name, jobject declType, jobjectArray params, jobjectArray returns, bool event) {
-    print(declType);
     jclass sfc = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
     jmethodID sfctor = jniEnv->GetStaticMethodID(sfc, "findOrCreate", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)Lcom/certora/wala/cast/solidity/loader/FunctionType;");
     return jniEnv->CallStaticObjectMethod(sfc, sfctor, jniEnv->NewStringUTF(name), declType, returns, params);
 }
 
 jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool event) {
-    jobjectArray ps = getCAstTypes(var->parameters());
-    jobjectArray rs = !event && var->returnParameters().size() > 0? getCAstTypes(var->returnParameters()): NULL;
     const char *nm = var->name().c_str();
+    std::cout << "!! " << nm << std::endl;
     const ContractDefinition *cls = var->annotation().contract;
-    const Type *tt = ((TypeType*)cls->type())->actualType();
-    std::cout << "!!! " << cls->type()->toString(true) << " " << tt->toString(true) << std::endl;
-    jobject declType = getType(tt);
-    print(declType);
+    std::cout << "!! " << cls << std::endl;
+    jobject declType;
+    if (cls != NULL) {
+        const Type *tt = ((TypeType*)cls->type())->actualType();
+        std::cout << "!!! " << cls->type()->toString(true) << " " << tt->toString(true) << std::endl;
+        declType = getType(tt);
+        print(declType);
+    } else {
+        declType = NULL;
+    }
+    jobjectArray ps = getCAstTypes(var->parameters());
+    print(ps);
+    jobjectArray rs = !event && var->returnParameters().size() > 0? getCAstTypes(var->returnParameters()): NULL;
+    std::cout << "!! " << rs << std::endl;
     return getSolidityFunctionType(nm, declType, ps, rs, event);
 }
 
@@ -276,6 +289,7 @@ bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::
         }
         
     } else if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(decl)) {
+        std::cout << "a " << *loc.sourceName << loc.start << std::endl;
         jobject fun = getSolidityFunctionType(var, false);
         jobject selfPtr = getSelfPtr();
         jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
@@ -284,6 +298,7 @@ bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::
         return true;
         
     } else if (CallableDeclaration const* var = dynamic_cast<CallableDeclaration const*>(decl)) {
+        std::cout << "b " << *loc.sourceName << loc.start << std::endl;
         jobject fun = getSolidityFunctionType(var, true);
         jobject selfPtr = getSelfPtr();
         jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
@@ -441,15 +456,21 @@ jobject Translator::visitCallableDefinition(const CallableDeclaration &_node, jo
     std::cout << "ft 1:" << _node.name().c_str() << std::endl;
 
     const ContractDefinition *cls = _node.annotation().contract;
-    std::cout << "@@@ " << cls->type()->toString(true) << " " << ((TypeType*)cls->type())->actualType()->toString(true) << std::endl;
-    jobject selfType = getType(((TypeType*)cls->type())->actualType());
-//    jobject selfType = context->type();
     
-    std::cout << "ft 2:" << _node.name().c_str() << std::endl;
-    std::cout << funName << endl;
-    print(funName);
-    print(selfType);
-
+    jobject selfType;
+    if (cls != NULL) {
+        std::cout << "@@@ " << cls->type()->toString(true) << " " << ((TypeType*)cls->type())->actualType()->toString(true) << std::endl;
+        selfType = getType(((TypeType*)cls->type())->actualType());
+        //    jobject selfType = context->type();
+        
+        std::cout << "ft 2:" << _node.name().c_str() << std::endl;
+        std::cout << funName << endl;
+        print(funName);
+        print(selfType);
+    } else {
+        selfType = NULL;
+    }
+    
     jclass sft = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
     jmethodID sfCtor = jniEnv->GetStaticMethodID(sft, "findOrCreate", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)Lcom/certora/wala/cast/solidity/loader/FunctionType;");
     jobject funType = jniEnv->CallStaticObjectMethod(sft, sfCtor, funName, selfType, retType, children);
@@ -756,17 +777,28 @@ bool Translator::visit(const ImportDirective &_node) {
 }
 
 bool Translator::visit(const IndexAccess &_node) {
+    std::cout << *_node.location().sourceName << ":" << _node.location().start << std::endl;
     _node.baseExpression().accept(*this);
     jobject obj = last();
+    std::cout << "1." << std::endl;
+    print(obj);
     
-    _node.indexExpression()->accept(*this);
-    jobject idx = last();
-
-    const Type *eltType = _node.annotation().type;
-    
-    jobject ref = cast.makeNode(cast.ARRAY_REF, obj, cast.makeConstant(getType(eltType)), idx);
-    
-    ret(record(ref, _node.location(), eltType));
+    if (_node.indexExpression() != NULL) {
+        _node.indexExpression()->accept(*this);
+        jobject idx = last();
+        std::cout << "2." << std::endl;
+        print(idx);
+        
+        const Type *eltType = _node.annotation().type;
+        std::cout << eltType << std::endl;
+        
+        jobject ref = cast.makeNode(cast.ARRAY_REF, obj, cast.makeConstant(getType(eltType)), idx);
+        
+        ret(record(ref, _node.location(), eltType));
+    } else {
+        const Type* baseType = _node.baseExpression().annotation().type;
+        ret(record(cast.makeNode(cast.TYPE_LITERAL_EXPR, cast.makeConstant(baseType->toString(true).append("[]").c_str())), _node.location()));
+    }
     return false;
 }
 
@@ -1126,17 +1158,19 @@ bool Translator::visit(const UsingForDirective &_node) {
 bool Translator::visit(const VariableDeclaration &_node) {
     showStackTrace();
     
-    std::cout << "&&&&" << _node.type()->toString(true) << std::endl;
-    
-    jobject type = getType(_node.type());
-    
+    std::cout << "&&&&" << std::endl;
+    std::cout << *_node.location().sourceName << ":" << _node.location().start << std::endl;
+        
     jobject loc = makePosition(_node.location());
     
     const char *name = _node.name().c_str();
     
     bool isFinal = _node.isConstant();
-    
-     if (_node.isStateVariable() || _node.isStructMember() || _node.isFileLevelVariable()) {
+
+    std::cout << name << " " << _node.annotation().type << std::endl;
+    jobject type = getType(_node.type());
+
+    if (_node.isStateVariable() || _node.isStructMember() || _node.isFileLevelVariable()) {
         jobject jname = cast.makeConstant(name);
         jobject loc = makePosition(_node.location());
         jobject nameLoc = makePosition(_node.nameLocation());

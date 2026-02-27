@@ -100,9 +100,9 @@ public:
     }
 };
 
-class RootContext : virtual public VariableContainerContext, virtual public EntityContext  {
+class RootContext : virtual public VariableContainerContext, virtual public FunctionContainerContext, virtual public EntityContext  {
 public:
-    RootContext(jobject entity) : DelegatingContext(NULL), VariableContainerContext(NULL), EntityContext(entity, NULL)  { }
+    RootContext(jobject entity) : DelegatingContext(NULL), VariableContainerContext(NULL), FunctionContainerContext(NULL), EntityContext(entity, NULL)  { }
 };
 
 using namespace solidity::frontend;
