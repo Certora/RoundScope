@@ -233,10 +233,19 @@ jobject Translator::getSelfType() {
     return jniEnv->CallObjectMethod(methodType, gdc);
 }
 
-jobject Translator::getSolidityFunctionType(const char *name, jobject declType, jobjectArray params, jobjectArray returns, bool event) {
+jobject Translator::getSolidityFunctionType(const char *name, jobject declType, jobjectArray params, jobjectArray returns, bool event, bool isCtor) {
     jclass sfc = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/FunctionType");
     jmethodID sfctor = jniEnv->GetStaticMethodID(sfc, "findOrCreate", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;[Lcom/ibm/wala/cast/tree/CAstType;)Lcom/certora/wala/cast/solidity/loader/FunctionType;");
-    return jniEnv->CallStaticObjectMethod(sfc, sfctor, jniEnv->NewStringUTF(name), declType, returns, params);
+    return jniEnv->CallStaticObjectMethod(sfc, sfctor, jniEnv->NewStringUTF(isCtor? "<init>": name), declType, returns, params);
+}
+
+bool isConstructor(const CallableDeclaration* decl) {
+    FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(decl);
+    if (var) {
+        return var->isConstructor();
+    } else {
+        return false;
+    }
 }
 
 jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool event) {
@@ -257,7 +266,7 @@ jobject Translator::getSolidityFunctionType(const CallableDeclaration* var, bool
     print(ps);
     jobjectArray rs = !event && var->returnParameters().size() > 0? getCAstTypes(var->returnParameters()): NULL;
     std::cout << "!! " << rs << std::endl;
-    return getSolidityFunctionType(nm, declType, ps, rs, event);
+    return getSolidityFunctionType(nm, declType, ps, rs, event, isConstructor(var));
 }
 
 jobject Translator::getSelfPtr() {
@@ -292,7 +301,13 @@ bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::
         std::cout << "a " << *loc.sourceName << loc.start << std::endl;
         jobject fun = getSolidityFunctionType(var, false);
         jobject selfPtr = getSelfPtr();
-        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, cast.makeConstant(decl->name().c_str())), loc);
+        jobject name;
+        if (var->isConstructor()) {
+            name = cast.makeConstant((var->annotation().contract->name() + "::<init>").c_str() );
+        } else {
+            name = cast.makeConstant(decl->name().c_str());
+        }
+        jobject retVal = record(cast.makeNode(cast.OBJECT_REF, selfPtr, name), loc);
         cast.setAstNodeType(context->entity(), retVal, fun);
         ret(retVal);
         return true;
@@ -621,7 +636,7 @@ bool Translator::visit(const FunctionCall &_node) {
     int i = 1;
     std::cout << "***" << _node.location().start << std::endl;
     std::cout << "***" << typeid(_node.expression()).name() << std::endl;
- std::vector<ASTPointer<const Expression>> args = _node.arguments();
+    std::vector<ASTPointer<const Expression>> args = _node.arguments();
     int len = (int)args.size();
     jclass cnc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode");
     jobjectArray children = jniEnv->NewObjectArray(len+1, cnc, NULL);
@@ -687,6 +702,46 @@ void Translator::endVisit(const FunctionDefinition &_node) {
     if (_node.isImplemented()) {
         jobject ast = last();
         std::cout << "got here 4 " << _node.name() << std::endl;
+        
+        if (_node.isConstructor()) {
+            std::vector<ASTPointer<ModifierInvocation>> const& superCalls = _node.modifiers();
+            
+            for(std::vector<ASTPointer<ModifierInvocation>>::const_iterator scs = superCalls.begin();
+                scs != superCalls.end();
+                scs++)
+            {
+                const Declaration *superDecl = scs->get()->name().annotation().referencedDeclaration;
+                std::cout << "%%%%" << superDecl->name() << std::endl;
+                ContractDefinition const* superContract = dynamic_cast<ContractDefinition const*>(superDecl);
+                if (superContract != NULL) {
+                    const FunctionDefinition* ctor = superContract->constructor();
+                    if (handleIdentifierDeclaration(ctor, scs->get()->location())) {
+                        jobject callee = last();
+                        print(callee);
+                        
+                        int i = 1;
+                        std::vector<ASTPointer<Expression>> const* ctorArgs = scs->get()->arguments();
+                        int len = (int)ctorArgs->size();
+                        jclass cnc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode");
+                        jobjectArray children = jniEnv->NewObjectArray(len+1, cnc, NULL);
+                        jniEnv->SetObjectArrayElement(children, 0, cast.makeNode(cast.SUPER));
+
+                        for(std::vector<ASTPointer<Expression>>::const_iterator args = ctorArgs->begin();
+                            args != ctorArgs->end();
+                            args++, i++)
+                        {
+                            args->get()->accept(*this);
+                            jniEnv->SetObjectArrayElement(children, i, last());
+                        }
+                        
+                        ast = cast.makeNode(cast.BLOCK_STMT,
+                                record(cast.makeNode(cast.CALL, callee, children), scs->get()->location()),
+                        ast);
+                    }
+                }
+            }
+        }
+        
         ASTPointer<ParameterList> retp = _node.returnParameterList();
         std::vector<jobject> retvals;
         const ParameterList &ret = *retp.get();
@@ -912,7 +967,8 @@ void Translator::endVisit(const ModifierDefinition &_node) {
 }
 
 bool Translator::visit(const ModifierInvocation &_node) {
-    return visitNode(_node);
+    // handled in function definition
+    return false;
 }
 
 bool Translator::visit(const NewExpression &_node) {

@@ -35,7 +35,7 @@ public class FunctionType implements Method {
 
 	private static String signature(String name, CAstType[] args, CAstType returnType) {
 		String sig = name + " " + arrayToString(args);
-		if (returnType != null) {
+		if (returnType != null && returnType != SolidityCAstType.get("void")) {
 			sig += " --> " + returnType.getName();
 		}
 		return sig;
