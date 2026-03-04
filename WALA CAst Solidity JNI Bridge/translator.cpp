@@ -43,7 +43,7 @@ jobject findOrCreateType(JNIEnv *jniEnv, const StructDefinition &structDef) {
     }
 }
 
-jobject findOrCreateType(JNIEnv *jniEnv, const ContractDefinition& contract) {
+jobject findOrCreateType(CAstWrapper& cast, JNIEnv *jniEnv, const ContractDefinition& contract) {
     std::string contractName = ((TypeType*)contract.type())->actualType()->toString(true);
     if (types.contains(contractName)) {
         std::cout << " found " << contractName << std::endl;
@@ -67,9 +67,17 @@ jobject findOrCreateType(JNIEnv *jniEnv, const ContractDefinition& contract) {
             jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;)V");
             contractType = jniEnv->NewGlobalRef(jniEnv->NewObject(ctCls, ctCtor, entityName));
         } else {
+            jclass sCls = jniEnv->FindClass("java/util/HashSet");
+            jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
+            jmethodID add = jniEnv->GetMethodID(sCls, "add", "(Ljava/lang/Object;)Z");
+            jobject qualifierSet = jniEnv->NewObject(sCls, sCtor);
+             if (contract.abstract()) {
+                 jniEnv->CallBooleanMethod(qualifierSet, add, cast.ABSTRACT);
+            }
+            
             ctCls = jniEnv->FindClass("com/certora/wala/cast/solidity/loader/ContractType");
-            jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;)V");
-            contractType = jniEnv->NewGlobalRef(jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet));
+            jmethodID ctCtor = jniEnv->GetMethodID(ctCls, "<init>", "(Ljava/lang/String;Ljava/util/Set;Ljava/util/Set;)V");
+            contractType = jniEnv->NewGlobalRef(jniEnv->NewObject(ctCls, ctCtor, entityName, supersSet, qualifierSet));
             supers[contractType] = supersSet;
         }
         
@@ -119,7 +127,7 @@ jobject Translator::getType(Type const* type) {
         return jniEnv->CallStaticObjectMethod(smt, gt, keyType, valueType);
         
     } else if (type->category() == Type::Category::Contract) {
-        return findOrCreateType(jniEnv, dynamic_cast<const ContractType *>(type)->contractDefinition());
+        return findOrCreateType(cast, jniEnv, dynamic_cast<const ContractType *>(type)->contractDefinition());
         
     } else if (type->category() == Type::Category::Struct) {
         return findOrCreateType(jniEnv, *dynamic_cast<const StructDefinition*>(dynamic_cast<const StructType *>(type)->typeDefinition()));
@@ -398,13 +406,13 @@ bool Translator::visit(const Block &_node) {
  }
 
 bool Translator::visit(const ContractDefinition &_node) {
-    jobject contractType = findOrCreateType(jniEnv, _node);
+    jobject contractType = findOrCreateType(cast, jniEnv, _node);
     context = new ContractContext(context, jniEnv, supers[contractType], contractType);
     return true;
 }
 
 void Translator::endVisit(const ContractDefinition &_node) {
-    jobject contractType = findOrCreateType(jniEnv, _node);
+    jobject contractType = findOrCreateType(cast, jniEnv, _node);
 
     jclass sCls = jniEnv->FindClass("java/util/HashSet");
     jmethodID sCtor = jniEnv->GetMethodID(sCls, "<init>", "()V");
@@ -533,8 +541,16 @@ jobject Translator::visitCallableDefinition(const CallableDeclaration &_node, jo
                 jniEnv->CallBooleanMethod(qualSet, add, cast.PUBLIC);
        }
     }
+    if (_node.markedVirtual()) {
+        jniEnv->CallBooleanMethod(qualSet, add, cast.VIRTUAL);
+    }
  
-    jclass sfet = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/FunctionEntity");
+    bool isEvent = (dynamic_cast<EventDefinition const*>(&_node) != NULL);
+    bool isError = (dynamic_cast<ErrorDefinition const*>(&_node) != NULL);
+
+    jclass sfet = jniEnv->FindClass(
+                    isEvent || isError? "com/certora/wala/cast/solidity/tree/EventEntity":
+                        "com/certora/wala/cast/solidity/tree/FunctionEntity");
     jmethodID sfeCtor = jniEnv->GetMethodID(sfet, "<init>", "(Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstType$Function;[Ljava/lang/String;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;[Lcom/ibm/wala/cast/tree/CAstSourcePositionMap$Position;Ljava/util/Collection;Lcom/ibm/wala/cast/tree/CAstNode;)V");
     
     return jniEnv->NewObject(sfet, sfeCtor, funName, funType, argNames, loc, nameLoc, argLocations,qualSet, NULL);
@@ -677,8 +693,10 @@ bool Translator::visit(const FunctionDefinition &_node) {
     } else if (_node.stateMutability() == StateMutability::View) {
         jniEnv->CallVoidMethod(funEntity, feaq, cast.CONST);
     }
-    
     if (_node.libraryFunction()) {
+        jniEnv->CallVoidMethod(funEntity, feaq, cast.STATIC);
+    }
+    if (! _node.isImplemented()) {
         jniEnv->CallVoidMethod(funEntity, feaq, cast.STATIC);
     }
     

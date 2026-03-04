@@ -165,7 +165,7 @@ private:
     jobjectArray getCAstTypes(const std::vector< solidity::frontend::ASTPointer< solidity::frontend::VariableDeclaration>>&);
     jobject getSolidityFunctionType(const char *, jobject, jobjectArray, jobjectArray, bool, bool);
     jobject getSolidityFunctionType(const solidity::frontend::CallableDeclaration*, bool);
-    jobject visitCallableDefinition(const  solidity::frontend::CallableDeclaration &, jobject, bool);
+    jobject visitCallableDefinition(const solidity::frontend::CallableDeclaration &, jobject, bool);
     jobject getSelfType();
     jobject getSelfPtr();
     bool handleIdentifierDeclaration(const Declaration *, solidity::langutil::SourceLocation const&);

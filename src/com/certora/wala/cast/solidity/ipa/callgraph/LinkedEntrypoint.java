@@ -1,5 +1,7 @@
 package com.certora.wala.cast.solidity.ipa.callgraph;
 
+import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -45,7 +47,12 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 	protected int makeArgument(AbstractRootMethod m, int i) {
 		TypeReference r = this.method.getParameterType(i);
 		if (r != SolidityTypes.address && !(r.isReferenceType() && getCha().lookupClass(r).isInterface())) {
-			return super.makeArgument(m, i);
+			int vn = super.makeArgument(m, i);
+			if (i == 0) {
+				int self = selfForType(selfType, m);
+				m.addSetInstance(FieldReference.findOrCreate(method.getDeclaringClass().getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference()), vn, self);
+			}
+			return vn;
 		} else {
 			return m.addInvocation(new int[0], CallSiteReference.make(i, MethodReference.findOrCreate(SolidityAddressInstantiator.aiRef, SolidityAddressInstantiator.aiSel), Dispatch.STATIC)).getDef();
 		}
@@ -75,17 +82,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			return objSelf;
 		}
 	}
-	
-	@Override
-	public SSAAbstractInvokeInstruction addCall(AbstractRootMethod m) {
-		SSAAbstractInvokeInstruction call = super.addCall(m);
-		int functionSelf = call.getUse(0);
-		int objSelf = selfForType(selfType, m);
-		m.addSetInstance(FieldReference.findOrCreate(call.getDeclaredTarget().getDeclaringClass(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference()), functionSelf, objSelf);
 		
-		return call;
-	}
-
 	@Override
 	public TypeReference[] getParameterTypes(int i) {
 		return new TypeReference[] { method.getParameterType(i) };
@@ -94,17 +91,25 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<Atom,TypeReference>,TypeReference> linkage, IClassHierarchy cha) {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
-		cha.forEach(cl -> { 
-			if (cl != contractClass && cha.isAssignableFrom(contractClass, cl) && !cl.isInterface()) {
-				cl.getDeclaredInstanceFields().forEach(m -> { 
+		cha.forEach(cls -> { 
+			if (cls.getName().toString().contains("BaseGeneralPool")) {
+				System.err.println("found it");
+			}
+			if (cls != contractClass && cha.isAssignableFrom(contractClass, cls) && !cls.isInterface() && !cls.isAbstract()) {
+				allSupersIncludingSelf(cls).forEach(x ->
+				x.getDeclaredInstanceFields().forEach(m -> { 
+					if (cls.getName().toString().contains("StablePoolHarness") && m.getName().toString().contains("onSwap")) {
+						System.err.print(cls);
+					}
 					IClass fieldClass = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, m.getName().toString()));
-					if (fieldClass != null && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
+					if (fieldClass != null && !m.getDeclaringClass().isInterface() && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
 						AstFunctionClass afc = (AstFunctionClass) fieldClass;
-						if (afc.isPublic() && !afc.isAbstract()) {
-							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, cl, linkage));
+						if (afc.isPublic() && !afc.isAbstract() && afc.getCodeBody() != null) {
+							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, cls, linkage));
 						}
 					}
-				});
+				})
+			);
 			}
 		});
 		return es;

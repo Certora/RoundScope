@@ -441,14 +441,16 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 	class SolidityClass extends AstClass {
 
 		protected SolidityClass(Position sourcePosition, TypeName typeName, Map<Atom, IField> declaredFields,
-				Map<Selector, IMethod> declaredMethods, Collection<TypeName> supers, TypeName superClass, boolean isInterface) {
+				Map<Selector, IMethod> declaredMethods, Collection<TypeName> supers, TypeName superClass, boolean isInterface, Collection<CAstQualifier> qualifiers) {
 			super(sourcePosition, typeName, SolidityLoader.this, (short) (isInterface? ACC_INTERFACE: 0), declaredFields, declaredMethods);
 			this.supers = supers;
 			this.superClass = superClass;
+			this.qualifiers = qualifiers;
 		}
 
-		private Collection<TypeName> supers;
-		private TypeName superClass;
+		private final Collection<TypeName> supers;
+		private final Collection<CAstQualifier> qualifiers;
+		private final TypeName superClass;
 
 		@Override
 		public Collection<Annotation> getAnnotations() {
@@ -480,6 +482,11 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		@Override
 		public String toString() {
 			return getReference().toString();
+		}
+
+		@Override
+		public boolean isAbstract() {
+			return qualifiers.contains(CAstQualifier.ABSTRACT);
 		}
 
 	}
@@ -527,7 +534,7 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 							struct.getName();
 			si = supers;
 		}
-		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass, type.getType() instanceof InterfaceType);
+		IClass newClass = new SolidityClass(type.getPosition(), typeName, fields, methods, si, superClass, type.getType() instanceof InterfaceType, type.getQualifiers());
 		types.put(typeName, newClass);
 		makeFields(type, newClass, fields);
 		return newClass;
@@ -537,9 +544,15 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 		public TypeReference getSelf();
 
+		public CAstType getSelfType();
+
 		public TypeReference[] getArgumentTypes();
 		
 		public boolean isPure();
+		
+		public boolean isVirtual();
+		
+		public String functionName();
 	}
 	
 	private abstract class TypedFunctionClass extends AstFunctionClass implements TypedCodeBody {
@@ -619,6 +632,14 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			self = null;
 		}
 
+		CAstType selfType;
+		if (f instanceof Method && ((Method)f).getDeclaringType() != null) {
+			selfType = ((Method)f).getDeclaringType();
+		} else {
+			selfType = null;
+		}
+
+		
 		if (n instanceof EventEntity) {
 			return new TypedFunctionClass(fn, this, n.getPosition()) {
 
@@ -626,8 +647,20 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					types.put(fn.getName(), this);
 				}
 				
+				public CAstType getSelfType() {
+					return selfType;
+				}
+				
+				public String functionName() {
+					return n.getType().getName();
+				}
+				
 				public boolean isPure() {
 					return true;
+				}
+				
+				public boolean isVirtual() {
+					return false;
 				}
 				
 				@Override
@@ -664,6 +697,11 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				public TypeReference[] getArgumentTypes() {
 					return args;
 				}
+
+				@Override
+				public IMethod getMethod(Selector selector) {
+					return null;
+				}
 			};
 		} else {
 			boolean pblc = n.getQualifiers().contains(CAstQualifier.PUBLIC);
@@ -673,9 +711,22 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 				function.getReference(), this,
 				n.getPosition(), n, c, self) {
 
+					public CAstType getSelfType() {
+						return selfType;
+					}
+				
+					public String functionName() {
+						return n.getType().getName();
+					}
+
+					@Override
+					public boolean isVirtual() {
+						return n.getQualifiers().contains(CAstQualifier.VIRTUAL);
+					}
+
 					@Override
 					public String toString() {
-						return (isAbstract()? "abstract ": "") + "function " + n.getName();
+						return (n.getQualifiers().contains(CAstQualifier.ABSTRACT)? "abstract ": "") + "function " + n.getName();
 					}
 
 					@Override
@@ -690,14 +741,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 		
 					@Override
 					public boolean isAbstract() {
-						if (n.getType() instanceof FunctionType) {
-							if (((FunctionType)n.getType()).getDeclaringType() instanceof InterfaceType) {
-								return true;
-							}
-						}
-						return super.isAbstract();
+						return false;
 					}
-
+					
 					@Override
 					public int getModifiers() {
 						return modifiers;
@@ -716,9 +762,9 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 					private IMethod abs = null;
 					@Override
 					public IMethod getMethod(Selector selector) {
-						if (! isAbstract()) {
+						if (!n.getQualifiers().contains(CAstQualifier.ABSTRACT) && functionBody != null) {
 							return super.getMethod(selector);
-						} else {
+						} else if (!MethodReference.finalizeSelector.equals(selector)) {
 							if (abs == null) {
 								IClass cls = this;
 								abs = new IMethod() {
@@ -927,6 +973,8 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 								};
 							}
 							return abs;
+						} else {
+							return null;
 						}
 					}				
 			};
@@ -1017,6 +1065,29 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			}
 		}
 		return Topological.makeTopologicalIter(x).iterator();
+	}
+
+	public static Set<IClass> allSupersIncludingSelf(IClass cls) {
+		if (cls == null) {
+			return Collections.emptySet();
+		} else {
+			Set<IClass> directSupers = HashSetFactory.make(cls.getAllImplementedInterfaces());
+			if (cls.getSuperclass() != null) {
+				directSupers.add(cls.getSuperclass());
+			}
+			
+			Collection<IClass> otherSupers = directSupers.stream().filter(x -> x != null).map(sc -> allSupersIncludingSelf(sc)).reduce((a, b) -> { 
+				Set<IClass> all = HashSetFactory.make(a);
+				all.addAll(b);
+				return all;
+			}).orElse(Collections.emptySet());
+			
+			directSupers.addAll(otherSupers);
+			
+			directSupers.add(cls);
+			
+			return directSupers;
+		}
 	}
 	
 	
