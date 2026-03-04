@@ -51,8 +51,7 @@ public class ContractEntity extends AbstractClassEntity {
 
 	@Override
 	public Collection<CAstQualifier> getQualifiers() {
-		// TODO Auto-generated method stub
-		return null;
+		return ((CAstType.Class)getType()).getQualifiers();
 	}
 
 	@Override

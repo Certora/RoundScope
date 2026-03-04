@@ -43,8 +43,7 @@ public class InterfaceType implements Class {
 
 	@Override
 	public Collection<CAstQualifier> getQualifiers() {
-		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override

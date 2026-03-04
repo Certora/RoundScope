@@ -21,6 +21,8 @@ import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Res
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
+import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
+import com.certora.wala.cast.solidity.loader.SolidityLoader.TypedCodeBody;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
@@ -32,8 +34,11 @@ import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
+import com.ibm.wala.classLoader.CallSiteReference;
+import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -43,10 +48,12 @@ import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilderCancelException;
 import com.ibm.wala.ipa.callgraph.ContextSelector;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
+import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.impl.Util;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DelegatingSSAContextInterpreter;
@@ -58,6 +65,7 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
 import com.ibm.wala.ssa.IRFactory;
+import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
@@ -66,6 +74,7 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.JGF;
 import com.ibm.wala.util.graph.JGF.EntityTypes;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
+import com.ibm.wala.util.intset.OrdinalSet;
 
 public class TestRunner {
 
@@ -134,12 +143,14 @@ public class TestRunner {
 
 			Util.addDefaultSelectors(options, cha);
 			Util.addDefaultBypassLogic(options, Util.class.getClassLoader(), cha);
-			ContextSelector appSelector = null;
+					ContextSelector appSelector = null;
 			SSAContextInterpreter appInterpreter = null;
 			SSAPropagationCallGraphBuilder cgBuilder = new nCFABuilder(2,
 					SolidityLoader.solidity.getFakeRootMethod(cha, options, analysisCache), options, analysisCache,
 					appSelector, appInterpreter);
-			
+		
+			options.setSelector(new VirtualTargetSelector(cgBuilder, options));
+
 			cgBuilder.setContextInterpreter(
 				new DelegatingSSAContextInterpreter(
 		              new FactoryBypassInterpreter(options, analysisCache), 
@@ -182,13 +193,23 @@ public class TestRunner {
 			} else {
 				JSONArray graphs = new JSONArray();
 				for(CGNode n : cg.getEntrypointNodes()) {
+					Set<IClass> types = HashSetFactory.make();
+					OrdinalSet<InstanceKey> fn = cgBuilder.getPointerAnalysis().getPointsToSet(cgBuilder.getPointerKeyForLocal(n, 1));
+					fn.forEach(fk -> {
+						PointerKey sk = cgBuilder.getPointerKeyForInstanceField(fk, fk.getConcreteType().getField(Atom.findOrCreateUnicodeAtom("self")));
+						OrdinalSet<InstanceKey> sik = cgBuilder.getPointerAnalysis().getPointsToSet(sk);
+						sik.forEach(stype -> { 
+							types.add(stype.getConcreteType());
+						});
+					});
+					
 					RoundingAnalysis ra = new RoundingAnalysis(cg);
 					List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
 					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
 				    Result G = ri.getRoundingResult();
 					String res = G.toString();
 				    if (res.contains("--> Up") || res.contains("--> Down") || res.contains("--> Either")) {
-						System.out.println("looking at " + n + " --> " + ri.getResultOrResults());
+						System.out.println("looking at " + n + " (" + types + ") --> " + ri.getResultOrResults());
 				    	System.out.println(res);
 				    }
 				    NumberedLabeledGraph<JSONObject,Position> outGraph = G.toGraph();
@@ -201,7 +222,7 @@ public class TestRunner {
 
 						@Override
 						public String label(Graph<JSONObject> entity) {
-							return "graph of " + n.getMethod().getReference();
+							return "graph of " + n.getMethod().getReference() + " (" + types + ")";
 						}
 
 						@Override

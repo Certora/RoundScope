@@ -15,15 +15,17 @@ import com.ibm.wala.types.TypeReference;
 public class ContractType implements Class {
 	private final String name;
 	private final Set<String> superTypes;
+	private final Set<CAstQualifier> qualifiers;
 	
 	public ContractType(String name) {
-		this(name, Collections.emptySet());
+		this(name, Collections.emptySet(), Collections.emptySet());
 	}
 
-	public ContractType(String name, Set<String> superTypes) {
+	public ContractType(String name, Set<String> superTypes, Set<CAstQualifier> qualifiers) {
 		super();
 		this.name = name;
 		this.superTypes = superTypes;
+		this.qualifiers = qualifiers;
 		
 		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 		
@@ -43,8 +45,7 @@ public class ContractType implements Class {
 
 	@Override
 	public Collection<CAstQualifier> getQualifiers() {
-		// TODO Auto-generated method stub
-		return null;
+		return qualifiers;
 	}
 
 	@Override
