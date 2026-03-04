@@ -7,11 +7,17 @@ import org.json.JSONObject;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.classLoader.IClass;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.CGNode;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.JGF;
 import com.ibm.wala.util.graph.JGF.EntityTypes;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
+import com.ibm.wala.util.intset.OrdinalSet;
 
 public class JSONOutput {
 
@@ -40,6 +46,21 @@ public class JSONOutput {
 				return ps.stream().map(p -> p.getURL().getFile() + ":" +  toLocalPos(p)).reduce((a, b) -> a + b).orElse("");
 			}
 		});
+		return out;
+	}
+
+	public static JSONObject outputAsJSON(PointerAnalysis<InstanceKey> PA, CGNode n, Result G) {
+		Set<IClass> types = HashSetFactory.make();
+		OrdinalSet<InstanceKey> fn = PA.getPointsToSet(PA.getHeapModel().getPointerKeyForLocal(n, 1));
+		fn.forEach(fk -> { 
+			PointerKey sk = PA.getHeapModel().getPointerKeyForInstanceField(fk, fk.getConcreteType().getField(Atom.findOrCreateUnicodeAtom("self")));
+			OrdinalSet<InstanceKey> sik = PA.getPointsToSet(sk);
+			sik.forEach(stype -> { 
+				types.add(stype.getConcreteType());
+			});
+		});
+	
+		JSONObject out = outputAsJSON(n, types, G);
 		return out;
 	}
 

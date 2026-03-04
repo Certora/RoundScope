@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.certora.wala.analysis.defuse.DefUseGraph;
+import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.util.JSONOutput;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
@@ -682,6 +683,8 @@ public class RoundingAnalysis {
 			NumberedLabeledGraph<JSONObject, Position> toGraph();
 
 			JSONObject makeGraph(NumberedLabeledGraph<JSONObject,Position> g, Map<Pair<CGNode, List<Direction>>, JSONObject> startedSoFar);
+		
+			Map<FieldReference, Direction> getReturnRounding();
 		}
 
 		public Result getRoundingResult() {
@@ -860,7 +863,20 @@ public class RoundingAnalysis {
 						}
 					}
 				}
+
+				@Override
+				public Map<FieldReference, Direction> getReturnRounding() {
+					return getResultOrResults();
+				}
 			};
 		}
+	}
+
+	public static Result analyzeForNode(CallGraph cg, CGNode n) throws CancelException {
+		RoundingAnalysis ra = new RoundingAnalysis(cg);
+		List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
+		RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
+		Result G = ri.getRoundingResult();
+		return G;
 	}
 }
