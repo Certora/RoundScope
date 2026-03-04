@@ -5,18 +5,14 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.certora.certoraprover.cvl.Ast;
 import com.certora.wala.analysis.rounding.Direction;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
-import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
@@ -33,10 +29,8 @@ import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
-import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
-import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisCache;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -50,7 +44,6 @@ import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.impl.Util;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
-import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DelegatingSSAContextInterpreter;
@@ -65,8 +58,6 @@ import com.ibm.wala.ssa.IRFactory;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
-import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.intset.OrdinalSet;
 
 public class TestRunner {
 
@@ -186,27 +177,13 @@ public class TestRunner {
 				JSONArray graphs = new JSONArray();
 				for(CGNode n : cg.getEntrypointNodes()) {
 					
-					RoundingAnalysis ra = new RoundingAnalysis(cg);
-					List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
-					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
-				    Result G = ri.getRoundingResult();
+					Result G = RoundingAnalysis.analyzeForNode(cg, n);
 
-					Set<IClass> types = HashSetFactory.make();
-					OrdinalSet<InstanceKey> fn = cgBuilder.getPointerAnalysis().getPointsToSet(cgBuilder.getPointerKeyForLocal(n, 1));
-					fn.forEach(fk -> {
-						PointerKey sk = cgBuilder.getPointerKeyForInstanceField(fk, fk.getConcreteType().getField(Atom.findOrCreateUnicodeAtom("self")));
-						OrdinalSet<InstanceKey> sik = cgBuilder.getPointerAnalysis().getPointsToSet(sk);
-						sik.forEach(stype -> { 
-							types.add(stype.getConcreteType());
-						});
-					});
-
-				    JSONObject out = JSONOutput.outputAsJSON(n, types, G);
-				    graphs.put(out);
+				    graphs.put(JSONOutput.outputAsJSON(PA, n, G));
 
 				    String res = G.toString();
 				    if (res.contains("--> Up") || res.contains("--> Down") || res.contains("--> Either")) {
-						System.out.println("looking at " + n + " (" + types + ") --> " + ri.getResultOrResults());
+						System.out.println("looking at " + n + "  --> " + G.getReturnRounding());
 				    	System.out.println(res);
 				    }
 				}
