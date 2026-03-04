@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import com.certora.wala.analysis.defuse.DefUseGraph;
+import com.certora.wala.cast.solidity.util.JSONOutput;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
@@ -62,11 +63,6 @@ public class RoundingAnalysis {
 
 	public RoundingAnalysis(CallGraph CG) {
 		this.CG = CG;
-	}
-
-	public static String toLocalPos(Position p) {
-		return "[" + p.getFirstLine() + "," + p.getFirstCol() + "-" + p.getLastLine() + "," + p.getLastCol()
-				+ "]";
 	}
 
 	public class RoundingInference extends SSAInference<RoundingInference.RoundingVariable> {
@@ -766,7 +762,7 @@ public class RoundingAnalysis {
 					o.put("method", ir.getMethod().toString());
 					DebuggingInformation dbg = ((AstMethod) ir.getMethod()).debugInfo();
 					if (ir.getMethod() instanceof AstMethod) {
-						o.put("methodPosition", dbg.getCodeBodyPosition().getURL().getPath() + ":" + toLocalPos(dbg.getCodeBodyPosition()));
+						o.put("methodPosition", dbg.getCodeBodyPosition().getURL().getPath() + ":" + JSONOutput.toLocalPos(dbg.getCodeBodyPosition()));
 					}
 					JSONArray params;
 					o.put("parameters", params = new JSONArray(ir.getNumberOfParameters()));
@@ -777,7 +773,7 @@ public class RoundingAnalysis {
 							params.put(p);
 							Position pos = dbg.getParameterPosition(i);
 							if (pos != null) {
-								p.put("position", toLocalPos(pos));
+								p.put("position", JSONOutput.toLocalPos(pos));
 								p.put("source", new SourceBuffer(pos).toString());
 							}
 						} catch (IOException e) {
@@ -850,7 +846,7 @@ public class RoundingAnalysis {
 						Position p = use? dbg.getOperandPosition(i, j): dbg.getInstructionPosition(i);
 						if (p != null && (!IMPLICIT_NEITHER || data[i][j] != Direction.Neither)) {
 							try {
-								String k = toLocalPos(p);
+								String k = JSONOutput.toLocalPos(p);
 								JSONObject x = new JSONObject();
 								roundings.put(k, x);
 								x.put("rounding", data[i][j]);
