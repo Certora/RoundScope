@@ -22,10 +22,10 @@ import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
-import com.certora.wala.cast.solidity.loader.SolidityLoader.TypedCodeBody;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
+import com.certora.wala.cast.solidity.util.JSONOutput;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
@@ -33,8 +33,6 @@ import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.AstClass;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
-import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
-import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.classLoader.Module;
@@ -48,7 +46,6 @@ import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.CallGraphBuilderCancelException;
 import com.ibm.wala.ipa.callgraph.ContextSelector;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
-import com.ibm.wala.ipa.callgraph.MethodTargetSelector;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
 import com.ibm.wala.ipa.callgraph.impl.Util;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
@@ -65,15 +62,10 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.slicer.SDG;
 import com.ibm.wala.ipa.slicer.Slicer;
 import com.ibm.wala.ssa.IRFactory;
-import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
-import com.ibm.wala.util.graph.Graph;
-import com.ibm.wala.util.graph.JGF;
-import com.ibm.wala.util.graph.JGF.EntityTypes;
-import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
 import com.ibm.wala.util.intset.OrdinalSet;
 
 public class TestRunner {
@@ -193,6 +185,12 @@ public class TestRunner {
 			} else {
 				JSONArray graphs = new JSONArray();
 				for(CGNode n : cg.getEntrypointNodes()) {
+					
+					RoundingAnalysis ra = new RoundingAnalysis(cg);
+					List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
+					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
+				    Result G = ri.getRoundingResult();
+
 					Set<IClass> types = HashSetFactory.make();
 					OrdinalSet<InstanceKey> fn = cgBuilder.getPointerAnalysis().getPointsToSet(cgBuilder.getPointerKeyForLocal(n, 1));
 					fn.forEach(fk -> {
@@ -202,36 +200,15 @@ public class TestRunner {
 							types.add(stype.getConcreteType());
 						});
 					});
-					
-					RoundingAnalysis ra = new RoundingAnalysis(cg);
-					List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
-					RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
-				    Result G = ri.getRoundingResult();
-					String res = G.toString();
+
+				    JSONObject out = JSONOutput.outputAsJSON(n, types, G);
+				    graphs.put(out);
+
+				    String res = G.toString();
 				    if (res.contains("--> Up") || res.contains("--> Down") || res.contains("--> Either")) {
 						System.out.println("looking at " + n + " (" + types + ") --> " + ri.getResultOrResults());
 				    	System.out.println(res);
 				    }
-				    NumberedLabeledGraph<JSONObject,Position> outGraph = G.toGraph();
-				    graphs.put(JGF.toJGF(outGraph, new EntityTypes<JSONObject>() {
-
-						@Override
-						public JSONObject obj(JSONObject entity) {
-							return entity;
-						}
-
-						@Override
-						public String label(Graph<JSONObject> entity) {
-							return "graph of " + n.getMethod().getReference() + " (" + types + ")";
-						}
-
-						@Override
-						public String label(JSONObject from, JSONObject to) {
-							Set<? extends Position> ps = outGraph.getEdgeLabels(from, to);
-							return ps.stream().map(p -> p.getURL().getFile() + ":" +  RoundingAnalysis.toLocalPos(p)).reduce((a, b) -> a + b).orElse("");
-						}
-
-				    }));
 				}
 				
 				try (FileWriter jo = new FileWriter(args[1])) {
