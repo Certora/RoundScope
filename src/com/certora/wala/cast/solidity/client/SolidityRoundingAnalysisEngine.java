@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
@@ -14,14 +15,14 @@ import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.util.CancelException;
 
-public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONArray> {
+public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONObject> {
 
 	public SolidityRoundingAnalysisEngine(File confFile) throws FileNotFoundException {
 		super(confFile);
 	}
 
 	@Override
-	public JSONArray performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+	public JSONObject performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
 		JSONArray graphs = new JSONArray();
 		CallGraph cg = builder.getCallGraph();
 		for(CGNode n : cg.getEntrypointNodes()) {
@@ -37,10 +38,12 @@ public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONA
 		    }
 		}
 		
-		return graphs;
+		JSONObject G = new JSONObject();
+		G.put("graphs", graphs);
+		return G;
 	}
 	
-	public JSONArray analyze() throws IOException, IllegalArgumentException, CancelException {
+	public JSONObject analyze() throws IOException, IllegalArgumentException, CancelException {
 		buildAnalysisScope();
 		buildClassHierarchy();
 		PropagationCallGraphBuilder builder = defaultCallGraphBuilder();
