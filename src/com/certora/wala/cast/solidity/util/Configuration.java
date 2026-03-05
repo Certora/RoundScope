@@ -123,4 +123,14 @@ public class Configuration {
 			
 		};
 	}
+
+	public static void getSpecRules(Conf files) throws FileNotFoundException {
+		Ast rules = files.getRules();
+		rules.getAstBaseBlocks().component1().forEach(r -> {
+			System.err.println(r.toString());
+			r.component8$Shared().getCmds().forEach(c -> {
+				System.err.println("  " + c.toString());
+			});
+		});
+	}
 }

@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.json.JSONArray;
 
-import com.certora.certoraprover.cvl.Ast;
 import com.certora.wala.analysis.rounding.Direction;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
@@ -69,14 +68,16 @@ public class TestRunner {
 			File confFile = new File(args[0]);
 			Conf conf = Configuration.getConf(confFile);
 			try {
-				getSpecRules(conf);
+				Configuration.getSpecRules(conf);
 			} catch (Exception | Error e) {
 
 			}
 
 			SingleClassLoaderFactory sl = new SolidityLoaderFactory(confFile, conf.getIncludePath());
 
-			AnalysisScope s = new CAstAnalysisScope(conf.getFiles().toArray(new Module[conf.getFiles().size()]), sl,
+			Module[] solidityFiles = conf.getFiles().toArray(new Module[conf.getFiles().size()]);
+			
+			AnalysisScope s = new CAstAnalysisScope(solidityFiles, sl,
 					Collections.singleton(SolidityLoader.solidity));
 
 			System.out.println(s);
@@ -152,8 +153,8 @@ public class TestRunner {
 			CAstCallGraphUtil.AVOID_DUMP.set(false);
 			CAstCallGraphUtil.dumpCG(cgBuilder.getCFAContextInterpreter(), PA, cg);
 			
-			boolean changed;
 			if (useOldAnalysis) {
+				boolean changed;
 				Map<CGNode, Direction> rounding = HashMapFactory.make();
 				do {
 					changed = false;
@@ -195,16 +196,6 @@ public class TestRunner {
 		} catch (RuntimeException | CancelException | IOException e) {
 			assert false : e;
 		}
-	}
-
-	private static void getSpecRules(Conf files) throws FileNotFoundException {
-		Ast rules = files.getRules();
-		rules.getAstBaseBlocks().component1().forEach(r -> {
-			System.err.println(r.toString());
-			r.component8$Shared().getCmds().forEach(c -> {
-				System.err.println("  " + c.toString());
-			});
-		});
 	}
 
 }
