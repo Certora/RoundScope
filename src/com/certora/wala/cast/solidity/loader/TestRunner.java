@@ -1,7 +1,6 @@
 package com.certora.wala.cast.solidity.loader;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
@@ -14,6 +13,7 @@ import com.certora.wala.analysis.rounding.Direction;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
+import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngine;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
@@ -36,7 +36,6 @@ import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.AnalysisScope;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
-import com.ibm.wala.ipa.callgraph.CallGraphBuilderCancelException;
 import com.ibm.wala.ipa.callgraph.ContextSelector;
 import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.impl.Everywhere;
@@ -61,11 +60,12 @@ import com.ibm.wala.util.collections.HashMapFactory;
 public class TestRunner {
 
 	private static boolean useOldAnalysis = false;
-
-	public static void main(String[] args) throws ClassHierarchyException, FileNotFoundException,
-			IllegalArgumentException, CallGraphBuilderCancelException {
-		try {
-			File confFile = new File(args[0]);
+	
+	private static boolean useOldRunner = false;
+	
+	public static void main(String[] args) throws ClassHierarchyException, IllegalArgumentException, IOException, CancelException {
+		File confFile = new File(args[0]);
+		if (useOldRunner) {
 			Conf conf = Configuration.getConf(confFile);
 			try {
 				Configuration.getSpecRules(conf);
@@ -193,8 +193,14 @@ public class TestRunner {
 					graphs.write(jo, 4, 0);
 				}
 			}
-		} catch (RuntimeException | CancelException | IOException e) {
-			assert false : e;
+		} else {
+			SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngine(confFile);
+			JSONArray graphs = E.analyze();
+						
+			try (FileWriter jo = new FileWriter(args[1])) {
+				graphs.write(jo, 4, 0);
+			}
+
 		}
 	}
 
