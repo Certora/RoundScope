@@ -1,6 +1,7 @@
 package com.certora.wala.cast.solidity.loader;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
@@ -8,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.certora.wala.analysis.rounding.Direction;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
@@ -21,6 +23,11 @@ import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.certora.wala.cast.solidity.util.JSONOutput;
+import com.github.erosb.jsonsKema.JsonParser;
+import com.github.erosb.jsonsKema.Schema;
+import com.github.erosb.jsonsKema.SchemaLoader;
+import com.github.erosb.jsonsKema.ValidationFailure;
+import com.github.erosb.jsonsKema.Validator;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
@@ -195,12 +202,18 @@ public class TestRunner {
 			}
 		} else {
 			SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngine(confFile);
-			JSONArray graphs = E.analyze();
+			JSONObject graphs = E.analyze();
 						
 			try (FileWriter jo = new FileWriter(args[1])) {
 				graphs.write(jo, 4, 0);
 			}
 
+			Schema schema = SchemaLoader.forURL("https://raw.githubusercontent.com/jsongraph/json-graph-specification/refs/heads/master/json-graph-schema_v2.json").load();
+			Validator validator = Validator.forSchema(schema);
+			ValidationFailure failure = validator.validate(new JsonParser(new FileReader(args[1])).parse());
+			if (failure != null) {
+				System.err.println(failure);
+			}
 		}
 	}
 

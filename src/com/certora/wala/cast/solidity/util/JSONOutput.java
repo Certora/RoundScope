@@ -29,6 +29,10 @@ public class JSONOutput {
 	public static JSONObject outputAsJSON(CGNode n, Set<IClass> types, Result G) {
 		NumberedLabeledGraph<JSONObject,Position> outGraph = G.toGraph();
 		JSONObject out = JGF.toJGF(outGraph, new EntityTypes<JSONObject>() {
+			@Override
+			public String label(JSONObject n) {
+				return n.getString("method");
+			}
 	
 			@Override
 			public JSONObject obj(JSONObject entity) {
