@@ -64,7 +64,7 @@ A utility to generate Java-like stack traces in C++.  Used in RoundScope develop
 4. Solidity:
 [build the latest Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
 5. WALA:
-While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.  These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
+While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.  These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
 
 ### building RoundScope
 1. Get RoundScope: clone this repository into some dir, hereinafter called `RS`
@@ -81,4 +81,4 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
 
 ### Running RoundScope
 1. cd into `RS/WALA CAst Solidity JNI Bridge`
-2. ```java -Djava.library.path=. -jar ../target/com.certora.RoundScope-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
+2. `java -Djava.library.path=. -jar ../target/com.certora.RoundScope-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
