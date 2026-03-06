@@ -44,7 +44,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 	private final Conf conf;
 	private SingleClassLoaderFactory loaders;
 	
-	SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
+	protected SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
 		this.confFile = confFile;
 		this.conf = Configuration.getConf(confFile);
 	}
