@@ -81,4 +81,4 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
 
 ### Running RoundScope
 1. cd into `RS/WALA CAst Solidity JNI Bridge`
-2. ```java -Djava.library.path=. -jar ../target/com.certora.RoundScope-0.0.1-SNAPSHOT.jar <a .conf file>`
+2. ```java -Djava.library.path=. -jar ../target/com.certora.RoundScope-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
