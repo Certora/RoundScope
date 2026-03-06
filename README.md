@@ -4,7 +4,7 @@ This tool takes a Certora `.conf` file, and performs analysis to generate a repo
 
 ## report format
 
-The report formay is a [JGF](https://jsongraphformat.info/) array of graphs, one for each external or public function in the Solidity files specified by the `.conf` file.  The nodes are a refinement of the underlying call graph, with a node for each call graph node and the rounding state of its arguments.  Potentially, the same function could be called with different rounding states for its arguments, so there would be multiple nodes in this JFG graph corresponding to those multiple rounding argument states.  The graph is per-public-function so that someone interested in a specific public function sees a graph specific to that function.
+The report format is an array of [JGF](https://jsongraphformat.info/) graphs, one for each external or public function in the Solidity files specified by the `.conf` file.  The nodes are a refinement of the underlying call graph, with a node for each call graph node and the rounding state of its arguments.  Potentially, the same function could be called with different rounding states for its arguments, so there would be multiple nodes in this JFG graph corresponding to those multiple rounding argument states.  The graph is per-public-function so that someone interested in a specific public function sees a graph specific to that function.
 
 More specifically, the format is as follows in terms of JSON structure, following the [JGF schema](https://github.com/jsongraph/json-graph-specification/blob/master/json-graph-schema_v2.json):
 ```
@@ -64,14 +64,14 @@ A utility to generate Java-like stack traces in C++.  Used in RoundScope develop
 4. Solidity:
 [build the latest Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
 5. WALA:
-While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.   These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
+While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.  These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`
 
 ### building RoundScope
 1. Get RoundScope: clone this repository into some dir, hereinafter called `RS`
    
 2. building the Java code
    1. `cd RS`
-   2. run `maven install`
+   2. run `mvn install`
 
 4. building the native code
    1. cd `RS/WALA CAst Solidity JNI Bridge`
