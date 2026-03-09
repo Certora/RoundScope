@@ -26,23 +26,24 @@ CAST_LIBS=-lcast
 
 RS_FLAGS=-DRS_DEVEL
 RS_DEVEL_LIBS=-lcpptrace
+TARGET=
 
 default:	libwalacastsolidity.jnilib
 
 com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.h com_certora_wala_cast_solidity_jni_SolidityJNIBridge.cpp $(JNI_HEADERS)
-	$(CC) -std=c++23 -fpic -c -o $@ -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) $(SOLIDITY_INCLUDES) $(BREW_INCLUDES) $(CAST_INCLUDES) com_certora_wala_cast_solidity_jni_SolidityJNIBridge.cpp
+	$(CC) $(TARGET) -std=c++23 -fpic -c -o $@ -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) $(SOLIDITY_INCLUDES) $(BREW_INCLUDES) $(CAST_INCLUDES) com_certora_wala_cast_solidity_jni_SolidityJNIBridge.cpp
 
 solidityBridge.o:	solidityBridge.h solidityBridge.cpp
-	$(CC) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES) solidityBridge.cpp
+	$(CC) $(TARGET) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES) solidityBridge.cpp
 
 translator.o:	solidityBridge.h translator.h translator.cpp
-	$(CC) -std=c++23 -fpic -c -o $@ $(RS_FLAGS) $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) translator.cpp
+	$(CC) $(TARGET) -std=c++23 -fpic -c -o $@ $(RS_FLAGS) $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) translator.cpp
 
 assembly.o:	solidityBridge.h translator.h assembly.cpp
-	$(CC) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) assembly.cpp
+	$(CC) $(TARGET) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) assembly.cpp
 
 libwalacastsolidity.jnilib:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o solidityBridge.o translator.o assembly.o $(SOLIDITY_LIB_DEPS)
-	$(CC) -dynamiclib -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) $(RS_DEVEL_LIBS) -lstdc++ 
+	$(CC) $(TARGET) -dynamiclib -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) $(RS_DEVEL_LIBS) -lstdc++ 
 
 clean:
-	rm libwalacastsolidity.jnilib *.o
+	rm -f libwalacastsolidity.jnilib *.o

@@ -872,11 +872,15 @@ public class RoundingAnalysis {
 		}
 	}
 
-	public static Result analyzeForNode(CallGraph cg, CGNode n) throws CancelException {
-		RoundingAnalysis ra = new RoundingAnalysis(cg);
+	public Result analyzeForNode(CallGraph cg, CGNode n) throws CancelException {
 		List<Direction> params = IntStream.range(0, n.getMethod().getNumberOfParameters()).mapToObj(i -> Direction.Neither).toList();
-		RoundingInference ri = ra.new RoundingInference(params, HashSetFactory.make(), n);
-		Result G = ri.getRoundingResult();
-		return G;
+		Pair<CGNode,List<Direction>> key = Pair.make(n, params);
+		if (! rawResults.containsKey(key)) {
+			RoundingInference ri = new RoundingInference(params, HashSetFactory.make(), n);
+			Result G = ri.getRoundingResult();
+			return G;
+		} else {
+			return rawResults.get(key);
+		}
 	}
 }

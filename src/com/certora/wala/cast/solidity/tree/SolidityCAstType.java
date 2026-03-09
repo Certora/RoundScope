@@ -54,11 +54,11 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"bool", SolidityTypes.bool, false},
 			{"function", SolidityTypes.function, null},
 			{"struct", SolidityTypes.struct, null},
-			{"bytes", SolidityTypes.bytes, 0},
 			{"bytes32", SolidityTypes.bytes32, 0},
 			{"bytes4", SolidityTypes.bytes4, 0},
 			{"bytes16", SolidityTypes.bytes16, 0},
 			{"bytes1", SolidityTypes.bytes1, 0},
+			{"bytes2", SolidityTypes.bytes2, 0},
 			{"error", SolidityTypes.error, null},
 			{"msg", SolidityTypes.msg, null},
 			{"void", TypeReference.Void, null}}) {
@@ -77,8 +77,12 @@ public class SolidityCAstType implements CAstType.Primitive {
 				SolidityCAstType ti = new SolidityCAstType("int" + i, 0);
 				types.put("int" + i, ti);
 				irTypes.put(ti, it);
-
 			}
+			
+			types.put("bytes", SolidityArrayType.get(get("bytes1")));
+			irTypes.put(get("bytes"), irTypes.get(get("bytes1")).getArrayTypeForElementType());
+			
+
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			assert false : e;
 		}
