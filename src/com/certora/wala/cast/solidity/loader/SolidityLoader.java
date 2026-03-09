@@ -1069,6 +1069,16 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 
 	public static Set<IClass> allSupersIncludingSelf(IClass cls) {
 		if (cls == null) {
+			return Collections.singleton(cls);
+		} else {
+			Set<IClass> supers = allSupers(cls);
+			supers.add(cls);
+			return supers;
+		}
+	}
+		
+	public static Set<IClass> allSupers(IClass cls) {
+		if (cls == null) {
 			return Collections.emptySet();
 		} else {
 			Set<IClass> directSupers = HashSetFactory.make(cls.getAllImplementedInterfaces());
@@ -1083,8 +1093,6 @@ public class SolidityLoader extends CAstAbstractModuleLoader {
 			}).orElse(Collections.emptySet());
 			
 			directSupers.addAll(otherSupers);
-			
-			directSupers.add(cls);
 			
 			return directSupers;
 		}
