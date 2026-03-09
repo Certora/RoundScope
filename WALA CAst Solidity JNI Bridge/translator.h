@@ -195,6 +195,7 @@ public:
     virtual bool visit(const BinaryOperation &_node) override;
     virtual bool visit(const Block &_node) override;
     virtual bool visit(const ContractDefinition &_node) override;
+    virtual bool visit(const Conditional &_node) override;
     virtual void endVisit(const ContractDefinition &_node) override;
     virtual bool visit(const ElementaryTypeName &_node) override;
     virtual bool visit(const ElementaryTypeNameExpression &_node) override;
