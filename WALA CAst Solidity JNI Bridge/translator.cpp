@@ -414,6 +414,20 @@ bool Translator::visit(const Block &_node) {
     return false;
  }
 
+bool Translator::visit(const Conditional &_node) {
+    _node.condition().accept(*this);
+    jobject cond = last();
+    
+    _node.trueExpression().accept(*this);
+    jobject trueV = last();
+    
+    _node.falseExpression().accept(*this);
+    jobject falseV = last();
+    
+    ret(record(cast.makeNode(cast.IF_EXPR, cond, trueV, falseV), _node.location(), _node.annotation().type));
+    return false;
+}
+
 bool Translator::visit(const ContractDefinition &_node) {
     jobject contractType = findOrCreateType(cast, jniEnv, _node);
     context = new ContractContext(context, jniEnv, supers[contractType], contractType, _node);
