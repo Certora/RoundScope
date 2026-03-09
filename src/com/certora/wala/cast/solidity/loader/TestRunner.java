@@ -183,9 +183,10 @@ public class TestRunner {
 				
 			} else {
 				JSONArray graphs = new JSONArray();
+				RoundingAnalysis ra = new RoundingAnalysis(cg);
 				for(CGNode n : cg.getEntrypointNodes()) {
 					
-					Result G = RoundingAnalysis.analyzeForNode(cg, n);
+					Result G = ra.analyzeForNode(cg, n);
 
 				    graphs.put(JSONOutput.outputAsJSON(PA, n, G));
 

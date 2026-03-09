@@ -93,6 +93,24 @@ jobject getArrayType(JNIEnv *jniEnv, jobject elt) {
     return jniEnv->CallStaticObjectMethod(smt, gt, elt);
 }
 
+jobject Translator::makeTupleType(JNIEnv *jniEnv, std::vector<Type const*> const& eltTypes) {
+    jobjectArray eltCAstTypes = jniEnv->NewObjectArray(eltTypes.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType"), NULL);
+    int i = 0;
+    for (std::vector<Type const *>::const_iterator t=eltTypes.begin();
+         t != eltTypes.end();
+         ++t, i++)
+    {
+        if (*t) {
+            jniEnv->SetObjectArrayElement(eltCAstTypes, i, getType(*t));
+            CheckExceptions(cast);
+        }
+    }
+    
+    jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityTupleType");
+    jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "([Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
+    return jniEnv->CallStaticObjectMethod(smt, gt, eltCAstTypes);
+}
+
 jobject Translator::getType(Type const* type) {
     if (type->category() == Type::Category::Array) {
         ArrayType const* arrayType = (ArrayType *)type;
@@ -102,21 +120,7 @@ jobject Translator::getType(Type const* type) {
     } else if (type->category() == Type::Category::Tuple) {
         TupleType const* tupleType = (TupleType const*)type;
         std::vector<Type const*> const& eltTypes = tupleType->components();
-        jobjectArray eltCAstTypes = jniEnv->NewObjectArray(eltTypes.size(), jniEnv->FindClass("com/ibm/wala/cast/tree/CAstType"), NULL);
-        int i = 0;
-        for (std::vector<Type const *>::const_iterator t=eltTypes.begin();
-             t != eltTypes.end();
-             ++t, i++)
-        {
-            if (*t) {
-                jniEnv->SetObjectArrayElement(eltCAstTypes, i, getType(*t));
-                CheckExceptions(cast);
-            }
-        }
-        
-        jclass smt = jniEnv->FindClass("com/certora/wala/cast/solidity/tree/SolidityTupleType");
-        jmethodID gt = jniEnv->GetStaticMethodID(smt, "get", "([Lcom/ibm/wala/cast/tree/CAstType;)Lcom/ibm/wala/cast/tree/CAstType;");
-        return jniEnv->CallStaticObjectMethod(smt, gt, eltCAstTypes);
+        return makeTupleType(jniEnv, eltTypes);
 
     } else if (type->category() == Type::Category::Mapping) {
         MappingType const* mapType = (MappingType const*)type;
@@ -184,12 +188,17 @@ private:
     jobject supersSet;
     jobject _type;
     JNIEnv *jniEnv;
+    const ContractDefinition& _contract;
     
 public:
-    ContractContext(DelegatingContext *parent, JNIEnv *jniEnv, jobject supersSet, jobject type) : DelegatingContext(parent), FunctionContainerContext(parent), VariableContainerContext(parent), jniEnv(jniEnv), supersSet(supersSet), _type(type){
+    ContractContext(DelegatingContext *parent, JNIEnv *jniEnv, jobject supersSet, jobject type, const solidity::frontend::ContractDefinition& contract) : DelegatingContext(parent), FunctionContainerContext(parent), VariableContainerContext(parent), jniEnv(jniEnv), supersSet(supersSet), _type(type), _contract(contract) {
         
     }
     
+    virtual const solidity::frontend::ContractDefinition* contract() override {
+        return &_contract;
+    }
+
     virtual jobject type() override {
         return _type;
     }
@@ -330,7 +339,7 @@ bool Translator::handleIdentifierDeclaration(const Declaration *decl, solidity::
         return true;
         
     } else if (MagicVariableDeclaration const* var = dynamic_cast<MagicVariableDeclaration const*>(decl)) {
-        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(decl->name().c_str())), loc, var->type()));
+        ret(record(cast.makeNode(cast.PRIMITIVE, cast.makeConstant(decl->name().c_str()), cast.makeConstant(getType(var->type()))), loc, var->type()));
         return true;
         
     } else if (ContractDefinition const* var = dynamic_cast<ContractDefinition const*>(decl)) {
@@ -405,9 +414,23 @@ bool Translator::visit(const Block &_node) {
     return false;
  }
 
+bool Translator::visit(const Conditional &_node) {
+    _node.condition().accept(*this);
+    jobject cond = last();
+    
+    _node.trueExpression().accept(*this);
+    jobject trueV = last();
+    
+    _node.falseExpression().accept(*this);
+    jobject falseV = last();
+    
+    ret(record(cast.makeNode(cast.IF_EXPR, cond, trueV, falseV), _node.location(), _node.annotation().type));
+    return false;
+}
+
 bool Translator::visit(const ContractDefinition &_node) {
     jobject contractType = findOrCreateType(cast, jniEnv, _node);
-    context = new ContractContext(context, jniEnv, supers[contractType], contractType);
+    context = new ContractContext(context, jniEnv, supers[contractType], contractType, _node);
     return true;
 }
 
@@ -648,10 +671,27 @@ bool Translator::visit(const ForStatement &_node) {
 bool Translator::visit(const FunctionCall &_node) {
     _node.expression().accept(*this);
     jobject fun = last();
- 
+    
+    const ContractDefinition* currentContract = context->contract();
+    std::cout << "##### " << currentContract << std::endl;
+    if (currentContract != NULL) {
+        FunctionDefinition const* callee = _node.resolveFunctionCall(_node, currentContract);
+        std::cout << "###### " << callee << std::endl;
+        if (callee != NULL) {
+            if (handleIdentifierDeclaration(callee, _node.expression().location())) {
+                solidity::langutil::SourceLocation const& loc = _node.location();
+                std::cout << "###### " << *loc.sourceName << loc.start << std::endl;
+                print(last());
+                fun = last();
+                
+            }
+        }
+   }
+
     int i = 1;
     std::cout << "***" << _node.location().start << std::endl;
     std::cout << "***" << typeid(_node.expression()).name() << std::endl;
+    print(getType(_node.expression().annotation().type));
     std::vector<ASTPointer<const Expression>> args = _node.arguments();
     int len = (int)args.size();
     jclass cnc = jniEnv->FindClass("com/ibm/wala/cast/tree/CAstNode");
@@ -672,17 +712,22 @@ bool Translator::visit(const FunctionCall &_node) {
 
 bool Translator::visit(const FunctionDefinition &_node) {
     jobject retType = NULL;
-    const std::vector<ASTPointer<VariableDeclaration>> rets = _node.returnParameters();
+    const std::vector<ASTPointer<VariableDeclaration>>& rets = _node.returnParameters();
     if (rets.size() == 0) {
         // void function
     } else if (rets.size() == 1) {
         Type const * retTypeName = rets[0].get()->type();
          retType = getType(retTypeName);
     } else {
-        std::cout << "ret " << rets.size() << std::endl;
-        showStackTrace();
-        // todo
-    }
+        std::vector<const Type *> retvals;
+        for(std::vector<ASTPointer<VariableDeclaration>> ::const_iterator args = rets.begin();
+            args != rets.end();
+            args++)
+        {
+            retvals.push_back(args->get()->type());
+        }
+        retType = makeTupleType(jniEnv, retvals);
+     }
     
     jobject funEntity = visitCallableDefinition(_node, retType, _node.isConstructor());
  
@@ -928,7 +973,7 @@ bool Translator::visit(const Mapping &_node) {
 
 bool Translator::visit(const MemberAccess &_node) {
     std::cout << "***" << typeid(_node.annotation().referencedDeclaration).name() << std::endl;
-
+ 
     if (VariableDeclaration const* var = dynamic_cast<VariableDeclaration const*>(_node.annotation().referencedDeclaration)) {
         std::cout << "####found a var for " << var->name() << std::endl;
         if (var->isConstant() && var->value()) {
@@ -945,6 +990,7 @@ bool Translator::visit(const MemberAccess &_node) {
     
     jobject elt = cast.makeConstant( _node.memberName().c_str() );
     jobject ref = cast.makeNode(cast.OBJECT_REF, obj, elt);
+        
     if (FunctionDefinition const* var = dynamic_cast<FunctionDefinition const*>(_node.annotation().referencedDeclaration)) {
        std::cout << "got here " << var->name() << std::endl;
         jobject fun = getSolidityFunctionType(var, false);

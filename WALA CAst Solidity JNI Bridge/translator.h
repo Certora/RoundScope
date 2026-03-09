@@ -23,6 +23,10 @@ protected:
 public:
     virtual DelegatingContext *parent() { return _parent; }
     
+    virtual const solidity::frontend::ContractDefinition* contract() {
+        return parent()->contract();
+    }
+    
     virtual jobject type() {
         return parent()->type();
     }
@@ -103,6 +107,11 @@ public:
 class RootContext : virtual public VariableContainerContext, virtual public FunctionContainerContext, virtual public EntityContext  {
 public:
     RootContext(jobject entity) : DelegatingContext(NULL), VariableContainerContext(NULL), FunctionContainerContext(NULL), EntityContext(entity, NULL)  { }
+    
+    virtual const solidity::frontend::ContractDefinition* contract() {
+        return NULL;
+    }
+
 };
 
 using namespace solidity::frontend;
@@ -169,7 +178,8 @@ private:
     jobject getSelfType();
     jobject getSelfPtr();
     bool handleIdentifierDeclaration(const Declaration *, solidity::langutil::SourceLocation const&);
-
+    jobject makeTupleType(JNIEnv *, std::vector<Type const*> const&);
+    
 public:
     jobject last() {
         return tree;
@@ -185,6 +195,7 @@ public:
     virtual bool visit(const BinaryOperation &_node) override;
     virtual bool visit(const Block &_node) override;
     virtual bool visit(const ContractDefinition &_node) override;
+    virtual bool visit(const Conditional &_node) override;
     virtual void endVisit(const ContractDefinition &_node) override;
     virtual bool visit(const ElementaryTypeName &_node) override;
     virtual bool visit(const ElementaryTypeNameExpression &_node) override;

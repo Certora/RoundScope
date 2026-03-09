@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
+import com.certora.wala.cast.solidity.tree.SolidityTupleType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Method;
@@ -48,17 +49,24 @@ public class FunctionType implements Method {
 		
 		this.name = signature(name, args, returnType);
 		 		
+		if (name.contains("_onJoinPool")) {
+			System.err.println(name);
+		}
+		
 		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + (self != null? self.getName() + ".": "") + this.name);
 		SolidityCAstType.record((self != null? self.getName() + ".": "") + this.name, this, tr);
 	}
 
-	// TODO: multiple return types; probably use a tuple
+	private static CAstType makeReturnType(CAstType[] returnType) {
+		return returnType==null? null: returnType.length==1? returnType[0]: SolidityTupleType.get(returnType);
+	}
+	
 	public FunctionType(String name, CAstType self, CAstType[] returnType, CAstType... args) {
-		this(name, self, returnType[0], args);
+		this(name, self, makeReturnType(returnType), args);
 	}
 	
 	public static FunctionType findOrCreate(String name, CAstType self, CAstType returnType[], CAstType... args) {
-		CAstType ret = returnType==null || returnType.length==0? SolidityCAstType.get("void"): returnType[0];
+		CAstType ret = makeReturnType(returnType);
 		String sig = signature(name, args, ret);
 		if (SolidityCAstType.types.containsKey(sig)) {
 			return (FunctionType) SolidityCAstType.get(sig);
