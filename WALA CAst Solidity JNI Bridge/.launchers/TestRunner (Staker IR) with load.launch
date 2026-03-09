@@ -36,7 +36,7 @@
     <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.certora.wala.cast.solidity.loader.TestRunner"/>
     <listAttribute key="org.eclipse.jdt.launching.MODULEPATH"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="com.certora.wala.cast.solidity"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/Users/julian/Downloads/TarName/inputs/.certora_sources/run4.conf"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/Users/julian/Downloads/TarName/inputs/.certora_sources/run4.conf /tmp/staker.json"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.certora.wala.cast.solidity"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
     <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=&quot;/Users/julian/git/WALA CAst Solidity/WALA CAst Solidity JNI Bridge&quot;"/>

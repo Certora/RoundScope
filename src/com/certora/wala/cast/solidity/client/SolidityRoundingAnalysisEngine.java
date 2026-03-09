@@ -10,9 +10,12 @@ import org.json.JSONObject;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.util.JSONOutput;
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
+import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.util.CancelException;
 
 public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONObject> {
@@ -25,9 +28,15 @@ public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONO
 	public JSONObject performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
 		JSONArray graphs = new JSONArray();
 		CallGraph cg = builder.getCallGraph();
-		for(CGNode n : cg.getEntrypointNodes()) {
-			
-			Result G = RoundingAnalysis.analyzeForNode(cg, n);
+
+		System.err.println(cg.getClassHierarchy());
+		CAstCallGraphUtil.AVOID_DUMP.set(false);
+		CAstCallGraphUtil.dumpCG((SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), cg);
+
+		RoundingAnalysis ra = new RoundingAnalysis(cg);
+		for(CGNode n : cg) {
+			if (n.getMethod() instanceof AstMethod) {
+			Result G = ra.analyzeForNode(cg, n);
 
 		    graphs.put(JSONOutput.outputAsJSON(builder.getPointerAnalysis(), n, G));
 
@@ -36,6 +45,7 @@ public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONO
 				System.out.println("looking at " + n + "  --> " + G.getReturnRounding());
 		    	System.out.println(res);
 		    }
+			}
 		}
 		
 		JSONObject G = new JSONObject();
