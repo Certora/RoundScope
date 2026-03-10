@@ -46,14 +46,15 @@ public class Configuration {
 	}
 	
 	public static Conf getConf(File configFile) throws FileNotFoundException {
-		JSONTokener conf = new JSONTokener(new FileReader(configFile));
+		File absConfigFile = configFile.getAbsoluteFile();
+		JSONTokener conf = new JSONTokener(new FileReader(absConfigFile));
 		JSONObject cf = (JSONObject) conf.nextValue();
 		
 		String spec = cf.getString("verify");
 		if (spec.contains(":")) {
 			spec = spec.substring(spec.lastIndexOf(':')+1, spec.length());
 		}
-		File stem = configFile.getParentFile();
+		File stem = absConfigFile.getParentFile();
 		File rulesFile = getFile(stem, spec);
 
 		return new Conf() {
@@ -77,7 +78,7 @@ public class Configuration {
 						f = f.substring(0, f.lastIndexOf(':'));
 					}
 					if (! result.containsKey(f)) {
-						File m = getFile(configFile.getParentFile(), f);
+						File m = getFile(absConfigFile.getParentFile(), f);
 						result.put(f, new SourceFileModule(m, m.getAbsolutePath(), null));
 					}
 				}
@@ -113,7 +114,7 @@ public class Configuration {
 					for(int i =  0; i < packages.length(); i++) {
 						String elt = packages.getString(i);
 						String[] elts = elt.split("[=]");
-						result.put(elts[0], getFile(configFile.getParentFile(), elts[1]));
+						result.put(elts[0], getFile(absConfigFile.getParentFile(), elts[1]));
 					}
 					return result;
 				} else {
