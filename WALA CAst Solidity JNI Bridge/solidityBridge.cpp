@@ -28,9 +28,30 @@ void compileSources(
     solidity::frontend::CompilerStack& compiler,
     const solidity::StringMap &sources)
 {
+    for (auto const& s : sources) {
+        std::cerr << "source: " << s.first << " (" << s.second.size() << " bytes)" << std::endl;
+    }
+
     compiler.setSources(sources);
-    
-    compiler.parseAndAnalyze(solidity::frontend::CompilerStack::State::AnalysisSuccessful);
-    
-    std::cout << compiler.state() << " " << solidity::frontend::CompilerStack::State::AnalysisSuccessful << std::endl;
+
+    try {
+        bool success = compiler.parseAndAnalyze(solidity::frontend::CompilerStack::State::AnalysisSuccessful);
+
+        std::cerr << "parseAndAnalyze: " << (success ? "success" : "FAILED") << std::endl;
+        std::cerr << "compiler state: " << compiler.state() << " (target: " << solidity::frontend::CompilerStack::State::AnalysisSuccessful << ")" << std::endl;
+
+        if (!success) {
+            for (auto const& error : compiler.errors()) {
+                std::cerr << "  error: " << error->what() << std::endl;
+            }
+        }
+    } catch (boost::exception const& e) {
+        std::cerr << "parseAndAnalyze threw boost exception: " << boost::diagnostic_information(e) << std::endl;
+        std::cerr << "compiler state at crash: " << compiler.state() << std::endl;
+        for (auto const& error : compiler.errors()) {
+            std::cerr << "  error: " << error->what() << std::endl;
+        }
+    } catch (std::exception const& e) {
+        std::cerr << "parseAndAnalyze threw: " << e.what() << std::endl;
+    }
 }

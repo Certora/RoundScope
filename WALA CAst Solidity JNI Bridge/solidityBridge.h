@@ -21,6 +21,7 @@
 #include <libsolidity/interface/CompilerStack.h>
 
 #include <assert.h>
+#include <boost/exception/diagnostic_information.hpp>
 
 solidity::StringMap gatherSources(int argc, char const**argv);
 void compileSources(solidity::frontend::CompilerStack& compiler, const solidity::StringMap &sources);
