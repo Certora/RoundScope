@@ -1,0 +1,26 @@
+diff --git a/libsolidity/analysis/SyntaxChecker.cpp b/libsolidity/analysis/SyntaxChecker.cpp
+index 9bf784b36..3fce0b337 100644
+--- a/libsolidity/analysis/SyntaxChecker.cpp
++++ b/libsolidity/analysis/SyntaxChecker.cpp
+@@ -169,7 +169,7 @@ bool SyntaxChecker::visit(PragmaDirective const& _pragma)
+ 			SemVerMatchExpressionParser parser(tokens, literals);
+ 			SemVerMatchExpression matchExpression = parser.parse();
+ 			static SemVerVersion const currentVersion{std::string(VersionString)};
+-			solAssert(matchExpression.matches(currentVersion));
++			// Version check disabled for RoundScope compatibility
+ 			m_versionPragmaFound = true;
+ 		}
+ 		catch (SemVerError const&)
+diff --git a/libsolidity/parsing/Parser.cpp b/libsolidity/parsing/Parser.cpp
+index 77b702673..ac3b2d1ca 100644
+--- a/libsolidity/parsing/Parser.cpp
++++ b/libsolidity/parsing/Parser.cpp
+@@ -197,7 +197,7 @@ void Parser::parsePragmaVersion(SourceLocation const& _location, std::vector<Tok
+ 		static SemVerVersion const currentVersion{std::string(VersionString)};
+ 		// FIXME: only match for major version incompatibility
+ 		if (!matchExpression.matches(currentVersion))
+-			m_errorReporter.fatalParserError(
++			m_errorReporter.warning(
+ 				5333_error,
+ 				_location,
+ 				"Source file requires different compiler version (current compiler is " +
