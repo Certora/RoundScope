@@ -17,7 +17,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk
 
 # Build Solidity from source
 WORKDIR /build
-RUN git clone --depth 1 https://github.com/ethereum/solidity.git \
+RUN git clone --branch v0.8.34 --depth 1 https://github.com/ethereum/solidity.git \
     && cd solidity \
     && git submodule update --init --recursive \
     && mkdir build && cd build \
