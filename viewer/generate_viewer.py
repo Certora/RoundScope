@@ -60,11 +60,11 @@ def extract_roundings(data, project_root):
     Extract all (filename, range_key, rounding, source, expr) tuples from JSON,
     then aggregate per (filename, range_key) for context-free view.
     """
-    # Collect all rounding entries: (filename, range_key) -> list of {rounding, source, expr}
+    # Collect all rounding entries: (filename, range_key) -> list of {rounding, source, expr, graphIdx, nodeId}
     raw = defaultdict(list)
 
-    for graph in data["graphs"]:
-        for node in graph["nodes"].values():
+    for graph_idx, graph in enumerate(data["graphs"]):
+        for node_id, node in graph["nodes"].items():
             md = node["metadata"]
             method_pos = md.get("methodPosition", "")
             if not method_pos:
@@ -72,7 +72,10 @@ def extract_roundings(data, project_root):
             filename = extract_filename_from_method_position(method_pos)
 
             for range_key, info in md.get("roundings", {}).items():
-                raw[(filename, range_key)].append(info)
+                entry = dict(info)
+                entry["_graphIdx"] = graph_idx
+                entry["_nodeId"] = node_id
+                raw[(filename, range_key)].append(entry)
 
     # Aggregate
     aggregated = defaultdict(list)  # filename -> list of annotation dicts
@@ -91,6 +94,15 @@ def extract_roundings(data, project_root):
             if not expr and e.get("expr"):
                 expr = e["expr"]
 
+        # Collect unique (graphIdx, nodeId) pairs
+        seen_refs = set()
+        node_refs = []
+        for e in entries:
+            key = (e["_graphIdx"], e["_nodeId"])
+            if key not in seen_refs:
+                seen_refs.add(key)
+                node_refs.append({"g": e["_graphIdx"], "n": e["_nodeId"]})
+
         # Normalize filename: make relative to project_root
         rel_filename = normalize_path(filename, project_root)
 
@@ -103,10 +115,106 @@ def extract_roundings(data, project_root):
                 "rounding": agg_rounding,
                 "source": source,
                 "expr": expr,
+                "nodeRefs": node_refs,
             }
         )
 
     return dict(aggregated)
+
+
+def clean_node_label(label):
+    """Clean graph node labels: '<Code body of function repay>' -> 'repay'."""
+    if label.startswith("<Code body of "):
+        inner = label[len("<Code body of "):]
+        if inner.endswith(">"):
+            inner = inner[:-1]
+        if inner.startswith("function "):
+            return inner[len("function "):]
+        return inner
+    return label
+
+
+def parse_method_position(method_position):
+    """Parse 'path/to/file.sol:[sl,sc-el,ec]' into (filename, sl, sc, el, ec) or None."""
+    idx = method_position.rfind(":[")
+    if idx == -1:
+        return None
+    filename = method_position[:idx]
+    range_part = method_position[idx + 1:]
+    try:
+        sl, sc, el, ec = parse_range_key(range_part)
+        return filename, sl, sc, el, ec
+    except (ValueError, IndexError):
+        return None
+
+
+def extract_graphs(data, project_root):
+    """Process JGF graphs into a frontend-friendly structure."""
+    graphs = []
+    for graph in data["graphs"]:
+        nodes = {}
+        edges = []
+
+        for node_id, node in graph["nodes"].items():
+            label = clean_node_label(node.get("label", node_id))
+            md = node.get("metadata", {})
+            method_pos = md.get("methodPosition", "")
+
+            file_path = ""
+            sl = sc = el = ec = 0
+            if method_pos:
+                parsed = parse_method_position(method_pos)
+                if parsed:
+                    file_path, sl, sc, el, ec = parsed
+                    file_path = normalize_path(file_path, project_root)
+
+            # Determine return rounding (from the node's own roundings)
+            return_rounding = ""
+            roundings = md.get("roundings", {})
+            if roundings:
+                values = [r.get("rounding", "Neither") for r in roundings.values()]
+                agg = aggregate_rounding(values)
+                if agg != "Neither":
+                    return_rounding = agg
+
+            nodes[node_id] = {
+                "label": label,
+                "file": file_path,
+                "sl": sl,
+                "sc": sc,
+                "el": el,
+                "ec": ec,
+                "returnRounding": return_rounding,
+            }
+
+        for edge in graph.get("edges", []):
+            source = edge.get("source", "")
+            target = edge.get("target", "")
+            edge_label = edge.get("label", "")
+
+            # Parse call-site info from edge label (e.g., "file.sol:42")
+            call_file = ""
+            call_sl = 0
+            if edge_label:
+                # Edge labels may contain file:line info
+                parts = edge_label.rsplit(":", 1)
+                if len(parts) == 2:
+                    try:
+                        call_sl = int(parts[1])
+                        call_file = normalize_path(parts[0], project_root)
+                    except ValueError:
+                        pass
+
+            edges.append({
+                "source": source,
+                "target": target,
+                "file": call_file,
+                "sl": call_sl,
+            })
+
+        graphs.append({"nodes": nodes, "edges": edges})
+
+    return graphs
 
 
 def normalize_path(filepath, project_root):
@@ -119,12 +227,12 @@ def normalize_path(filepath, project_root):
     return filepath
 
 
-def collect_referenced_files(aggregated, project_root):
-    """Read source files referenced in the annotations, with Pygments highlighting."""
+def collect_referenced_files_from_paths(file_paths, project_root):
+    """Read source files by path, with Pygments highlighting."""
     formatter = HtmlFormatter(nowrap=True)
     sol_lexer = SolidityLexer()
     source_files = {}
-    for rel_path in aggregated:
+    for rel_path in file_paths:
         abs_path = os.path.join(project_root, rel_path)
         try:
             with open(abs_path, "r") as f:
@@ -178,7 +286,7 @@ def build_directory_tree(file_paths):
     return root
 
 
-def generate_html(project_root, source_files, directory_tree, contexts):
+def generate_html(project_root, source_files, directory_tree, contexts, graphs):
     """Generate the self-contained HTML string."""
     data_json = json.dumps(
         {
@@ -186,6 +294,7 @@ def generate_html(project_root, source_files, directory_tree, contexts):
             "sourceFiles": source_files,
             "directoryTree": directory_tree,
             "contexts": contexts,
+            "graphs": graphs,
         }
     )
 
@@ -337,6 +446,42 @@ td.line-content { padding-left: 12px; }
 .tree-file.has-findings:hover { background: #fef9c3; }
 .tree-file.has-findings.active { background: #d0e1fd; }
 .finding-count { color: #a16207; font-size: 11px; margin-left: 4px; }
+
+/* Bottom pane */
+#bottom-resize-handle {
+  display: none; height: 4px; cursor: row-resize; background: transparent; flex-shrink: 0;
+}
+#bottom-resize-handle:hover { background: #dee2e6; }
+#bottom-resize-handle.visible { display: block; }
+#bottom-pane {
+  display: none; height: 220px; min-height: 100px; flex-shrink: 0;
+  border-top: 1px solid #e0e0e0; background: #f8f9fa;
+}
+#bottom-pane.visible { display: flex; }
+#parents-pane, #children-pane {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+}
+#parents-pane { border-right: 1px solid #e0e0e0; }
+.pane-header {
+  position: sticky; top: 0; padding: 6px 12px; font-size: 12px; font-weight: 600;
+  color: #64748b; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; flex-shrink: 0;
+}
+.pane-content {
+  flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-wrap: wrap;
+  gap: 8px; align-content: flex-start;
+}
+.node-box {
+  border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px 10px;
+  background: #fff; cursor: pointer; min-width: 160px; max-width: 260px;
+  transition: box-shadow 0.15s;
+}
+.node-box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.nb-func { font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 600; font-size: 13px; color: #1e293b; }
+.nb-file { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.nb-callsite { font-size: 11px; color: #7c3aed; margin-top: 2px; }
+.nb-return { font-size: 11px; color: #94a3b8; margin-top: 2px; }
+.pane-empty { color: #94a3b8; font-size: 12px; padding: 12px; }
+.annotation-span { cursor: pointer; }
 """
 
 HTML_TEMPLATE_SCRIPT_START = r"""
@@ -368,6 +513,18 @@ HTML_TEMPLATE_SCRIPT_START = r"""
   </div>
 </div>
 
+<div id="bottom-resize-handle"></div>
+<div id="bottom-pane">
+  <div id="parents-pane">
+    <div class="pane-header">Parents (callers)</div>
+    <div class="pane-content" id="parents-content"></div>
+  </div>
+  <div id="children-pane">
+    <div class="pane-header">Children (callees)</div>
+    <div class="pane-content" id="children-content"></div>
+  </div>
+</div>
+
 <script>
 """
 
@@ -376,13 +533,31 @@ let currentFile = null;
 let currentContext = 'contextFree';
 let currentFindings = [];
 let currentFindingIdx = -1;
+let nodePositionIndex = {};
 
 function init() {
   document.getElementById('project-root-display').textContent = DATA.projectRoot;
   renderTree(DATA.directoryTree, document.getElementById('tree-panel'), '');
   setupResize();
+  setupBottomResize();
   updateContextCounts();
   updateTreeHighlights();
+  buildNodePositionIndex();
+}
+
+function buildNodePositionIndex() {
+  nodePositionIndex = {};
+  for (let g = 0; g < (DATA.graphs || []).length; g++) {
+    const graph = DATA.graphs[g];
+    for (const n in graph.nodes) {
+      const node = graph.nodes[n];
+      if (node.file && node.sl) {
+        const key = node.file + ':' + node.sl;
+        if (!nodePositionIndex[key]) nodePositionIndex[key] = [];
+        nodePositionIndex[key].push({g: g, n: n});
+      }
+    }
+  }
 }
 
 function renderTree(node, container, pathPrefix) {
@@ -593,6 +768,7 @@ function getAnnotationsForLine(annotations, lineNum, lineLen) {
       rounding: a.rounding,
       source: a.source || '',
       expr: a.expr || '',
+      nodeRefs: a.nodeRefs || [],
       // size for sorting: total span
       size: (a.el - a.sl) * 10000 + (a.ec - a.sc)
     });
@@ -656,6 +832,13 @@ function buildAnnotatedLine(lineText, annotations, lineNum) {
       });
       span.addEventListener('mouseleave', () => {
         tooltip.style.display = 'none';
+      });
+
+      span.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (ann.nodeRefs && ann.nodeRefs.length > 0) {
+          showNodeRelationships(ann.nodeRefs);
+        }
       });
 
       frag.appendChild(span);
@@ -739,6 +922,154 @@ function setupResize() {
   }
 }
 
+function setupBottomResize() {
+  const handle = document.getElementById('bottom-resize-handle');
+  const pane = document.getElementById('bottom-pane');
+  let startY, startHeight;
+
+  handle.addEventListener('mousedown', (e) => {
+    startY = e.clientY;
+    startHeight = pane.offsetHeight;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    e.preventDefault();
+  });
+
+  function onMouseMove(e) {
+    const newHeight = startHeight - (e.clientY - startY);
+    pane.style.height = Math.max(80, Math.min(500, newHeight)) + 'px';
+  }
+
+  function onMouseUp() {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+}
+
+function showNodeRelationships(nodeRefs) {
+  const handle = document.getElementById('bottom-resize-handle');
+  const pane = document.getElementById('bottom-pane');
+  const parentsCont = document.getElementById('parents-content');
+  const childrenCont = document.getElementById('children-content');
+
+  handle.classList.add('visible');
+  pane.classList.add('visible');
+  parentsCont.innerHTML = '';
+  childrenCont.innerHTML = '';
+
+  const parentMap = {};
+  const childMap = {};
+
+  for (const ref of nodeRefs) {
+    const graph = DATA.graphs[ref.g];
+    if (!graph) continue;
+    for (const edge of graph.edges) {
+      if (edge.target === ref.n) {
+        const key = ref.g + ':' + edge.source;
+        if (!parentMap[key]) {
+          parentMap[key] = { g: ref.g, n: edge.source, callFile: edge.file, callLine: edge.sl };
+        }
+      }
+      if (edge.source === ref.n) {
+        const key = ref.g + ':' + edge.target;
+        if (!childMap[key]) {
+          childMap[key] = { g: ref.g, n: edge.target, callFile: edge.file, callLine: edge.sl };
+        }
+      }
+    }
+  }
+
+  const parents = Object.values(parentMap);
+  const children = Object.values(childMap);
+
+  if (parents.length === 0) {
+    const el = document.createElement('div');
+    el.className = 'pane-empty';
+    el.textContent = 'No callers found';
+    parentsCont.appendChild(el);
+  } else {
+    for (const p of parents) parentsCont.appendChild(createNodeBox(p));
+  }
+
+  if (children.length === 0) {
+    const el = document.createElement('div');
+    el.className = 'pane-empty';
+    el.textContent = 'No callees found';
+    childrenCont.appendChild(el);
+  } else {
+    for (const c of children) childrenCont.appendChild(createNodeBox(c));
+  }
+}
+
+function abbreviatePath(filePath) {
+  if (!filePath) return '';
+  const parts = filePath.split('/');
+  return parts.length > 2 ? parts.slice(-2).join('/') : filePath;
+}
+
+function createNodeBox(info) {
+  const graph = DATA.graphs[info.g];
+  const node = graph ? graph.nodes[info.n] : null;
+  const box = document.createElement('div');
+  box.className = 'node-box';
+
+  const funcEl = document.createElement('div');
+  funcEl.className = 'nb-func';
+  funcEl.textContent = node ? node.label : info.n;
+  box.appendChild(funcEl);
+
+  if (node && node.file) {
+    const fileEl = document.createElement('div');
+    fileEl.className = 'nb-file';
+    fileEl.textContent = abbreviatePath(node.file) + ':' + node.sl;
+    box.appendChild(fileEl);
+  }
+
+  if (info.callFile && info.callLine) {
+    const csEl = document.createElement('div');
+    csEl.className = 'nb-callsite';
+    csEl.textContent = 'call at line ' + info.callLine;
+    box.appendChild(csEl);
+  }
+
+  if (node && node.returnRounding) {
+    const retEl = document.createElement('div');
+    retEl.className = 'nb-return';
+    retEl.textContent = 'rounding: ' + node.returnRounding;
+    box.appendChild(retEl);
+  }
+
+  box.addEventListener('click', () => {
+    if (node && node.file && DATA.sourceFiles[node.file]) {
+      showFile(node.file);
+      setTimeout(() => {
+        const table = document.querySelector('table.source-code');
+        if (table && node.sl > 0) {
+          const tr = table.rows[node.sl - 1];
+          if (tr) {
+            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            tr.style.transition = 'background 0.15s';
+            tr.style.background = '#fef9c3';
+            setTimeout(() => { tr.style.background = ''; }, 800);
+          }
+        }
+      }, 50);
+    }
+
+    // Look up all nodes at this position and update bottom pane
+    const allRefs = [];
+    if (node && node.file && node.sl) {
+      const key = node.file + ':' + node.sl;
+      const posRefs = nodePositionIndex[key] || [];
+      for (const r of posRefs) allRefs.push(r);
+    }
+    if (allRefs.length === 0) allRefs.push({g: info.g, n: info.n});
+    showNodeRelationships(allRefs);
+  });
+
+  return box;
+}
+
 init();
 </script>
 </body>
@@ -757,8 +1088,18 @@ def main():
     # Extract and aggregate roundings
     aggregated = extract_roundings(data, project_root)
 
+    # Extract graphs
+    graphs = extract_graphs(data, project_root)
+
+    # Collect all referenced file paths (annotations + graph nodes)
+    all_files = set(aggregated.keys())
+    for g in graphs:
+        for node in g["nodes"].values():
+            if node["file"]:
+                all_files.add(node["file"])
+
     # Read source files
-    source_files = collect_referenced_files(aggregated, project_root)
+    source_files = collect_referenced_files_from_paths(all_files, project_root)
 
     # Build directory tree
     dir_tree = build_directory_tree(sorted(source_files.keys()))
@@ -769,7 +1110,7 @@ def main():
         contexts["contextFree"][filename] = annotations
 
     # Generate HTML
-    html = generate_html(project_root, source_files, dir_tree, contexts)
+    html = generate_html(project_root, source_files, dir_tree, contexts, graphs)
 
     # Write output
     os.makedirs(os.path.dirname(os.path.abspath(html_output)), exist_ok=True)
