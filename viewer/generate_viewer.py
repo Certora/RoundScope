@@ -42,20 +42,12 @@ def parse_range_key(range_key):
 def aggregate_rounding(values):
     """
     Context-free aggregation:
-    1. Normalize Inconsistent -> Either
-    2. Filter out Neither
-    3. If no significant values -> Neither
-    4. If all same -> that value
-    5. Otherwise -> Either
+    1. Filter out Neither
+    2. If no significant values -> Neither
+    3. If all same -> that value
+    4. Otherwise -> Either
     """
-    normalized = []
-    for v in values:
-        if v == "Inconsistent":
-            normalized.append("Either")
-        else:
-            normalized.append(v)
-
-    significant = [v for v in normalized if v != "Neither"]
+    significant = [v for v in values if v != "Neither"]
     if not significant:
         return "Neither"
     if len(set(significant)) == 1:
@@ -270,7 +262,22 @@ body { display: flex; flex-direction: column; background: #f8fafc; color: #333; 
   position: sticky; top: 0; z-index: 10; background: #f8f9fa;
   border-bottom: 1px solid #e0e0e0; padding: 8px 16px;
   font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #64748b;
+  display: flex; align-items: center; gap: 12px;
 }
+#source-nav {
+  display: flex; align-items: center; gap: 6px;
+  margin-left: auto;
+}
+#source-nav .nav-counter {
+  font-size: 12px; color: #64748b; min-width: 50px; text-align: center;
+}
+#source-nav button {
+  background: none; border: 1px solid #e0e0e0; border-radius: 4px;
+  cursor: pointer; padding: 2px 8px; font-size: 14px; color: #64748b;
+  line-height: 1;
+}
+#source-nav button:hover { background: #e9ecef; }
+#source-nav button:disabled { opacity: 0.3; cursor: default; }
 #source-placeholder {
   display: flex; align-items: center; justify-content: center;
   height: 100%; color: #94a3b8; font-size: 14px;
@@ -290,12 +297,13 @@ td.line-content { padding-left: 12px; }
 
 /* Rounding underline classes */
 .r-up { text-decoration: underline; text-decoration-color: #2563eb; text-underline-offset: 3px; text-decoration-thickness: 2px; }
-.r-down { text-decoration: underline; text-decoration-color: #ea580c; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.r-down { text-decoration: underline; text-decoration-color: #4ade80; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.r-inconsistent { text-decoration: underline; text-decoration-color: #ea580c; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-either { text-decoration: underline; text-decoration-color: #dc2626; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-neither { text-decoration: underline; text-decoration-color: #d1d5db; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 
 /* Tooltip */
-.r-up, .r-down, .r-either, .r-neither { position: relative; cursor: default; }
+.r-up, .r-down, .r-inconsistent, .r-either, .r-neither { position: relative; cursor: default; }
 .annotation-span:hover .tooltip, .annotation-span:focus .tooltip { display: block; }
 .tooltip {
   display: none; position: fixed; z-index: 1000;
@@ -306,7 +314,8 @@ td.line-content { padding-left: 12px; }
 }
 .tooltip .tt-label { color: #64748b; }
 .tooltip .tt-rounding-up { color: #2563eb; font-weight: 600; }
-.tooltip .tt-rounding-down { color: #ea580c; font-weight: 600; }
+.tooltip .tt-rounding-down { color: #4ade80; font-weight: 600; }
+.tooltip .tt-rounding-inconsistent { color: #ea580c; font-weight: 600; }
 .tooltip .tt-rounding-either { color: #dc2626; font-weight: 600; }
 .tooltip .tt-rounding-neither { color: #d1d5db; font-weight: 600; }
 
@@ -324,6 +333,10 @@ td.line-content { padding-left: 12px; }
   width: 4px; cursor: col-resize; background: transparent; flex-shrink: 0;
 }
 #resize-handle:hover { background: #dee2e6; }
+.tree-file.has-findings { background: #fefce8; }
+.tree-file.has-findings:hover { background: #fef9c3; }
+.tree-file.has-findings.active { background: #d0e1fd; }
+.finding-count { color: #a16207; font-size: 11px; margin-left: 4px; }
 """
 
 HTML_TEMPLATE_SCRIPT_START = r"""
@@ -336,14 +349,15 @@ HTML_TEMPLATE_SCRIPT_START = r"""
   <span class="project-root" id="project-root-display"></span>
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#ea580c"></div> Down</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#4ade80"></div> Down</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#ea580c"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> Neither</div>
   </div>
 </div>
 
 <div id="context-bar">
-  <button class="ctx-btn active" onclick="switchContext('contextFree')">Context-Free</button>
+  <button class="ctx-btn active" data-context="contextFree" onclick="switchContext('contextFree')">Context-Free</button>
 </div>
 
 <div id="main">
@@ -360,11 +374,15 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 HTML_TEMPLATE_END = r"""
 let currentFile = null;
 let currentContext = 'contextFree';
+let currentFindings = [];
+let currentFindingIdx = -1;
 
 function init() {
   document.getElementById('project-root-display').textContent = DATA.projectRoot;
   renderTree(DATA.directoryTree, document.getElementById('tree-panel'), '');
   setupResize();
+  updateContextCounts();
+  updateTreeHighlights();
 }
 
 function renderTree(node, container, pathPrefix) {
@@ -409,6 +427,37 @@ function renderTree(node, container, pathPrefix) {
   }
 }
 
+function updateTreeHighlights() {
+  const ctx = DATA.contexts[currentContext] || {};
+  document.querySelectorAll('.tree-file').forEach(el => {
+    const path = el.dataset.path;
+    const annotations = ctx[path] || [];
+    const count = annotations.length;
+    const old = el.querySelector('.finding-count');
+    if (old) old.remove();
+    if (count > 0) {
+      el.classList.add('has-findings');
+      const span = document.createElement('span');
+      span.className = 'finding-count';
+      span.textContent = '(' + count + ')';
+      el.appendChild(span);
+    } else {
+      el.classList.remove('has-findings');
+    }
+  });
+}
+
+function updateContextCounts() {
+  document.querySelectorAll('.ctx-btn').forEach(btn => {
+    const ctxName = btn.dataset.context;
+    const ctx = DATA.contexts[ctxName] || {};
+    let total = 0;
+    for (const file in ctx) total += ctx[file].length;
+    const label = ctxName === 'contextFree' ? 'Context-Free' : ctxName;
+    btn.textContent = label + ' (' + total + ')';
+  });
+}
+
 function showFile(filePath) {
   // Update active state in tree
   document.querySelectorAll('.tree-file').forEach(el => {
@@ -421,7 +470,9 @@ function showFile(filePath) {
 
   const header = document.createElement('div');
   header.id = 'source-header';
-  header.textContent = filePath;
+  const pathSpan = document.createElement('span');
+  pathSpan.textContent = filePath;
+  header.appendChild(pathSpan);
   panel.appendChild(header);
 
   const fileData = DATA.sourceFiles[filePath];
@@ -430,12 +481,64 @@ function showFile(filePath) {
     msg.id = 'source-placeholder';
     msg.textContent = 'Source not available for ' + filePath;
     panel.appendChild(msg);
+    currentFindings = [];
+    currentFindingIdx = -1;
     return;
   }
 
   const annotations = (DATA.contexts[currentContext] || {})[filePath] || [];
+  const findingLines = [...new Set(annotations.map(a => a.sl))].sort((a, b) => a - b);
+  currentFindings = findingLines;
+  currentFindingIdx = -1;
+
+  const nav = document.createElement('span');
+  nav.id = 'source-nav';
+  const upBtn = document.createElement('button');
+  upBtn.textContent = '\u25B2';
+  upBtn.disabled = true;
+  upBtn.addEventListener('click', () => navigateToFinding(-1));
+  const counter = document.createElement('span');
+  counter.className = 'nav-counter';
+  counter.textContent = findingLines.length > 0 ? '0/' + findingLines.length : '0/0';
+  const downBtn = document.createElement('button');
+  downBtn.textContent = '\u25BC';
+  downBtn.disabled = findingLines.length === 0;
+  downBtn.addEventListener('click', () => navigateToFinding(+1));
+  nav.appendChild(upBtn);
+  nav.appendChild(counter);
+  nav.appendChild(downBtn);
+  header.appendChild(nav);
+
   const table = renderSource(fileData.raw, fileData.highlightedLines || [], annotations);
   panel.appendChild(table);
+}
+
+function navigateToFinding(direction) {
+  if (currentFindings.length === 0) return;
+  let idx = currentFindingIdx + direction;
+  if (idx < 0) idx = 0;
+  if (idx >= currentFindings.length) idx = currentFindings.length - 1;
+  currentFindingIdx = idx;
+
+  const nav = document.getElementById('source-nav');
+  if (nav) {
+    nav.querySelector('.nav-counter').textContent = (idx + 1) + '/' + currentFindings.length;
+    const btns = nav.querySelectorAll('button');
+    btns[0].disabled = idx === 0;
+    btns[1].disabled = idx === currentFindings.length - 1;
+  }
+
+  const lineNum = currentFindings[idx];
+  const table = document.querySelector('table.source-code');
+  if (table) {
+    const tr = table.rows[lineNum - 1];
+    if (tr) {
+      tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      tr.style.transition = 'background 0.15s';
+      tr.style.background = '#fef9c3';
+      setTimeout(() => { tr.style.background = ''; }, 800);
+    }
+  }
 }
 
 function renderSource(source, highlightedLines, annotations) {
@@ -579,6 +682,7 @@ function roundingClass(rounding) {
   switch (rounding) {
     case 'Up': return 'r-up';
     case 'Down': return 'r-down';
+    case 'Inconsistent': return 'r-inconsistent';
     case 'Either': return 'r-either';
     case 'Neither': return 'r-neither';
     default: return '';
@@ -604,8 +708,10 @@ function escapeHtml(str) {
 function switchContext(name) {
   currentContext = name;
   document.querySelectorAll('.ctx-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.includes(name === 'contextFree' ? 'Context-Free' : name));
+    btn.classList.toggle('active', btn.dataset.context === name);
   });
+  updateContextCounts();
+  updateTreeHighlights();
   if (currentFile) showFile(currentFile);
 }
 
