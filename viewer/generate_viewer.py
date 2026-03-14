@@ -192,24 +192,23 @@ def extract_graphs(data, project_root):
             target = edge.get("target", "")
             edge_label = edge.get("label", "")
 
-            # Parse call-site info from edge label (e.g., "file.sol:42")
+            # Parse call-site info from edge label (e.g., "file.sol:[sl,sc-el,ec]")
             call_file = ""
             call_sl = 0
+            call_sc = 0
             if edge_label:
-                # Edge labels may contain file:line info
-                parts = edge_label.rsplit(":", 1)
-                if len(parts) == 2:
-                    try:
-                        call_sl = int(parts[1])
-                        call_file = normalize_path(parts[0], project_root)
-                    except ValueError:
-                        pass
+                parsed = parse_method_position(edge_label)
+                if parsed:
+                    call_file = normalize_path(parsed[0], project_root)
+                    call_sl = parsed[1]   # start line
+                    call_sc = parsed[2]   # start col
 
             edges.append({
                 "source": source,
                 "target": target,
                 "file": call_file,
                 "sl": call_sl,
+                "sc": call_sc,
             })
 
         graphs.append({"nodes": nodes, "edges": edges})
@@ -482,6 +481,7 @@ td.line-content { padding-left: 12px; }
 .nb-return { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 .pane-empty { color: #94a3b8; font-size: 12px; padding: 12px; }
 .annotation-span { cursor: pointer; }
+.ann-selected { background: rgba(124, 58, 237, 0.12); border-radius: 2px; }
 """
 
 HTML_TEMPLATE_SCRIPT_START = r"""
@@ -551,6 +551,11 @@ function init() {
   updateContextCounts();
   updateTreeHighlights();
   buildNodePositionIndex();
+  document.getElementById('source-panel').addEventListener('click', (e) => {
+    if (!e.target.closest('.annotation-span')) {
+      document.querySelectorAll('.ann-selected').forEach(el => el.classList.remove('ann-selected'));
+    }
+  });
 }
 
 function buildNodePositionIndex() {
@@ -670,6 +675,7 @@ function showFile(filePath) {
   }
 
   const annotations = (DATA.contexts[currentContext] || {})[filePath] || [];
+  for (let i = 0; i < annotations.length; i++) annotations[i]._id = i;
   const findingLines = [...new Set(annotations.map(a => a.sl))].sort((a, b) => a - b);
   currentFindings = findingLines;
   currentFindingIdx = -1;
@@ -766,15 +772,17 @@ function getAnnotationsForLine(annotations, lineNum, lineLen) {
   const result = [];
   for (const a of annotations) {
     if (a.sl > lineNum || a.el < lineNum) continue;
-    // Compute character range on this line (1-based columns)
-    let startCol = (a.sl === lineNum) ? a.sc : 1;
-    let endCol = (a.el === lineNum) ? a.ec : lineLen + 1;
+    // Compute character range on this line (0-based columns, exclusive end)
+    let startCol = (a.sl === lineNum) ? a.sc : 0;
+    let endCol = (a.el === lineNum) ? a.ec : lineLen;
     result.push({
       startCol, endCol,
       rounding: a.rounding,
       source: a.source || '',
       expr: a.expr || '',
       nodeRefs: a.nodeRefs || [],
+      _id: a._id,
+      origSl: a.sl, origSc: a.sc, origEl: a.el, origEc: a.ec,
       // size for sorting: total span
       size: (a.el - a.sl) * 10000 + (a.ec - a.sc)
     });
@@ -798,8 +806,8 @@ function buildAnnotatedLine(lineText, annotations, lineNum) {
   // Apply largest first, then smallest overwrites -> smallest wins
   const bySizeLargest = [...sorted].reverse();
   for (const ann of bySizeLargest) {
-    const start = ann.startCol - 1; // convert 1-based to 0-based
-    const end = Math.min(ann.endCol - 1, lineText.length); // endCol is exclusive
+    const start = ann.startCol;
+    const end = Math.min(ann.endCol, lineText.length);
     for (let i = start; i < end; i++) {
       charAnnotation[i] = ann;
     }
@@ -820,6 +828,7 @@ function buildAnnotatedLine(lineText, annotations, lineNum) {
     } else {
       const span = document.createElement('span');
       span.className = 'annotation-span ' + roundingClass(ann.rounding);
+      span.dataset.annId = ann._id;
       span.textContent = text;
 
       // Tooltip
@@ -842,8 +851,14 @@ function buildAnnotatedLine(lineText, annotations, lineNum) {
 
       span.addEventListener('click', (e) => {
         e.stopPropagation();
+        document.querySelectorAll('.ann-selected').forEach(el => el.classList.remove('ann-selected'));
+        document.querySelectorAll('[data-ann-id="' + ann._id + '"]').forEach(el => el.classList.add('ann-selected'));
         if (ann.nodeRefs && ann.nodeRefs.length > 0) {
-          showNodeRelationships(ann.nodeRefs);
+          showNodeRelationships(ann.nodeRefs, {
+            file: currentFile,
+            sl: ann.origSl, sc: ann.origSc,
+            el: ann.origEl, ec: ann.origEc
+          });
         }
       });
 
@@ -952,7 +967,15 @@ function setupBottomResize() {
   }
 }
 
-function showNodeRelationships(nodeRefs) {
+function isPositionInRange(file, line, col, range) {
+  if (file !== range.file) return false;
+  if (line < range.sl || line > range.el) return false;
+  if (line === range.sl && col < range.sc) return false;
+  if (line === range.el && col >= range.ec) return false;
+  return true;
+}
+
+function showNodeRelationships(nodeRefs, annRange) {
   const handle = document.getElementById('bottom-resize-handle');
   const pane = document.getElementById('bottom-pane');
   const parentsCont = document.getElementById('parents-content');
@@ -973,20 +996,26 @@ function showNodeRelationships(nodeRefs) {
       if (edge.target === ref.n) {
         const key = ref.g + ':' + edge.source;
         if (!parentMap[key]) {
-          parentMap[key] = { g: ref.g, n: edge.source, callFile: edge.file, callLine: edge.sl };
+          parentMap[key] = { g: ref.g, n: edge.source, callFile: edge.file, callLine: edge.sl, callCol: edge.sc || 0 };
         }
       }
       if (edge.source === ref.n) {
         const key = ref.g + ':' + edge.target;
         if (!childMap[key]) {
-          childMap[key] = { g: ref.g, n: edge.target, callFile: edge.file, callLine: edge.sl };
+          childMap[key] = { g: ref.g, n: edge.target, callFile: edge.file, callLine: edge.sl, callCol: edge.sc || 0 };
         }
       }
     }
   }
 
   const parents = Object.values(parentMap);
-  const children = Object.values(childMap);
+  let children = Object.values(childMap);
+
+  if (annRange) {
+    children = children.filter(c =>
+      c.callFile && c.callLine && isPositionInRange(c.callFile, c.callLine, c.callCol, annRange)
+    );
+  }
 
   if (parents.length === 0) {
     const el = document.createElement('div');
@@ -1000,7 +1029,7 @@ function showNodeRelationships(nodeRefs) {
   if (children.length === 0) {
     const el = document.createElement('div');
     el.className = 'pane-empty';
-    el.textContent = 'No callees found';
+    el.textContent = annRange ? 'No callees for this expression' : 'No callees found';
     childrenCont.appendChild(el);
   } else {
     for (const c of children) childrenCont.appendChild(createNodeBox(c));
@@ -1034,7 +1063,10 @@ function createNodeBox(info) {
   if (info.callFile && info.callLine) {
     const csEl = document.createElement('div');
     csEl.className = 'nb-callsite';
-    csEl.textContent = 'call at line ' + info.callLine;
+    const sameFile = node && node.file && info.callFile === node.file;
+    csEl.textContent = sameFile
+      ? 'call at line ' + info.callLine
+      : 'call at ' + abbreviatePath(info.callFile) + ':' + info.callLine;
     box.appendChild(csEl);
   }
 
@@ -1046,12 +1078,16 @@ function createNodeBox(info) {
   }
 
   box.addEventListener('click', () => {
-    if (node && node.file && DATA.sourceFiles[node.file]) {
-      showFile(node.file);
+    // Prefer call site; fall back to function definition
+    const navFile = (info.callFile && DATA.sourceFiles[info.callFile]) ? info.callFile : (node && node.file);
+    const navLine = info.callLine || (node && node.sl);
+
+    if (navFile && DATA.sourceFiles[navFile]) {
+      showFile(navFile);
       setTimeout(() => {
         const table = document.querySelector('table.source-code');
-        if (table && node.sl > 0) {
-          const tr = table.rows[node.sl - 1];
+        if (table && navLine > 0) {
+          const tr = table.rows[navLine - 1];
           if (tr) {
             tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
             highlightLine(tr);
