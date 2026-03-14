@@ -534,6 +534,14 @@ let currentContext = 'contextFree';
 let currentFindings = [];
 let currentFindingIdx = -1;
 let nodePositionIndex = {};
+let highlightedRow = null;
+
+function highlightLine(tr) {
+  if (highlightedRow) highlightedRow.style.background = '';
+  tr.style.transition = 'background 0.15s';
+  tr.style.background = '#fef9c3';
+  highlightedRow = tr;
+}
 
 function init() {
   document.getElementById('project-root-display').textContent = DATA.projectRoot;
@@ -709,9 +717,7 @@ function navigateToFinding(direction) {
     const tr = table.rows[lineNum - 1];
     if (tr) {
       tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      tr.style.transition = 'background 0.15s';
-      tr.style.background = '#fef9c3';
-      setTimeout(() => { tr.style.background = ''; }, 800);
+      highlightLine(tr);
     }
   }
 }
@@ -1048,9 +1054,7 @@ function createNodeBox(info) {
           const tr = table.rows[node.sl - 1];
           if (tr) {
             tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            tr.style.transition = 'background 0.15s';
-            tr.style.background = '#fef9c3';
-            setTimeout(() => { tr.style.background = ''; }, 800);
+            highlightLine(tr);
           }
         }
       }, 50);
