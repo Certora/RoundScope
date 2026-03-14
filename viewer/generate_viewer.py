@@ -6,6 +6,11 @@ import os
 import sys
 from collections import defaultdict
 
+from pygments import highlight as pygments_highlight
+from pygments.formatters import HtmlFormatter
+from pygments.lexers import get_lexer_for_filename
+from pygments.lexers.solidity import SolidityLexer
+
 
 def parse_args():
     if len(sys.argv) != 4:
@@ -123,16 +128,38 @@ def normalize_path(filepath, project_root):
 
 
 def collect_referenced_files(aggregated, project_root):
-    """Read source files referenced in the annotations."""
+    """Read source files referenced in the annotations, with Pygments highlighting."""
+    formatter = HtmlFormatter(nowrap=True)
+    sol_lexer = SolidityLexer()
     source_files = {}
     for rel_path in aggregated:
         abs_path = os.path.join(project_root, rel_path)
         try:
             with open(abs_path, "r") as f:
-                source_files[rel_path] = f.read()
+                raw = f.read()
         except FileNotFoundError:
             print(f"Warning: source file not found: {abs_path}", file=sys.stderr)
-            source_files[rel_path] = f"// File not found: {abs_path}"
+            raw = f"// File not found: {abs_path}"
+
+        # Choose lexer: .sol -> SolidityLexer, else try by filename
+        if rel_path.endswith(".sol"):
+            lexer = sol_lexer
+        else:
+            try:
+                lexer = get_lexer_for_filename(rel_path)
+            except Exception:
+                lexer = sol_lexer  # fallback
+
+        highlighted = pygments_highlight(raw, lexer, formatter)
+        highlighted_lines = highlighted.split("\n")
+        # Pygments adds a trailing newline, so the last element is usually empty
+        if highlighted_lines and highlighted_lines[-1] == "":
+            highlighted_lines.pop()
+
+        source_files[rel_path] = {
+            "raw": raw,
+            "highlightedLines": highlighted_lines,
+        }
     return source_files
 
 
@@ -170,8 +197,14 @@ def generate_html(project_root, source_files, directory_tree, contexts):
         }
     )
 
+    pygments_css = HtmlFormatter(style="default").get_style_defs(".line-content")
+
     return (
         HTML_TEMPLATE_START
+        + "\n/* Pygments syntax highlighting */\n"
+        + pygments_css
+        + "\n"
+        + HTML_TEMPLATE_SCRIPT_START
         + "\nconst DATA = "
         + data_json
         + ";\n"
@@ -185,33 +218,37 @@ HTML_TEMPLATE_START = r"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>RoundScope Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-body { display: flex; flex-direction: column; background: #1e1e2e; color: #cdd6f4; }
+html, body { height: 100%; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+body { display: flex; flex-direction: column; background: #f8fafc; color: #333; }
 
 #top-bar {
-  background: #181825; border-bottom: 1px solid #313244;
-  padding: 8px 16px; font-size: 13px; color: #a6adc8;
+  background: linear-gradient(135deg, #1e293b, #334155);
+  border-bottom: 1px solid #1e293b;
+  padding: 8px 16px; font-size: 13px; color: #fff;
   display: flex; align-items: center; gap: 16px; flex-shrink: 0;
 }
-#top-bar .project-root { font-family: 'SF Mono', 'Fira Code', monospace; color: #cdd6f4; }
+#top-bar .project-root { font-family: 'JetBrains Mono', Consolas, monospace; color: rgba(255,255,255,0.85); }
 
 #context-bar {
-  background: #181825; border-bottom: 1px solid #313244;
+  background: #fff; border-bottom: 1px solid #e2e8f0;
   padding: 6px 16px; display: flex; gap: 8px; flex-shrink: 0;
 }
 .ctx-btn {
-  padding: 4px 12px; border: 1px solid #45475a; border-radius: 4px;
-  background: transparent; color: #a6adc8; cursor: pointer; font-size: 12px;
+  padding: 4px 12px; border: 1px solid #e2e8f0; border-radius: 4px;
+  background: transparent; color: #64748b; cursor: pointer; font-size: 12px;
 }
-.ctx-btn.active { background: #45475a; color: #cdd6f4; border-color: #585b70; }
+.ctx-btn.active { background: #e2e8f0; color: #1e293b; border-color: #cbd5e1; }
 
 #main { display: flex; flex: 1; overflow: hidden; }
 
 #tree-panel {
-  width: 260px; min-width: 180px; background: #181825;
-  border-right: 1px solid #313244; overflow-y: auto; padding: 8px 0;
+  width: 260px; min-width: 180px; background: #f8f9fa;
+  border-right: 1px solid #e0e0e0; overflow-y: auto; padding: 8px 0;
   flex-shrink: 0; font-size: 13px;
 }
 
@@ -219,34 +256,34 @@ body { display: flex; flex-direction: column; background: #1e1e2e; color: #cdd6f
   padding: 3px 8px; cursor: pointer; white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
-.tree-dir { color: #89b4fa; font-weight: 500; }
-.tree-dir:hover { background: #313244; }
-.tree-file { color: #cdd6f4; padding-left: 4px; }
-.tree-file:hover { background: #313244; }
-.tree-file.active { background: #45475a; color: #f5e0dc; }
+.tree-dir { color: #1e293b; font-weight: 600; }
+.tree-dir:hover { background: #e9ecef; }
+.tree-file { color: #333; padding-left: 4px; }
+.tree-file:hover { background: #e9ecef; }
+.tree-file.active { background: #d0e1fd; color: #1e293b; }
 .tree-children { padding-left: 14px; }
-.tree-toggle { display: inline-block; width: 14px; text-align: center; color: #6c7086; font-size: 11px; }
+.tree-toggle { display: inline-block; width: 14px; text-align: center; color: #94a3b8; font-size: 11px; }
 
-#source-panel { flex: 1; overflow: auto; background: #1e1e2e; }
+#source-panel { flex: 1; overflow: auto; background: #fff; }
 
 #source-header {
-  position: sticky; top: 0; z-index: 10; background: #181825;
-  border-bottom: 1px solid #313244; padding: 8px 16px;
-  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; color: #a6adc8;
+  position: sticky; top: 0; z-index: 10; background: #f8f9fa;
+  border-bottom: 1px solid #e0e0e0; padding: 8px 16px;
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; color: #64748b;
 }
 #source-placeholder {
   display: flex; align-items: center; justify-content: center;
-  height: 100%; color: #6c7086; font-size: 14px;
+  height: 100%; color: #94a3b8; font-size: 14px;
 }
 
 table.source-code {
   border-collapse: collapse; width: 100%;
-  font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px; line-height: 1.5;
+  font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13px; line-height: 1.5;
 }
 table.source-code td { padding: 0 12px; vertical-align: top; white-space: pre; }
 td.line-num {
-  text-align: right; color: #6c7086; user-select: none;
-  width: 1%; min-width: 48px; border-right: 1px solid #313244;
+  text-align: right; color: #adb5bd; user-select: none;
+  width: 1%; min-width: 48px; border-right: 1px solid #eee;
   padding-right: 8px;
 }
 td.line-content { padding-left: 12px; }
@@ -262,12 +299,12 @@ td.line-content { padding-left: 12px; }
 .annotation-span:hover .tooltip, .annotation-span:focus .tooltip { display: block; }
 .tooltip {
   display: none; position: fixed; z-index: 1000;
-  background: #313244; border: 1px solid #45475a; border-radius: 6px;
+  background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;
   padding: 8px 12px; font-size: 12px; line-height: 1.5;
-  color: #cdd6f4; white-space: pre-wrap; max-width: 500px;
-  pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  color: #333; white-space: pre-wrap; max-width: 500px;
+  pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
-.tooltip .tt-label { color: #a6adc8; }
+.tooltip .tt-label { color: #64748b; }
 .tooltip .tt-rounding-up { color: #2563eb; font-weight: 600; }
 .tooltip .tt-rounding-down { color: #ea580c; font-weight: 600; }
 .tooltip .tt-rounding-either { color: #dc2626; font-weight: 600; }
@@ -277,7 +314,7 @@ td.line-content { padding-left: 12px; }
 #legend {
   display: flex; gap: 16px; align-items: center; margin-left: auto; font-size: 12px;
 }
-.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-item { display: flex; align-items: center; gap: 4px; color: rgba(255,255,255,0.85); }
 .legend-swatch {
   width: 20px; height: 3px; border-radius: 1px;
 }
@@ -286,7 +323,10 @@ td.line-content { padding-left: 12px; }
 #resize-handle {
   width: 4px; cursor: col-resize; background: transparent; flex-shrink: 0;
 }
-#resize-handle:hover { background: #45475a; }
+#resize-handle:hover { background: #dee2e6; }
+"""
+
+HTML_TEMPLATE_SCRIPT_START = r"""
 </style>
 </head>
 <body>
@@ -384,8 +424,8 @@ function showFile(filePath) {
   header.textContent = filePath;
   panel.appendChild(header);
 
-  const source = DATA.sourceFiles[filePath];
-  if (!source && source !== '') {
+  const fileData = DATA.sourceFiles[filePath];
+  if (!fileData) {
     const msg = document.createElement('div');
     msg.id = 'source-placeholder';
     msg.textContent = 'Source not available for ' + filePath;
@@ -394,11 +434,11 @@ function showFile(filePath) {
   }
 
   const annotations = (DATA.contexts[currentContext] || {})[filePath] || [];
-  const table = renderSource(source, annotations);
+  const table = renderSource(fileData.raw, fileData.highlightedLines || [], annotations);
   panel.appendChild(table);
 }
 
-function renderSource(source, annotations) {
+function renderSource(source, highlightedLines, annotations) {
   const lines = source.split('\n');
   const table = document.createElement('table');
   table.className = 'source-code';
@@ -419,8 +459,14 @@ function renderSource(source, annotations) {
     const lineAnnotations = getAnnotationsForLine(annotations, lineNum, lineText.length);
 
     if (lineAnnotations.length === 0) {
-      tdContent.textContent = lineText || ' ';
+      // Use Pygments-highlighted HTML for lines without rounding annotations
+      if (highlightedLines[i] !== undefined && highlightedLines[i] !== '') {
+        tdContent.innerHTML = highlightedLines[i];
+      } else {
+        tdContent.textContent = lineText || ' ';
+      }
     } else {
+      // Use raw text + annotation spans for lines with rounding underlines
       tdContent.appendChild(buildAnnotatedLine(lineText, lineAnnotations, lineNum));
     }
 
