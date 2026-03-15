@@ -510,6 +510,22 @@ td.line-content { padding-left: 12px; }
 .pane-empty { color: #94a3b8; font-size: 12px; padding: 12px; }
 .annotation-span { cursor: pointer; }
 .ann-selected { background: rgba(124, 58, 237, 0.12); border-radius: 2px; }
+
+.type-counts { display: inline-flex; align-items: center; gap: 4px; }
+.type-badge {
+  display: inline-flex; align-items: center; gap: 2px;
+  background: #f1f5f9; border-radius: 4px; padding: 2px 6px; font-size: 11px;
+}
+.type-badge .badge-label { font-weight: 600; }
+.type-badge .badge-count { color: #64748b; }
+.type-badge.empty { opacity: 0.4; }
+.type-badge { position: relative; cursor: default; }
+.type-badge .badge-tooltip {
+  display: none; position: fixed; z-index: 1000;
+  background: #1e293b; color: #e2e8f0; border-radius: 4px; padding: 4px 8px;
+  font-size: 11px; white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15); pointer-events: none;
+}
 """
 
 HTML_TEMPLATE_SCRIPT_START = r"""
@@ -557,6 +573,10 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 """
 
 HTML_TEMPLATE_END = r"""
+const ROUNDING_TYPES = ['Up', 'Down', 'Inconsistent', 'Either'];
+const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#ea580c', Either:'#dc2626', Neither:'#d1d5db' };
+const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N' };
+
 let currentFile = null;
 let currentContext = 'contextFree';
 let currentFindings = [];
@@ -708,6 +728,53 @@ function showFile(filePath) {
   currentFindings = findingLines;
   currentFindingIdx = -1;
 
+  const typeCounts = document.createElement('span');
+  typeCounts.className = 'type-counts';
+  for (const t of ROUNDING_TYPES) {
+    const matching = annotations.filter(a => a.rounding === t);
+    const lines = [...new Set(matching.map(a => a.sl))].sort((a, b) => a - b);
+    const compressed = [];
+    let ci = 0;
+    while (ci < lines.length) {
+      let cj = ci;
+      while (cj + 1 < lines.length && lines[cj + 1] === lines[cj] + 1) cj++;
+      compressed.push(cj > ci ? lines[ci] + '-' + lines[cj] : '' + lines[ci]);
+      ci = cj + 1;
+    }
+    const count = compressed.length;
+    const badge = document.createElement('span');
+    badge.className = 'type-badge' + (count === 0 ? ' empty' : '');
+    const lbl = document.createElement('span');
+    lbl.className = 'badge-label';
+    lbl.style.color = ROUNDING_COLORS[t];
+    lbl.textContent = ROUNDING_SHORT[t] + ':';
+    const cnt = document.createElement('span');
+    cnt.className = 'badge-count';
+    cnt.textContent = count;
+    badge.appendChild(lbl);
+    badge.appendChild(cnt);
+    if (count > 0) {
+      const tip = document.createElement('span');
+      tip.className = 'badge-tooltip';
+      tip.textContent = 'Lines: ' + compressed.join(', ');
+      badge.appendChild(tip);
+      badge.addEventListener('mouseenter', (e) => {
+        tip.style.display = 'block';
+        const r = tip.getBoundingClientRect();
+        let x = e.clientX;
+        let y = e.clientY + 16;
+        if (x + r.width > window.innerWidth - 24) x = window.innerWidth - r.width - 24;
+        if (x < 16) x = 16;
+        if (y + r.height > window.innerHeight - 24) y = e.clientY - r.height - 16;
+        tip.style.left = x + 'px';
+        tip.style.top = y + 'px';
+      });
+      badge.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+    }
+    typeCounts.appendChild(badge);
+  }
+  header.appendChild(typeCounts);
+
   const nav = document.createElement('span');
   nav.id = 'source-nav';
   const upBtn = document.createElement('button');
@@ -716,7 +783,7 @@ function showFile(filePath) {
   upBtn.addEventListener('click', () => navigateToFinding(-1));
   const counter = document.createElement('span');
   counter.className = 'nav-counter';
-  counter.textContent = findingLines.length > 0 ? '0/' + findingLines.length : '0/0';
+  counter.textContent = findingLines.length > 0 ? '0/' + findingLines.length + ' sites' : '0/0 sites';
   const downBtn = document.createElement('button');
   downBtn.textContent = '\u25BC';
   downBtn.disabled = findingLines.length === 0;
@@ -733,7 +800,7 @@ function showFile(filePath) {
 function updateFindingNav(idx) {
   const nav = document.getElementById('source-nav');
   if (nav) {
-    nav.querySelector('.nav-counter').textContent = (idx + 1) + '/' + currentFindings.length;
+    nav.querySelector('.nav-counter').textContent = (idx + 1) + '/' + currentFindings.length + ' sites';
     const btns = nav.querySelectorAll('button');
     btns[0].disabled = idx === 0;
     btns[1].disabled = idx === currentFindings.length - 1;
