@@ -13,13 +13,33 @@ from pygments.lexers.solidity import SolidityLexer
 
 
 def parse_args():
-    if len(sys.argv) != 4:
+    if len(sys.argv) < 4 or len(sys.argv) > 5:
         print(
-            "Usage: python3 generate_viewer.py <project-root> <roundscope-output.json> <output.html>",
+            "Usage: python3 generate_viewer.py <project-root> <roundscope-output.json> <output.html> [conf-file]",
             file=sys.stderr,
         )
         sys.exit(1)
-    return sys.argv[1], sys.argv[2], sys.argv[3]
+    conf_file = sys.argv[4] if len(sys.argv) == 5 else None
+    return sys.argv[1], sys.argv[2], sys.argv[3], conf_file
+
+
+def extract_contracts_from_conf(conf_path):
+    """Extract contract names from the 'files' list in a Certora conf file."""
+    import re
+
+    with open(conf_path, "r") as f:
+        text = f.read()
+    # Strip single-line // comments and trailing commas (conf files allow them but JSON doesn't)
+    text = re.sub(r"//.*", "", text)
+    text = re.sub(r",\s*([}\]])", r"\1", text)
+    conf = json.loads(text)
+    contracts = []
+    for entry in conf.get("files", []):
+        # "src/hub/Hub.sol" -> "Hub"
+        basename = os.path.basename(entry)
+        name = os.path.splitext(basename)[0]
+        contracts.append(name)
+    return contracts
 
 
 def extract_filename_from_method_position(method_position):
@@ -285,7 +305,7 @@ def build_directory_tree(file_paths):
     return root
 
 
-def generate_html(project_root, source_files, directory_tree, contexts, graphs):
+def generate_html(project_root, source_files, directory_tree, contexts, graphs, contracts=None):
     """Generate the self-contained HTML string."""
     data_json = json.dumps(
         {
@@ -299,8 +319,16 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs):
 
     pygments_css = HtmlFormatter(style="default").get_style_defs(".line-content")
 
+    title = "RoundScope — " + os.path.basename(project_root)
+    if contracts:
+        title += " — " + ", ".join(contracts)
+    html_start = HTML_TEMPLATE_START.replace(
+        "<title>RoundScope Viewer</title>",
+        "<title>" + title + "</title>",
+    )
+
     return (
-        HTML_TEMPLATE_START
+        html_start
         + "\n/* Pygments syntax highlighting */\n"
         + pygments_css
         + "\n"
@@ -1126,7 +1154,7 @@ init();
 
 
 def main():
-    project_root, json_input, html_output = parse_args()
+    project_root, json_input, html_output, conf_file = parse_args()
     project_root = os.path.abspath(project_root)
 
     # Load JSON
@@ -1158,7 +1186,12 @@ def main():
         contexts["contextFree"][filename] = annotations
 
     # Generate HTML
-    html = generate_html(project_root, source_files, dir_tree, contexts, graphs)
+    if conf_file:
+        conf_path = conf_file if os.path.isabs(conf_file) else os.path.join(project_root, conf_file)
+        contracts = extract_contracts_from_conf(conf_path)
+    else:
+        contracts = None
+    html = generate_html(project_root, source_files, dir_tree, contexts, graphs, contracts)
 
     # Write output
     os.makedirs(os.path.dirname(os.path.abspath(html_output)), exist_ok=True)
