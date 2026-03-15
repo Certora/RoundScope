@@ -702,13 +702,7 @@ function showFile(filePath) {
   panel.appendChild(table);
 }
 
-function navigateToFinding(direction) {
-  if (currentFindings.length === 0) return;
-  let idx = currentFindingIdx + direction;
-  if (idx < 0) idx = 0;
-  if (idx >= currentFindings.length) idx = currentFindings.length - 1;
-  currentFindingIdx = idx;
-
+function updateFindingNav(idx) {
   const nav = document.getElementById('source-nav');
   if (nav) {
     nav.querySelector('.nav-counter').textContent = (idx + 1) + '/' + currentFindings.length;
@@ -716,6 +710,15 @@ function navigateToFinding(direction) {
     btns[0].disabled = idx === 0;
     btns[1].disabled = idx === currentFindings.length - 1;
   }
+}
+
+function navigateToFinding(direction) {
+  if (currentFindings.length === 0) return;
+  let idx = currentFindingIdx + direction;
+  if (idx < 0) idx = 0;
+  if (idx >= currentFindings.length) idx = currentFindings.length - 1;
+  currentFindingIdx = idx;
+  updateFindingNav(idx);
 
   const lineNum = currentFindings[idx];
   const table = document.querySelector('table.source-code');
@@ -859,6 +862,11 @@ function buildAnnotatedLine(lineText, annotations, lineNum) {
             sl: ann.origSl, sc: ann.origSc,
             el: ann.origEl, ec: ann.origEc
           });
+        }
+        const findIdx = currentFindings.indexOf(ann.origSl);
+        if (findIdx !== -1) {
+          currentFindingIdx = findIdx;
+          updateFindingNav(findIdx);
         }
       });
 
