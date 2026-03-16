@@ -24,6 +24,188 @@ def parse_args():
     return sys.argv[1], sys.argv[2], sys.argv[3], conf_file
 
 
+def clean_graph_label(label):
+    """Clean graph label into a readable function name.
+
+    'graph of < solidity, Lcontract Hub.previewRemoveByShares (uint256,uint256) --> uint256, do(...)... > ([...])'
+    -> 'Hub.previewRemoveByShares'
+    """
+    # Extract the function signature part
+    m = re.match(r'graph of < solidity, Lcontract (\w+\.\w+)', label)
+    if m:
+        return m.group(1)
+    # Fallback: try to find any Contract.method pattern
+    m = re.search(r'Lcontract (\w+\.\w+)', label)
+    if m:
+        return m.group(1)
+    # Try to clean up <init> patterns
+    m = re.match(r'graph of < solidity, Lcontract (\w+)\.<init>', label)
+    if m:
+        return m.group(1) + '.constructor'
+    return label
+
+
+def extract_per_graph_roundings(data, project_root):
+    """Extract roundings per graph (each graph is a separate context).
+
+    Returns a dict of context_name -> {filename -> [annotation dicts]}.
+    """
+    per_graph = {}
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        label = graph.get("label", f"Graph {graph_idx}")
+        context_name = clean_graph_label(label)
+
+        # Collect roundings for this graph only
+        raw = defaultdict(list)  # (filename, range_key) -> list of entries
+        for node_id, node in graph["nodes"].items():
+            md = node["metadata"]
+            method_pos = md.get("methodPosition", "")
+            if not method_pos:
+                continue
+            filename = extract_filename_from_method_position(method_pos)
+            for range_key, info in md.get("roundings", {}).items():
+                entry = dict(info)
+                entry["_graphIdx"] = graph_idx
+                entry["_nodeId"] = node_id
+                raw[(filename, range_key)].append(entry)
+
+        if not raw:
+            per_graph[context_name] = {}
+            continue
+
+        file_annotations = defaultdict(list)
+        for (filename, range_key), entries in raw.items():
+            rounding_values = [e["rounding"] for e in entries]
+            agg_rounding = aggregate_rounding(rounding_values)
+
+            sl, sc, el, ec = parse_range_key(range_key)
+
+            source = ""
+            expr = ""
+            for e in entries:
+                if not source and e.get("source"):
+                    source = e["source"]
+                if not expr and e.get("expr"):
+                    expr = e["expr"]
+
+            node_refs = [{"g": graph_idx, "n": entries[0]["_nodeId"]}]
+            seen = {entries[0]["_nodeId"]}
+            for e in entries[1:]:
+                if e["_nodeId"] not in seen:
+                    seen.add(e["_nodeId"])
+                    node_refs.append({"g": graph_idx, "n": e["_nodeId"]})
+
+            rel_filename = normalize_path(filename, project_root)
+            file_annotations[rel_filename].append({
+                "sl": sl, "sc": sc, "el": el, "ec": ec,
+                "rounding": agg_rounding,
+                "source": source, "expr": expr,
+                "nodeRefs": node_refs,
+            })
+
+        per_graph[context_name] = dict(file_annotations)
+
+    return per_graph
+
+
+def extract_per_graph_return_annotations(data, project_root, source_files):
+    """Extract return annotations per graph.
+
+    Returns a dict of context_name -> {filename -> [annotation dicts]}.
+    """
+    per_graph = {}
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        label = graph.get("label", f"Graph {graph_idx}")
+        context_name = clean_graph_label(label)
+
+        # Collect return values for this graph, grouped by method position
+        grouped = defaultdict(list)
+        for node_id, node in graph["nodes"].items():
+            md = node["metadata"]
+            method_pos = md.get("methodPosition", "")
+            ret = md.get("return")
+            if not method_pos or ret is None:
+                continue
+            parsed = parse_method_position(method_pos)
+            if not parsed:
+                continue
+            filename, sl, sc, el, ec = parsed
+            rel_filename = normalize_path(filename, project_root)
+            grouped[(rel_filename, sl, el)].append((ret, graph_idx, node_id))
+
+        file_annotations = defaultdict(list)
+        for (rel_filename, method_sl, method_el), entries in grouped.items():
+            file_data = source_files.get(rel_filename)
+            if not file_data:
+                continue
+            raw_lines = file_data["raw"].split("\n")
+            clause = find_returns_clause(raw_lines, method_sl, method_el)
+            if not clause:
+                continue
+
+            r_sl, r_sc, r_el, r_ec = clause
+            flat_roundings = []
+            element_roundings = defaultdict(list)
+            node_refs = []
+            seen_refs = set()
+
+            for ret_val, g_idx, n_id in entries:
+                if (g_idx, n_id) not in seen_refs:
+                    seen_refs.add((g_idx, n_id))
+                    node_refs.append({"g": g_idx, "n": n_id})
+                if isinstance(ret_val, str):
+                    flat_roundings.append(ret_val)
+                elif isinstance(ret_val, dict):
+                    for type_key, rounding in ret_val.items():
+                        flat_roundings.append(rounding)
+                        element_roundings[type_key].append(rounding)
+
+            significant = [v for v in flat_roundings if v != "Neither"]
+            if not significant:
+                rounding = "Neither"
+            elif len(set(significant)) == 1:
+                rounding = significant[0]
+            else:
+                rounding = "Mixed"
+
+            annotation = {
+                "sl": r_sl, "sc": r_sc, "el": r_el, "ec": r_ec,
+                "rounding": rounding, "source": "return type", "expr": "",
+                "nodeRefs": node_refs,
+            }
+
+            if element_roundings and rounding == "Mixed":
+                breakdown = []
+                sorted_keys = sorted(
+                    element_roundings.keys(),
+                    key=lambda k: int(re.search(r'Ltuple,\s*(\d+)', k).group(1))
+                    if re.search(r'Ltuple,\s*(\d+)', k) else 0,
+                )
+                for i, type_key in enumerate(sorted_keys):
+                    roundings = element_roundings[type_key]
+                    agg = aggregate_rounding(roundings)
+                    inner_match = re.search(r'<\s*solidity\s*,\s*[PL]\w+\s*>', type_key)
+                    sol_type = clean_wala_type(inner_match.group(0)) if inner_match else f"[{i}]"
+                    breakdown.append({"index": i, "type": sol_type, "rounding": agg})
+                annotation["returnBreakdown"] = breakdown
+
+            file_annotations[rel_filename].append(annotation)
+
+        # Only store if we got annotations (may have been merged into an existing context_name)
+        if context_name not in per_graph:
+            per_graph[context_name] = dict(file_annotations)
+        else:
+            # Merge into existing
+            for fname, anns in file_annotations.items():
+                if fname not in per_graph[context_name]:
+                    per_graph[context_name][fname] = []
+                per_graph[context_name][fname].extend(anns)
+
+    return per_graph
+
+
 def extract_contracts_from_conf(conf_path):
     """Extract contract names from the 'files' list in a Certora conf file."""
     with open(conf_path, "r") as f:
@@ -554,7 +736,8 @@ body { display: flex; flex-direction: column; background: #f8fafc; color: #333; 
 
 #context-bar {
   background: #fff; border-bottom: 1px solid #e2e8f0;
-  padding: 6px 16px; display: flex; gap: 8px; flex-shrink: 0;
+  padding: 6px 16px; display: flex; gap: 6px; flex-shrink: 0;
+  overflow-x: auto; flex-wrap: wrap; max-height: 72px;
 }
 .ctx-btn {
   padding: 4px 12px; border: 1px solid #e2e8f0; border-radius: 4px;
@@ -741,9 +924,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
   </div>
 </div>
 
-<div id="context-bar">
-  <button class="ctx-btn active" data-context="contextFree" onclick="switchContext('contextFree')">Context-Free</button>
-</div>
+<div id="context-bar"></div>
 
 <div id="main">
   <div id="tree-panel"></div>
@@ -790,6 +971,7 @@ function highlightLine(tr) {
 function init() {
   document.getElementById('project-root-display').textContent = DATA.projectRoot;
   renderTree(DATA.directoryTree, document.getElementById('tree-panel'), '');
+  buildContextBar();
   setupResize();
   setupBottomResize();
   updateContextCounts();
@@ -800,6 +982,23 @@ function init() {
       document.querySelectorAll('.ann-selected').forEach(el => el.classList.remove('ann-selected'));
     }
   });
+}
+
+function buildContextBar() {
+  const bar = document.getElementById('context-bar');
+  const names = Object.keys(DATA.contexts);
+  // Put contextFree first, then sort the rest alphabetically
+  const sorted = names.filter(n => n === 'contextFree').concat(
+    names.filter(n => n !== 'contextFree').sort()
+  );
+  for (const name of sorted) {
+    const btn = document.createElement('button');
+    btn.className = 'ctx-btn' + (name === 'contextFree' ? ' active' : '');
+    btn.dataset.context = name;
+    btn.textContent = name === 'contextFree' ? 'Context-Free' : name;
+    btn.addEventListener('click', () => switchContext(name));
+    bar.appendChild(btn);
+  }
 }
 
 function buildNodePositionIndex() {
@@ -886,7 +1085,7 @@ function updateContextCounts() {
     let total = 0;
     for (const file in ctx) total += ctx[file].length;
     const label = ctxName === 'contextFree' ? 'Context-Free' : ctxName;
-    btn.textContent = label + ' (' + total + ')';
+    btn.textContent = label + (total > 0 ? ' (' + total + ')' : '');
   });
 }
 
@@ -1466,6 +1665,10 @@ def main():
     # Extract return annotations
     return_annotations = extract_return_annotations(data, project_root, source_files)
 
+    # Extract per-graph roundings and return annotations
+    per_graph_roundings = extract_per_graph_roundings(data, project_root)
+    per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
+
     # Build contexts dict
     contexts = {"contextFree": {}}
     for filename, annotations in aggregated.items():
@@ -1476,6 +1679,24 @@ def main():
         if filename not in contexts["contextFree"]:
             contexts["contextFree"][filename] = []
         contexts["contextFree"][filename].extend(ret_anns)
+
+    # Add per-graph contexts
+    for ctx_name, file_anns in per_graph_roundings.items():
+        if ctx_name not in contexts:
+            contexts[ctx_name] = {}
+        for filename, anns in file_anns.items():
+            if filename not in contexts[ctx_name]:
+                contexts[ctx_name][filename] = []
+            contexts[ctx_name][filename].extend(anns)
+
+    # Merge per-graph return annotations
+    for ctx_name, file_anns in per_graph_returns.items():
+        if ctx_name not in contexts:
+            contexts[ctx_name] = {}
+        for filename, anns in file_anns.items():
+            if filename not in contexts[ctx_name]:
+                contexts[ctx_name][filename] = []
+            contexts[ctx_name][filename].extend(anns)
 
     # Generate HTML
     if conf_file:
