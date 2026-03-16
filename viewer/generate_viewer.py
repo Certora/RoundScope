@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import sys
 from collections import defaultdict
 
@@ -25,8 +26,6 @@ def parse_args():
 
 def extract_contracts_from_conf(conf_path):
     """Extract contract names from the 'files' list in a Certora conf file."""
-    import re
-
     with open(conf_path, "r") as f:
         text = f.read()
     # Strip single-line // comments and trailing commas (conf files allow them but JSON doesn't)
@@ -246,6 +245,197 @@ def normalize_path(filepath, project_root):
     return filepath
 
 
+def find_returns_clause(source_lines, method_sl, method_el):
+    """Find 'returns (...)' clause in function signature. Returns (sl, sc, el, ec) or None.
+
+    Searches from a few lines before method_sl through method_sl for the 'returns'
+    keyword followed by balanced parentheses.
+    """
+    # Search window: up to 10 lines before method body start through the start line
+    search_start = max(0, method_sl - 11)  # 0-indexed
+    search_end = min(len(source_lines), method_sl)  # method_sl is 1-indexed, so this includes that line
+
+    # Join the search window into one string to handle multi-line returns clauses
+    window_lines = source_lines[search_start:search_end]
+    window_text = "\n".join(window_lines)
+
+    # Find the last 'returns' keyword (whole word) in the search window
+    # We want the last one because there might be comments mentioning 'returns'
+    matches = list(re.finditer(r'\breturns\s*\(', window_text))
+    if not matches:
+        return None
+
+    match = matches[-1]
+    returns_pos = match.start()
+
+    # Find balanced closing paren
+    paren_start = match.end() - 1  # position of '('
+    depth = 1
+    pos = paren_start + 1
+    while pos < len(window_text) and depth > 0:
+        if window_text[pos] == '(':
+            depth += 1
+        elif window_text[pos] == ')':
+            depth -= 1
+        pos += 1
+
+    if depth != 0:
+        return None
+
+    paren_end = pos  # one past the closing ')'
+
+    # Convert positions back to (line, col) in 1-indexed source coordinates
+    # returns_pos and paren_end are offsets into window_text
+    def offset_to_line_col(offset):
+        line_offset = 0
+        for i, line in enumerate(window_lines):
+            line_len = len(line) + 1  # +1 for the \n
+            if offset < line_offset + line_len:
+                col = offset - line_offset
+                return (search_start + i + 1, col)  # 1-indexed line, 0-indexed col
+            line_offset += line_len
+        # Shouldn't reach here
+        return (search_start + len(window_lines), 0)
+
+    sl, sc = offset_to_line_col(returns_pos)
+    el, ec = offset_to_line_col(paren_end - 1)
+    ec += 1  # exclusive end column
+
+    return (sl, sc, el, ec)
+
+
+def clean_wala_type(wala_type):
+    """Extract Solidity type name from WALA type descriptor.
+
+    '<solidity,Puint256>' -> 'uint256'
+    '<solidity,Laddress>' -> 'address'
+    '<solidity, Puint120>' -> 'uint120'
+    """
+    m = re.search(r'<\s*solidity\s*,\s*[PL](\w+)\s*>', wala_type)
+    if m:
+        return m.group(1)
+    return wala_type
+
+
+def extract_return_annotations(data, project_root, source_files):
+    """Extract return-type rounding annotations from graph node metadata.
+
+    Returns a dict of filename -> list of annotation dicts, same format as extract_roundings()
+    but with an optional 'returnBreakdown' field for mixed roundings.
+    """
+    # Group by (filename, method_sl, method_el) to deduplicate across graph nodes
+    # that share the same methodPosition
+    grouped = defaultdict(list)  # (rel_filename, method_sl, method_el) -> list of return values
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        for node_id, node in graph["nodes"].items():
+            md = node["metadata"]
+            method_pos = md.get("methodPosition", "")
+            ret = md.get("return")
+            if not method_pos or ret is None:
+                continue
+
+            parsed = parse_method_position(method_pos)
+            if not parsed:
+                continue
+
+            filename, sl, sc, el, ec = parsed
+            rel_filename = normalize_path(filename, project_root)
+            key = (rel_filename, sl, el)
+            grouped[key].append((ret, graph_idx, node_id))
+
+    # Process each unique method position
+    result = defaultdict(list)  # rel_filename -> list of annotation dicts
+
+    for (rel_filename, method_sl, method_el), entries in grouped.items():
+        # Get source lines for this file
+        file_data = source_files.get(rel_filename)
+        if not file_data:
+            continue
+
+        raw_lines = file_data["raw"].split("\n")
+
+        # Find the returns clause
+        clause = find_returns_clause(raw_lines, method_sl, method_el)
+        if not clause:
+            continue
+
+        r_sl, r_sc, r_el, r_ec = clause
+
+        # Aggregate return roundings across all nodes for this method
+        all_return_values = []
+        node_refs = []
+        seen_refs = set()
+        for ret_val, g_idx, n_id in entries:
+            ref_key = (g_idx, n_id)
+            if ref_key not in seen_refs:
+                seen_refs.add(ref_key)
+                node_refs.append({"g": g_idx, "n": n_id})
+
+            if isinstance(ret_val, str):
+                all_return_values.append({"_single": ret_val})
+            elif isinstance(ret_val, dict):
+                all_return_values.append(ret_val)
+
+        # Determine the final rounding
+        # Flatten all individual rounding values
+        flat_roundings = []
+        # Also collect per-element info for breakdown
+        element_roundings = defaultdict(list)  # wala_type_key -> list of rounding values
+
+        for rv in all_return_values:
+            if "_single" in rv:
+                flat_roundings.append(rv["_single"])
+            else:
+                for type_key, rounding in rv.items():
+                    flat_roundings.append(rounding)
+                    element_roundings[type_key].append(rounding)
+
+        # Filter out Neither for aggregate determination
+        significant = [v for v in flat_roundings if v != "Neither"]
+        if not significant:
+            rounding = "Neither"
+        elif len(set(significant)) == 1:
+            rounding = significant[0]
+        else:
+            rounding = "Mixed"
+
+        annotation = {
+            "sl": r_sl,
+            "sc": r_sc,
+            "el": r_el,
+            "ec": r_ec,
+            "rounding": rounding,
+            "source": "return type",
+            "expr": "",
+            "nodeRefs": node_refs,
+        }
+
+        # Add breakdown for multi-value returns
+        if element_roundings and rounding == "Mixed":
+            breakdown = []
+            # Sort by tuple index extracted from the type key
+            sorted_keys = sorted(
+                element_roundings.keys(),
+                key=lambda k: int(re.search(r'Ltuple,\s*(\d+)', k).group(1))
+                if re.search(r'Ltuple,\s*(\d+)', k)
+                else 0,
+            )
+            for i, type_key in enumerate(sorted_keys):
+                roundings = element_roundings[type_key]
+                agg = aggregate_rounding(roundings)
+                # Extract the inner type
+                # type_key looks like "< solidity, Ltuple, 1, <solidity,Puint256> >"
+                inner_match = re.search(r'<\s*solidity\s*,\s*[PL]\w+\s*>', type_key)
+                sol_type = clean_wala_type(inner_match.group(0)) if inner_match else f"[{i}]"
+                breakdown.append({"index": i, "type": sol_type, "rounding": agg})
+            annotation["returnBreakdown"] = breakdown
+
+        result[rel_filename].append(annotation)
+
+    return dict(result)
+
+
 def collect_referenced_files_from_paths(file_paths, project_root):
     """Read source files by path, with Pygments highlighting."""
     formatter = HtmlFormatter(nowrap=True)
@@ -437,9 +627,10 @@ td.line-content { padding-left: 12px; }
 .r-inconsistent { text-decoration: underline; text-decoration-color: #ea580c; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-either { text-decoration: underline; text-decoration-color: #dc2626; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-neither { text-decoration: underline; text-decoration-color: #d1d5db; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.r-mixed { text-decoration: underline; text-decoration-color: #000; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 
 /* Tooltip */
-.r-up, .r-down, .r-inconsistent, .r-either, .r-neither { position: relative; cursor: default; }
+.r-up, .r-down, .r-inconsistent, .r-either, .r-neither, .r-mixed { position: relative; cursor: default; }
 .annotation-span:hover .tooltip, .annotation-span:focus .tooltip { display: block; }
 .tooltip {
   display: none; position: fixed; z-index: 1000;
@@ -454,6 +645,9 @@ td.line-content { padding-left: 12px; }
 .tooltip .tt-rounding-inconsistent { color: #ea580c; font-weight: 600; }
 .tooltip .tt-rounding-either { color: #dc2626; font-weight: 600; }
 .tooltip .tt-rounding-neither { color: #d1d5db; font-weight: 600; }
+.tooltip .tt-rounding-mixed { color: #000; font-weight: 600; }
+.tooltip .tt-breakdown { margin-top: 4px; padding-top: 4px; border-top: 1px solid #e2e8f0; }
+.tooltip .tt-breakdown-entry { margin-top: 2px; }
 
 /* Legend */
 #legend {
@@ -542,6 +736,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
     <div class="legend-item"><div class="legend-swatch" style="background:#ea580c"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> Neither</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed</div>
   </div>
 </div>
 
@@ -574,8 +769,8 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 
 HTML_TEMPLATE_END = r"""
 const ROUNDING_TYPES = ['Up', 'Down', 'Inconsistent', 'Either'];
-const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#ea580c', Either:'#dc2626', Neither:'#d1d5db' };
-const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N' };
+const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#ea580c', Either:'#dc2626', Neither:'#d1d5db', Mixed:'#000' };
+const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', Mixed:'M' };
 
 let currentFile = null;
 let currentContext = 'contextFree';
@@ -879,6 +1074,7 @@ function getAnnotationsForLine(annotations, lineNum, lineLen) {
       source: a.source || '',
       expr: a.expr || '',
       nodeRefs: a.nodeRefs || [],
+      returnBreakdown: a.returnBreakdown || null,
       _id: a._id,
       origSl: a.sl, origSc: a.sc, origEl: a.el, origEc: a.ec,
       // size for sorting: total span
@@ -992,6 +1188,7 @@ function roundingClass(rounding) {
     case 'Inconsistent': return 'r-inconsistent';
     case 'Either': return 'r-either';
     case 'Neither': return 'r-neither';
+    case 'Mixed': return 'r-mixed';
     default: return '';
   }
 }
@@ -1004,6 +1201,14 @@ function buildTooltipHTML(ann) {
   }
   if (ann.expr) {
     html += '\n<span class="tt-label">In:</span> ' + escapeHtml(ann.expr);
+  }
+  if (ann.returnBreakdown && ann.returnBreakdown.length > 0) {
+    html += '\n<div class="tt-breakdown">';
+    for (const entry of ann.returnBreakdown) {
+      const entryRcls = 'tt-rounding-' + entry.rounding.toLowerCase();
+      html += '<div class="tt-breakdown-entry">return[' + entry.index + '] (' + escapeHtml(entry.type) + '): <span class="' + entryRcls + '">' + escapeHtml(entry.rounding) + '</span></div>';
+    }
+    html += '</div>';
   }
   return html;
 }
@@ -1247,10 +1452,19 @@ def main():
     # Build directory tree
     dir_tree = build_directory_tree(sorted(source_files.keys()))
 
+    # Extract return annotations
+    return_annotations = extract_return_annotations(data, project_root, source_files)
+
     # Build contexts dict
     contexts = {"contextFree": {}}
     for filename, annotations in aggregated.items():
         contexts["contextFree"][filename] = annotations
+
+    # Merge return annotations into contextFree
+    for filename, ret_anns in return_annotations.items():
+        if filename not in contexts["contextFree"]:
+            contexts["contextFree"][filename] = []
+        contexts["contextFree"][filename].extend(ret_anns)
 
     # Generate HTML
     if conf_file:
@@ -1268,7 +1482,9 @@ def main():
     print(f"Generated: {html_output}")
     print(f"  {len(source_files)} source files")
     total_annotations = sum(len(v) for v in aggregated.values())
+    total_return = sum(len(v) for v in return_annotations.values())
     print(f"  {total_annotations} rounding annotations")
+    print(f"  {total_return} return annotations")
 
 
 if __name__ == "__main__":
