@@ -70,6 +70,19 @@ def extract_per_graph_roundings(data, project_root):
                 entry["_nodeId"] = node_id
                 raw[(filename, range_key)].append(entry)
 
+            for param in md.get("parameters", []):
+                pos = param.get("position")
+                if not pos:
+                    continue
+                entry = {
+                    "rounding": param.get("rounding", "Neither"),
+                    "source": param.get("source", ""),
+                    "expr": "",
+                    "_graphIdx": graph_idx,
+                    "_nodeId": node_id,
+                }
+                raw[(filename, pos)].append(entry)
+
         if not raw:
             per_graph[context_name] = {}
             continue
@@ -277,6 +290,19 @@ def extract_roundings(data, project_root):
                 entry["_graphIdx"] = graph_idx
                 entry["_nodeId"] = node_id
                 raw[(filename, range_key)].append(entry)
+
+            for param in md.get("parameters", []):
+                pos = param.get("position")
+                if not pos:
+                    continue
+                entry = {
+                    "rounding": param.get("rounding", "Neither"),
+                    "source": param.get("source", ""),
+                    "expr": "",
+                    "_graphIdx": graph_idx,
+                    "_nodeId": node_id,
+                }
+                raw[(filename, pos)].append(entry)
 
     # Aggregate
     aggregated = defaultdict(list)  # filename -> list of annotation dicts
