@@ -624,7 +624,7 @@ td.line-content { padding-left: 12px; }
 /* Rounding underline classes */
 .r-up { text-decoration: underline; text-decoration-color: #2563eb; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-down { text-decoration: underline; text-decoration-color: #4ade80; text-underline-offset: 3px; text-decoration-thickness: 2px; }
-.r-inconsistent { text-decoration: underline; text-decoration-color: #ea580c; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.r-inconsistent { text-decoration: underline; text-decoration-color: #f59e0b; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-either { text-decoration: underline; text-decoration-color: #dc2626; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-neither { text-decoration: underline; text-decoration-color: #d1d5db; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-mixed { text-decoration: underline; text-decoration-color: #000; text-underline-offset: 3px; text-decoration-thickness: 2px; }
@@ -642,7 +642,7 @@ td.line-content { padding-left: 12px; }
 .tooltip .tt-label { color: #64748b; }
 .tooltip .tt-rounding-up { color: #2563eb; font-weight: 600; }
 .tooltip .tt-rounding-down { color: #4ade80; font-weight: 600; }
-.tooltip .tt-rounding-inconsistent { color: #ea580c; font-weight: 600; }
+.tooltip .tt-rounding-inconsistent { color: #f59e0b; font-weight: 600; }
 .tooltip .tt-rounding-either { color: #dc2626; font-weight: 600; }
 .tooltip .tt-rounding-neither { color: #d1d5db; font-weight: 600; }
 .tooltip .tt-rounding-mixed { color: #000; font-weight: 600; }
@@ -699,7 +699,8 @@ td.line-content { padding-left: 12px; }
 .node-box:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .nb-func { font-family: 'JetBrains Mono', Consolas, monospace; font-weight: 600; font-size: 13px; color: #1e293b; }
 .nb-file { font-size: 11px; color: #94a3b8; margin-top: 2px; }
-.nb-callsite { font-size: 11px; color: #7c3aed; margin-top: 2px; }
+.nb-callsite { font-size: 11px; color: #7c3aed; margin-top: 2px; text-decoration: underline; cursor: pointer; }
+.nb-callsite:hover { color: #6d28d9; }
 .nb-return { font-size: 11px; color: #94a3b8; margin-top: 2px; }
 .pane-empty { color: #94a3b8; font-size: 12px; padding: 12px; }
 .annotation-span { cursor: pointer; }
@@ -733,7 +734,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#4ade80"></div> Down</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#ea580c"></div> Inconsistent</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> Neither</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed</div>
@@ -769,7 +770,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 
 HTML_TEMPLATE_END = r"""
 const ROUNDING_TYPES = ['Up', 'Down', 'Inconsistent', 'Either'];
-const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#ea580c', Either:'#dc2626', Neither:'#d1d5db', Mixed:'#000' };
+const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', Either:'#dc2626', Neither:'#d1d5db', Mixed:'#000' };
 const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', Mixed:'M' };
 
 let currentFile = null;
@@ -1350,6 +1351,22 @@ function abbreviatePath(filePath) {
   return parts.length > 2 ? parts.slice(-2).join('/') : filePath;
 }
 
+function navigateToLocation(file, line) {
+  if (file && DATA.sourceFiles[file]) {
+    showFile(file);
+    setTimeout(() => {
+      const table = document.querySelector('table.source-code');
+      if (table && line > 0) {
+        const tr = table.rows[line - 1];
+        if (tr) {
+          tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          highlightLine(tr);
+        }
+      }
+    }, 50);
+  }
+}
+
 function createNodeBox(info) {
   const graph = DATA.graphs[info.g];
   const node = graph ? graph.nodes[info.n] : null;
@@ -1375,6 +1392,10 @@ function createNodeBox(info) {
     csEl.textContent = sameFile
       ? 'call at line ' + info.callLine
       : 'call at ' + abbreviatePath(info.callFile) + ':' + info.callLine;
+    csEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      navigateToLocation(info.callFile, info.callLine);
+    });
     box.appendChild(csEl);
   }
 
@@ -1386,22 +1407,12 @@ function createNodeBox(info) {
   }
 
   box.addEventListener('click', () => {
-    // Prefer call site; fall back to function definition
-    const navFile = (info.callFile && DATA.sourceFiles[info.callFile]) ? info.callFile : (node && node.file);
-    const navLine = info.callLine || (node && node.sl);
+    // Navigate to function definition
+    const defFile = node && node.file;
+    const defLine = node && node.sl;
 
-    if (navFile && DATA.sourceFiles[navFile]) {
-      showFile(navFile);
-      setTimeout(() => {
-        const table = document.querySelector('table.source-code');
-        if (table && navLine > 0) {
-          const tr = table.rows[navLine - 1];
-          if (tr) {
-            tr.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            highlightLine(tr);
-          }
-        }
-      }, 50);
+    if (defFile && DATA.sourceFiles[defFile]) {
+      navigateToLocation(defFile, defLine);
     }
 
     // Look up all nodes at this position and update bottom pane
