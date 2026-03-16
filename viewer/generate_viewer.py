@@ -168,7 +168,7 @@ def extract_per_graph_return_annotations(data, project_root, source_files):
             elif len(set(significant)) == 1:
                 rounding = significant[0]
             else:
-                rounding = "Mixed"
+                rounding = "Mixed returns"
 
             annotation = {
                 "sl": r_sl, "sc": r_sc, "el": r_el, "ec": r_ec,
@@ -176,7 +176,7 @@ def extract_per_graph_return_annotations(data, project_root, source_files):
                 "nodeRefs": node_refs,
             }
 
-            if element_roundings and rounding == "Mixed":
+            if element_roundings and rounding == "Mixed returns":
                 breakdown = []
                 sorted_keys = sorted(
                     element_roundings.keys(),
@@ -580,7 +580,7 @@ def extract_return_annotations(data, project_root, source_files):
         elif len(set(significant)) == 1:
             rounding = significant[0]
         else:
-            rounding = "Mixed"
+            rounding = "Mixed returns"
 
         annotation = {
             "sl": r_sl,
@@ -594,7 +594,7 @@ def extract_return_annotations(data, project_root, source_files):
         }
 
         # Add breakdown for multi-value returns
-        if element_roundings and rounding == "Mixed":
+        if element_roundings and rounding == "Mixed returns":
             breakdown = []
             # Sort by tuple index extracted from the type key
             sorted_keys = sorted(
@@ -737,8 +737,9 @@ body { display: flex; flex-direction: column; background: #f8fafc; color: #333; 
 #context-bar {
   background: #fff; border-bottom: 1px solid #e2e8f0;
   padding: 6px 16px; display: flex; gap: 6px; flex-shrink: 0;
-  overflow-x: auto; flex-wrap: wrap; max-height: 72px;
+  overflow-x: auto; overflow-y: auto; flex-wrap: wrap;
 }
+.ctx-btn { white-space: nowrap; }
 .ctx-btn {
   padding: 4px 12px; border: 1px solid #e2e8f0; border-radius: 4px;
   background: transparent; color: #64748b; cursor: pointer; font-size: 12px;
@@ -828,7 +829,7 @@ td.line-content { padding-left: 12px; }
 .tooltip .tt-rounding-inconsistent { color: #f59e0b; font-weight: 600; }
 .tooltip .tt-rounding-either { color: #dc2626; font-weight: 600; }
 .tooltip .tt-rounding-neither { color: #d1d5db; font-weight: 600; }
-.tooltip .tt-rounding-mixed { color: #000; font-weight: 600; }
+.tooltip .tt-rounding-mixed-returns { color: #000; font-weight: 600; }
 .tooltip .tt-breakdown { margin-top: 4px; padding-top: 4px; border-top: 1px solid #e2e8f0; }
 .tooltip .tt-breakdown-entry { margin-top: 2px; }
 
@@ -920,7 +921,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
     <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> Neither</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed returns</div>
   </div>
 </div>
 
@@ -951,8 +952,8 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 
 HTML_TEMPLATE_END = r"""
 const ROUNDING_TYPES = ['Up', 'Down', 'Inconsistent', 'Either'];
-const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', Either:'#dc2626', Neither:'#d1d5db', Mixed:'#000' };
-const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', Mixed:'M' };
+const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', Either:'#dc2626', Neither:'#d1d5db', 'Mixed returns':'#000' };
+const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', 'Mixed returns':'MR' };
 
 let currentFile = null;
 let currentContext = 'contextFree';
@@ -1388,13 +1389,17 @@ function roundingClass(rounding) {
     case 'Inconsistent': return 'r-inconsistent';
     case 'Either': return 'r-either';
     case 'Neither': return 'r-neither';
-    case 'Mixed': return 'r-mixed';
+    case 'Mixed returns': return 'r-mixed';
     default: return '';
   }
 }
 
+function tooltipClass(rounding) {
+  return 'tt-rounding-' + rounding.toLowerCase().replace(/\s+/g, '-');
+}
+
 function buildTooltipHTML(ann) {
-  const rcls = 'tt-rounding-' + ann.rounding.toLowerCase();
+  const rcls = tooltipClass(ann.rounding);
   let html = '<span class="tt-label">Rounding:</span> <span class="' + rcls + '">' + escapeHtml(ann.rounding) + '</span>';
   if (ann.source) {
     html += '\n<span class="tt-label">Expression:</span> ' + escapeHtml(ann.source);
@@ -1405,7 +1410,7 @@ function buildTooltipHTML(ann) {
   if (ann.returnBreakdown && ann.returnBreakdown.length > 0) {
     html += '\n<div class="tt-breakdown">';
     for (const entry of ann.returnBreakdown) {
-      const entryRcls = 'tt-rounding-' + entry.rounding.toLowerCase();
+      const entryRcls = tooltipClass(entry.rounding);
       html += '<div class="tt-breakdown-entry">return[' + entry.index + '] (' + escapeHtml(entry.type) + '): <span class="' + entryRcls + '">' + escapeHtml(entry.rounding) + '</span></div>';
     }
     html += '</div>';
@@ -1697,6 +1702,18 @@ def main():
             if filename not in contexts[ctx_name]:
                 contexts[ctx_name][filename] = []
             contexts[ctx_name][filename].extend(anns)
+
+    # Filter out per-graph contexts where all findings are Neither
+    for ctx_name in list(contexts.keys()):
+        if ctx_name == "contextFree":
+            continue
+        all_neither = all(
+            a["rounding"] == "Neither"
+            for anns in contexts[ctx_name].values()
+            for a in anns
+        )
+        if all_neither:
+            del contexts[ctx_name]
 
     # Generate HTML
     if conf_file:
