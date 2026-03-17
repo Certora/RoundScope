@@ -37,4 +37,12 @@ public interface SolidityWalkContext extends TranslatorToCAst.WalkContext<Solidi
 	default CAstType type() {
 		return parent().type();
 	}
+
+	default JSONObject sourceUnit() {
+		return parent().sourceUnit();
+	}
+
+	default JSONObject sourceUnit(int nodeId) {
+		return parent().sourceUnit();
+	}
 }
