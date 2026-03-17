@@ -111,7 +111,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[461,2-463,3]",
+                    "methodPosition": "src/hub/Hub.sol:[461,2-463,3]",
                     "roundings": {},
                     "method": "<Code body of function isUnderlyingListed>",
                     "parameters": [
@@ -174,7 +174,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[462,11-462,49]",
+                "label": "src/hub/Hub.sol:[462,11-462,49]",
                 "target": "1"
             },
             {
@@ -189,7 +189,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[466,2-468,3]",
+                "methodPosition": "src/hub/Hub.sol:[466,2-468,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetCount>",
                 "parameters": [{"rounding": "Neither"}],
@@ -204,7 +204,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[380,2-392,3]",
+                "methodPosition": "src/hub/Hub.sol:[380,2-392,3]",
                 "roundings": {},
                 "method": "<Code body of function refreshPremium>",
                 "parameters": [
@@ -638,7 +638,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[486,2-488,3]",
+                    "methodPosition": "src/hub/Hub.sol:[486,2-488,3]",
                     "roundings": {"[487,11-487,53]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toAddedAssetsDown(shares)",
@@ -1204,7 +1204,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[487,11-487,53]",
+                "label": "src/hub/Hub.sol:[487,11-487,53]",
                 "target": "1"
             },
             {
@@ -1319,7 +1319,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[410,2-421,3]",
+                "methodPosition": "src/hub/Hub.sol:[410,2-421,3]",
                 "roundings": {},
                 "method": "<Code body of function transferShares>",
                 "parameters": [
@@ -1351,7 +1351,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[511,2-514,3]",
+                "methodPosition": "src/hub/Hub.sol:[511,2-514,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetUnderlyingAndDecimals>",
                 "parameters": [
@@ -1797,7 +1797,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[476,2-478,3]",
+                    "methodPosition": "src/hub/Hub.sol:[476,2-478,3]",
                     "roundings": {"[477,11-477,51]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toAddedAssetsUp(shares)",
@@ -2363,7 +2363,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[477,11-477,51]",
+                "label": "src/hub/Hub.sol:[477,11-477,51]",
                 "target": "1"
             },
             {
@@ -2479,7 +2479,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[665,2-667,3]",
+                    "methodPosition": "src/hub/Hub.sol:[665,2-667,3]",
                     "roundings": {},
                     "method": "<Code body of function isSpokeListed>",
                     "parameters": [
@@ -2547,7 +2547,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[666,11-666,50]",
+                "label": "src/hub/Hub.sol:[666,11-666,50]",
                 "target": "1"
             },
             {
@@ -2562,7 +2562,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[646,2-648,3]",
+                "methodPosition": "src/hub/Hub.sol:[646,2-648,3]",
                 "roundings": {},
                 "method": "<Code body of function getSpokeDrawnShares>",
                 "parameters": [
@@ -2589,7 +2589,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[567,2-569,3]",
+                "methodPosition": "src/hub/Hub.sol:[567,2-569,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetLiquidity>",
                 "parameters": [
@@ -2611,7 +2611,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[680,2-693,3]",
+                "methodPosition": "src/hub/Hub.sol:[680,2-693,3]",
                 "roundings": {},
                 "method": "<Code body of function getSpokeConfig>",
                 "parameters": [
@@ -2638,7 +2638,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[527,2-529,3]",
+                "methodPosition": "src/hub/Hub.sol:[527,2-529,3]",
                 "roundings": {},
                 "method": "<Code body of function getAddedShares>",
                 "parameters": [
@@ -2661,7 +2661,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[444,2-458,3]",
+                    "methodPosition": "src/hub/Hub.sol:[444,2-458,3]",
                     "roundings": {},
                     "method": "<Code body of function reclaim>",
                     "parameters": [
@@ -2719,12 +2719,12 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[451,23-451,41]",
+                "label": "src/hub/Hub.sol:[451,23-451,41]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[452,19-452,37]",
+                "label": "src/hub/Hub.sol:[452,19-452,37]",
                 "target": "2"
             }
         ],
@@ -2735,7 +2735,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[491,2-493,3]",
+                    "methodPosition": "src/hub/Hub.sol:[491,2-493,3]",
                     "roundings": {"[492,11-492,51]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toDrawnSharesUp(assets)",
@@ -2964,7 +2964,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[492,11-492,51]",
+                "label": "src/hub/Hub.sol:[492,11-492,51]",
                 "target": "1"
             },
             {
@@ -3212,7 +3212,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[632,2-636,3]",
+                    "methodPosition": "src/hub/Hub.sol:[632,2-636,3]",
                     "roundings": {
                         "[635,11-635,43]": {
                             "rounding": "Either",
@@ -3250,7 +3250,7 @@
             },
             "1": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[793,2-798,3]",
+                    "methodPosition": "src/hub/Hub.sol:[793,2-798,3]",
                     "roundings": {"[797,11-797,51]": {
                         "rounding": "Either",
                         "expr": "return asset.toDrawnAssetsUp(spoke.drawnShares)",
@@ -3486,7 +3486,7 @@
             },
             "7": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[801,2-806,3]",
+                    "methodPosition": "src/hub/Hub.sol:[801,2-806,3]",
                     "roundings": {
                         "[805,11-805,56]": {
                             "rounding": "Either",
@@ -3519,7 +3519,7 @@
             },
             "8": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[809,2-819,3]",
+                    "methodPosition": "src/hub/Hub.sol:[809,2-819,3]",
                     "roundings": {
                         "[814,6-818,8]": {
                             "rounding": "Either",
@@ -3619,17 +3619,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[635,11-635,43]",
+                "label": "src/hub/Hub.sol:[635,11-635,43]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[635,46-635,80]",
+                "label": "src/hub/Hub.sol:[635,46-635,80]",
                 "target": "7"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[797,11-797,51]",
+                "label": "src/hub/Hub.sol:[797,11-797,51]",
                 "target": "2"
             },
             {
@@ -3654,22 +3654,22 @@
             },
             {
                 "source": "7",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[805,11-805,44]",
+                "label": "src/hub/Hub.sol:[805,11-805,44]",
                 "target": "8"
             },
             {
                 "source": "7",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[805,11-805,56]",
+                "label": "src/hub/Hub.sol:[805,11-805,56]",
                 "target": "15"
             },
             {
                 "source": "8",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[817,20-817,41]",
+                "label": "src/hub/Hub.sol:[817,20-817,41]",
                 "target": "9"
             },
             {
                 "source": "8",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[814,6-818,8]",
+                "label": "src/hub/Hub.sol:[814,6-818,8]",
                 "target": "12"
             },
             {
@@ -3699,7 +3699,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[600,2-602,3]",
+                "methodPosition": "src/hub/Hub.sol:[600,2-602,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetSwept>",
                 "parameters": [
@@ -4259,7 +4259,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[217,2-238,3]",
+                    "methodPosition": "src/hub/Hub.sol:[217,2-238,3]",
                     "roundings": {
                         "[227,21-227,64]": {
                             "rounding": "Either",
@@ -4800,22 +4800,22 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[226,58-226,89]",
+                "label": "src/hub/Hub.sol:[226,58-226,89]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[227,21-227,52]",
+                "label": "src/hub/Hub.sol:[227,21-227,52]",
                 "target": "2"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[227,21-227,64]",
+                "label": "src/hub/Hub.sol:[227,21-227,64]",
                 "target": "24"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[231,22-231,43]",
+                "label": "src/hub/Hub.sol:[231,22-231,43]",
                 "target": "25"
             },
             {
@@ -4930,7 +4930,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[199,2-205,3]",
+                "methodPosition": "src/hub/Hub.sol:[199,2-205,3]",
                 "roundings": {},
                 "method": "<Code body of function setInterestRateData>",
                 "parameters": [
@@ -4958,7 +4958,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[188,2-196,3]",
+                    "methodPosition": "src/hub/Hub.sol:[188,2-196,3]",
                     "roundings": {},
                     "method": "<Code body of function updateSpokeConfig>",
                     "parameters": [
@@ -5031,7 +5031,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[194,12-194,51]",
+                "label": "src/hub/Hub.sol:[194,12-194,51]",
                 "target": "1"
             },
             {
@@ -5046,7 +5046,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[620,2-622,3]",
+                "methodPosition": "src/hub/Hub.sol:[620,2-622,3]",
                 "roundings": {},
                 "method": "<Code body of function getSpokeAddedShares>",
                 "parameters": [
@@ -5480,7 +5480,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[615,2-617,3]",
+                    "methodPosition": "src/hub/Hub.sol:[615,2-617,3]",
                     "roundings": {"[616,11-616,82]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toAddedAssetsDown(_spokes[assetId][spoke].addedShares)",
@@ -6046,7 +6046,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[616,11-616,82]",
+                "label": "src/hub/Hub.sol:[616,11-616,82]",
                 "target": "1"
             },
             {
@@ -6161,7 +6161,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[61,2-63,3]",
+                "methodPosition": "src/hub/Hub.sol:[61,2-63,3]",
                 "roundings": {},
                 "method": "<Code body of function <init>>",
                 "parameters": [
@@ -6184,7 +6184,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[321,2-348,3]",
+                    "methodPosition": "src/hub/Hub.sol:[321,2-348,3]",
                     "roundings": {
                         "[340,4-340,52]": {
                             "rounding": "Either",
@@ -6588,22 +6588,22 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[332,26-332,62]",
+                "label": "src/hub/Hub.sol:[332,26-332,62]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[332,26-332,74]",
+                "label": "src/hub/Hub.sol:[332,26-332,74]",
                 "target": "6"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[340,24-340,52]",
+                "label": "src/hub/Hub.sol:[340,24-340,52]",
                 "target": "7"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[341,24-341,52]",
+                "label": "src/hub/Hub.sol:[341,24-341,52]",
                 "target": "8"
             },
             {
@@ -6634,7 +6634,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[517,2-519,3]",
+                    "methodPosition": "src/hub/Hub.sol:[517,2-519,3]",
                     "roundings": {"[518,11-518,43]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].getDrawnIndex()",
@@ -6778,7 +6778,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[518,11-518,43]",
+                "label": "src/hub/Hub.sol:[518,11-518,43]",
                 "target": "1"
             },
             {
@@ -7431,7 +7431,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[351,2-377,3]",
+                    "methodPosition": "src/hub/Hub.sol:[351,2-377,3]",
                     "roundings": {
                         "[367,25-367,31]": {
                             "rounding": "Either",
@@ -7992,37 +7992,37 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[366,43-366,71]",
+                "label": "src/hub/Hub.sol:[366,43-366,71]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[366,21-366,72]",
+                "label": "src/hub/Hub.sol:[366,21-366,72]",
                 "target": "2"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[366,21-366,84]",
+                "label": "src/hub/Hub.sol:[366,21-366,84]",
                 "target": "24"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[369,23-369,70]",
+                "label": "src/hub/Hub.sol:[369,23-369,70]",
                 "target": "25"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[369,23-369,82]",
+                "label": "src/hub/Hub.sol:[369,23-369,82]",
                 "target": "26"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[370,30-370,71]",
+                "label": "src/hub/Hub.sol:[370,30-370,71]",
                 "target": "27"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[370,30-370,83]",
+                "label": "src/hub/Hub.sol:[370,30-370,83]",
                 "target": "28"
             },
             {
@@ -8137,7 +8137,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[605,2-607,3]",
+                "methodPosition": "src/hub/Hub.sol:[605,2-607,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetDrawnRate>",
                 "parameters": [
@@ -8159,7 +8159,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[572,2-574,3]",
+                "methodPosition": "src/hub/Hub.sol:[572,2-574,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetDeficitRay>",
                 "parameters": [
@@ -8182,7 +8182,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[532,2-536,3]",
+                    "methodPosition": "src/hub/Hub.sol:[532,2-536,3]",
                     "roundings": {
                         "[535,51-535,61]": {
                             "rounding": "Either",
@@ -8610,17 +8610,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[534,25-534,46]",
+                "label": "src/hub/Hub.sol:[534,25-534,46]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[535,12-535,35]",
+                "label": "src/hub/Hub.sol:[535,12-535,35]",
                 "target": "4"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[535,37-535,62]",
+                "label": "src/hub/Hub.sol:[535,37-535,62]",
                 "target": "6"
             },
             {
@@ -8665,7 +8665,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[675,2-677,3]",
+                "methodPosition": "src/hub/Hub.sol:[675,2-677,3]",
                 "roundings": {},
                 "method": "<Code body of function getSpoke>",
                 "parameters": [
@@ -8692,7 +8692,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[582,2-591,3]",
+                "methodPosition": "src/hub/Hub.sol:[582,2-591,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetConfig>",
                 "parameters": [
@@ -8715,7 +8715,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[545,2-553,3]",
+                    "methodPosition": "src/hub/Hub.sol:[545,2-553,3]",
                     "roundings": {
                         "[551,20-551,41]": {
                             "rounding": "Either",
@@ -8985,12 +8985,12 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[551,20-551,41]",
+                "label": "src/hub/Hub.sol:[551,20-551,41]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[548,6-552,8]",
+                "label": "src/hub/Hub.sol:[548,6-552,8]",
                 "target": "4"
             },
             {
@@ -9021,7 +9021,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[539,2-542,3]",
+                    "methodPosition": "src/hub/Hub.sol:[539,2-542,3]",
                     "roundings": {
                         "[541,11-541,49]": {
                             "rounding": "Either",
@@ -9482,12 +9482,12 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[541,27-541,48]",
+                "label": "src/hub/Hub.sol:[541,27-541,48]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[541,11-541,49]",
+                "label": "src/hub/Hub.sol:[541,11-541,49]",
                 "target": "4"
             },
             {
@@ -9543,7 +9543,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[66,2-130,3]",
+                    "methodPosition": "src/hub/Hub.sol:[66,2-130,3]",
                     "roundings": {},
                     "method": "<Code body of function addAsset>",
                     "parameters": [
@@ -9743,27 +9743,27 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[81,13-81,51]",
+                "label": "src/hub/Hub.sol:[81,13-81,51]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[103,18-103,40]",
+                "label": "src/hub/Hub.sol:[103,18-103,40]",
                 "target": "3"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[105,27-105,57]",
+                "label": "src/hub/Hub.sol:[105,27-105,57]",
                 "target": "4"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[107,17-107,37]",
+                "label": "src/hub/Hub.sol:[107,17-107,37]",
                 "target": "5"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[114,4-114,37]",
+                "label": "src/hub/Hub.sol:[114,4-114,37]",
                 "target": "6"
             },
             {
@@ -9788,7 +9788,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[651,2-657,3]",
+                "methodPosition": "src/hub/Hub.sol:[651,2-657,3]",
                 "roundings": {},
                 "method": "<Code body of function getSpokePremiumData>",
                 "parameters": [
@@ -9818,7 +9818,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[660,2-662,3]",
+                "methodPosition": "src/hub/Hub.sol:[660,2-662,3]",
                 "roundings": {},
                 "method": "<Code body of function getSpokeDeficitRay>",
                 "parameters": [
@@ -9845,7 +9845,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[561,2-564,3]",
+                "methodPosition": "src/hub/Hub.sol:[561,2-564,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetPremiumData>",
                 "parameters": [
@@ -9871,7 +9871,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[506,2-508,3]",
+                    "methodPosition": "src/hub/Hub.sol:[506,2-508,3]",
                     "roundings": {"[507,11-507,51]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toDrawnAssetsUp(shares)",
@@ -10109,7 +10109,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[507,11-507,51]",
+                "label": "src/hub/Hub.sol:[507,11-507,51]",
                 "target": "1"
             },
             {
@@ -10140,7 +10140,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[670,2-672,3]",
+                    "methodPosition": "src/hub/Hub.sol:[670,2-672,3]",
                     "roundings": {},
                     "method": "<Code body of function getSpokeAddress>",
                     "parameters": [
@@ -10208,7 +10208,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[671,11-671,44]",
+                "label": "src/hub/Hub.sol:[671,11-671,44]",
                 "target": "1"
             },
             {
@@ -10563,7 +10563,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[522,2-524,3]",
+                    "methodPosition": "src/hub/Hub.sol:[522,2-524,3]",
                     "roundings": {"[523,11-523,46]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].totalAddedAssets()",
@@ -11068,7 +11068,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[523,11-523,46]",
+                "label": "src/hub/Hub.sol:[523,11-523,46]",
                 "target": "1"
             },
             {
@@ -11689,7 +11689,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[208,2-214,3]",
+                    "methodPosition": "src/hub/Hub.sol:[208,2-214,3]",
                     "roundings": {
                         "[213,11-213,20]": {
                             "rounding": "Either",
@@ -11716,7 +11716,7 @@
             },
             "1": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[773,2-790,3]",
+                    "methodPosition": "src/hub/Hub.sol:[773,2-790,3]",
                     "roundings": {
                         "[785,36-785,42]": {
                             "rounding": "Either",
@@ -12235,17 +12235,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[211,24-211,54]",
+                "label": "src/hub/Hub.sol:[211,24-211,54]",
                 "target": "1"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[775,21-775,50]",
+                "label": "src/hub/Hub.sol:[775,21-775,50]",
                 "target": "2"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[775,21-775,62]",
+                "label": "src/hub/Hub.sol:[775,21-775,62]",
                 "target": "24"
             },
             {
@@ -12361,7 +12361,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[424,2-441,3]",
+                    "methodPosition": "src/hub/Hub.sol:[424,2-441,3]",
                     "roundings": {},
                     "method": "<Code body of function sweep>",
                     "parameters": [
@@ -12441,17 +12441,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[434,22-434,52]",
+                "label": "src/hub/Hub.sol:[434,22-434,52]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[434,22-434,64]",
+                "label": "src/hub/Hub.sol:[434,22-434,64]",
                 "target": "2"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[435,19-435,37]",
+                "label": "src/hub/Hub.sol:[435,19-435,37]",
                 "target": "3"
             }
         ],
@@ -12462,7 +12462,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[496,2-498,3]",
+                    "methodPosition": "src/hub/Hub.sol:[496,2-498,3]",
                     "roundings": {"[497,11-497,53]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toDrawnAssetsDown(shares)",
@@ -12686,7 +12686,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[497,11-497,53]",
+                "label": "src/hub/Hub.sol:[497,11-497,53]",
                 "target": "1"
             },
             {
@@ -12717,7 +12717,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[639,2-643,3]",
+                    "methodPosition": "src/hub/Hub.sol:[639,2-643,3]",
                     "roundings": {"[642,11-642,48]": {
                         "rounding": "Either",
                         "expr": "return _getSpokePremiumRay(asset, spokeData)",
@@ -12743,7 +12743,7 @@
             },
             "1": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[809,2-819,3]",
+                    "methodPosition": "src/hub/Hub.sol:[809,2-819,3]",
                     "roundings": {
                         "[814,6-818,8]": {
                             "rounding": "Either",
@@ -13018,17 +13018,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[642,11-642,48]",
+                "label": "src/hub/Hub.sol:[642,11-642,48]",
                 "target": "1"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[817,20-817,41]",
+                "label": "src/hub/Hub.sol:[817,20-817,41]",
                 "target": "2"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[814,6-818,8]",
+                "label": "src/hub/Hub.sol:[814,6-818,8]",
                 "target": "5"
             },
             {
@@ -13460,7 +13460,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[471,2-473,3]",
+                    "methodPosition": "src/hub/Hub.sol:[471,2-473,3]",
                     "roundings": {"[472,11-472,53]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toAddedSharesDown(assets)",
@@ -14026,7 +14026,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[472,11-472,53]",
+                "label": "src/hub/Hub.sol:[472,11-472,53]",
                 "target": "1"
             },
             {
@@ -14667,7 +14667,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[241,2-263,3]",
+                    "methodPosition": "src/hub/Hub.sol:[241,2-263,3]",
                     "roundings": {
                         "[260,37-260,43]": {
                             "rounding": "Either",
@@ -15230,22 +15230,22 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[251,21-251,50]",
+                "label": "src/hub/Hub.sol:[251,21-251,50]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[251,21-251,62]",
+                "label": "src/hub/Hub.sol:[251,21-251,62]",
                 "target": "23"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[254,22-254,52]",
+                "label": "src/hub/Hub.sol:[254,22-254,52]",
                 "target": "24"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[254,22-254,64]",
+                "label": "src/hub/Hub.sol:[254,22-254,64]",
                 "target": "25"
             },
             {
@@ -15360,7 +15360,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[176,2-185,3]",
+                "methodPosition": "src/hub/Hub.sol:[176,2-185,3]",
                 "roundings": {},
                 "method": "<Code body of function addSpoke>",
                 "parameters": [
@@ -15543,7 +15543,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[594,2-597,3]",
+                    "methodPosition": "src/hub/Hub.sol:[594,2-597,3]",
                     "roundings": {
                         "[596,32-596,78]": {
                             "rounding": "Either",
@@ -16016,12 +16016,12 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[596,56-596,77]",
+                "label": "src/hub/Hub.sol:[596,56-596,77]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[596,32-596,78]",
+                "label": "src/hub/Hub.sol:[596,32-596,78]",
                 "target": "4"
             },
             {
@@ -16097,7 +16097,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[501,2-503,3]",
+                    "methodPosition": "src/hub/Hub.sol:[501,2-503,3]",
                     "roundings": {"[502,11-502,53]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toDrawnSharesDown(assets)",
@@ -16316,7 +16316,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[502,11-502,53]",
+                "label": "src/hub/Hub.sol:[502,11-502,53]",
                 "target": "1"
             },
             {
@@ -16346,7 +16346,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[577,2-579,3]",
+                "methodPosition": "src/hub/Hub.sol:[577,2-579,3]",
                 "roundings": {},
                 "method": "<Code body of function getAsset>",
                 "parameters": [
@@ -16369,7 +16369,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[266,2-288,3]",
+                    "methodPosition": "src/hub/Hub.sol:[266,2-288,3]",
                     "roundings": {
                         "[277,4-277,36]": {
                             "rounding": "Either",
@@ -16709,22 +16709,22 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[276,26-276,55]",
+                "label": "src/hub/Hub.sol:[276,26-276,55]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[276,26-276,67]",
+                "label": "src/hub/Hub.sol:[276,26-276,67]",
                 "target": "6"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[279,22-279,52]",
+                "label": "src/hub/Hub.sol:[279,22-279,52]",
                 "target": "7"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[279,22-279,64]",
+                "label": "src/hub/Hub.sol:[279,22-279,64]",
                 "target": "8"
             },
             {
@@ -17275,7 +17275,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[133,2-173,3]",
+                    "methodPosition": "src/hub/Hub.sol:[133,2-173,3]",
                     "roundings": {"[158,6-158,36]": {
                         "rounding": "Either",
                         "source": "_mintFeeShares(asset, assetId)"
@@ -17305,7 +17305,7 @@
             },
             "1": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[773,2-790,3]",
+                    "methodPosition": "src/hub/Hub.sol:[773,2-790,3]",
                     "roundings": {
                         "[785,36-785,42]": {
                             "rounding": "Either",
@@ -17824,17 +17824,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[158,6-158,36]",
+                "label": "src/hub/Hub.sol:[158,6-158,36]",
                 "target": "1"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[775,21-775,50]",
+                "label": "src/hub/Hub.sol:[775,21-775,50]",
                 "target": "2"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[775,21-775,62]",
+                "label": "src/hub/Hub.sol:[775,21-775,62]",
                 "target": "24"
             },
             {
@@ -17949,7 +17949,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[395,2-407,3]",
+                "methodPosition": "src/hub/Hub.sol:[395,2-407,3]",
                 "roundings": {},
                 "method": "<Code body of function payFeeShares>",
                 "parameters": [
@@ -17977,7 +17977,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[291,2-318,3]",
+                    "methodPosition": "src/hub/Hub.sol:[291,2-318,3]",
                     "roundings": {
                         "[317,11-317,22]": {
                             "rounding": "Either",
@@ -18408,27 +18408,27 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[302,26-302,62]",
+                "label": "src/hub/Hub.sol:[302,26-302,62]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[302,26-302,74]",
+                "label": "src/hub/Hub.sol:[302,26-302,74]",
                 "target": "6"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[307,28-307,71]",
+                "label": "src/hub/Hub.sol:[307,28-307,71]",
                 "target": "7"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[310,58-310,89]",
+                "label": "src/hub/Hub.sol:[310,58-310,89]",
                 "target": "8"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[311,22-311,43]",
+                "label": "src/hub/Hub.sol:[311,22-311,43]",
                 "target": "9"
             },
             {
@@ -18459,7 +18459,7 @@
         "nodes": {
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[610,2-612,3]",
+                    "methodPosition": "src/hub/Hub.sol:[610,2-612,3]",
                     "roundings": {},
                     "method": "<Code body of function getSpokeCount>",
                     "parameters": [
@@ -18512,7 +18512,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[611,11-611,43]",
+                "label": "src/hub/Hub.sol:[611,11-611,43]",
                 "target": "1"
             },
             {
@@ -18745,7 +18745,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[625,2-629,3]",
+                    "methodPosition": "src/hub/Hub.sol:[625,2-629,3]",
                     "roundings": {
                         "[628,46-628,80]": {
                             "rounding": "Either",
@@ -18779,7 +18779,7 @@
             },
             "1": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[793,2-798,3]",
+                    "methodPosition": "src/hub/Hub.sol:[793,2-798,3]",
                     "roundings": {"[797,11-797,51]": {
                         "rounding": "Either",
                         "expr": "return asset.toDrawnAssetsUp(spoke.drawnShares)",
@@ -19015,7 +19015,7 @@
             },
             "7": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[801,2-806,3]",
+                    "methodPosition": "src/hub/Hub.sol:[801,2-806,3]",
                     "roundings": {
                         "[805,11-805,56]": {
                             "rounding": "Either",
@@ -19048,7 +19048,7 @@
             },
             "8": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[809,2-819,3]",
+                    "methodPosition": "src/hub/Hub.sol:[809,2-819,3]",
                     "roundings": {
                         "[814,6-818,8]": {
                             "rounding": "Either",
@@ -19148,17 +19148,17 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[628,12-628,44]",
+                "label": "src/hub/Hub.sol:[628,12-628,44]",
                 "target": "1"
             },
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[628,46-628,80]",
+                "label": "src/hub/Hub.sol:[628,46-628,80]",
                 "target": "7"
             },
             {
                 "source": "1",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[797,11-797,51]",
+                "label": "src/hub/Hub.sol:[797,11-797,51]",
                 "target": "2"
             },
             {
@@ -19183,22 +19183,22 @@
             },
             {
                 "source": "7",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[805,11-805,44]",
+                "label": "src/hub/Hub.sol:[805,11-805,44]",
                 "target": "8"
             },
             {
                 "source": "7",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[805,11-805,56]",
+                "label": "src/hub/Hub.sol:[805,11-805,56]",
                 "target": "15"
             },
             {
                 "source": "8",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[817,20-817,41]",
+                "label": "src/hub/Hub.sol:[817,20-817,41]",
                 "target": "9"
             },
             {
                 "source": "8",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[814,6-818,8]",
+                "label": "src/hub/Hub.sol:[814,6-818,8]",
                 "target": "12"
             },
             {
@@ -19640,7 +19640,7 @@
             },
             "0": {
                 "metadata": {
-                    "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[481,2-483,3]",
+                    "methodPosition": "src/hub/Hub.sol:[481,2-483,3]",
                     "roundings": {"[482,11-482,51]": {
                         "rounding": "Either",
                         "expr": "return _assets[assetId].toAddedSharesUp(assets)",
@@ -20206,7 +20206,7 @@
         "edges": [
             {
                 "source": "0",
-                "label": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[482,11-482,51]",
+                "label": "src/hub/Hub.sol:[482,11-482,51]",
                 "target": "1"
             },
             {
@@ -20321,7 +20321,7 @@
         "directed": true,
         "nodes": {"0": {
             "metadata": {
-                "methodPosition": "/Users/shelly/Certora/CustomerProjects/Aave/aave-v4/src/hub/Hub.sol:[556,2-558,3]",
+                "methodPosition": "src/hub/Hub.sol:[556,2-558,3]",
                 "roundings": {},
                 "method": "<Code body of function getAssetDrawnShares>",
                 "parameters": [
