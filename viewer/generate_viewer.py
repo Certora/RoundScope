@@ -70,6 +70,19 @@ def extract_per_graph_roundings(data, project_root):
                 entry["_nodeId"] = node_id
                 raw[(filename, range_key)].append(entry)
 
+            for param in md.get("parameters", []):
+                pos = param.get("position")
+                if not pos:
+                    continue
+                entry = {
+                    "rounding": param.get("rounding", "Neither"),
+                    "source": param.get("source", ""),
+                    "expr": "",
+                    "_graphIdx": graph_idx,
+                    "_nodeId": node_id,
+                }
+                raw[(filename, pos)].append(entry)
+
         if not raw:
             per_graph[context_name] = {}
             continue
@@ -277,6 +290,19 @@ def extract_roundings(data, project_root):
                 entry["_graphIdx"] = graph_idx
                 entry["_nodeId"] = node_id
                 raw[(filename, range_key)].append(entry)
+
+            for param in md.get("parameters", []):
+                pos = param.get("position")
+                if not pos:
+                    continue
+                entry = {
+                    "rounding": param.get("rounding", "Neither"),
+                    "source": param.get("source", ""),
+                    "expr": "",
+                    "_graphIdx": graph_idx,
+                    "_nodeId": node_id,
+                }
+                raw[(filename, pos)].append(entry)
 
     # Aggregate
     aggregated = defaultdict(list)  # filename -> list of annotation dicts
@@ -956,7 +982,7 @@ const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', 
 const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', 'Mixed returns':'MR' };
 
 let currentFile = null;
-let currentContext = 'contextFree';
+let currentContext = 'allContexts';
 let currentFindings = [];
 let currentFindingIdx = -1;
 let nodePositionIndex = {};
@@ -988,15 +1014,15 @@ function init() {
 function buildContextBar() {
   const bar = document.getElementById('context-bar');
   const names = Object.keys(DATA.contexts);
-  // Put contextFree first, then sort the rest alphabetically
-  const sorted = names.filter(n => n === 'contextFree').concat(
-    names.filter(n => n !== 'contextFree').sort()
+  // Put allContexts first, then sort the rest alphabetically
+  const sorted = names.filter(n => n === 'allContexts').concat(
+    names.filter(n => n !== 'allContexts').sort()
   );
   for (const name of sorted) {
     const btn = document.createElement('button');
-    btn.className = 'ctx-btn' + (name === 'contextFree' ? ' active' : '');
+    btn.className = 'ctx-btn' + (name === 'allContexts' ? ' active' : '');
     btn.dataset.context = name;
-    btn.textContent = name === 'contextFree' ? 'Context-Free' : name;
+    btn.textContent = name === 'allContexts' ? 'All' : name;
     btn.addEventListener('click', () => switchContext(name));
     bar.appendChild(btn);
   }
@@ -1085,7 +1111,7 @@ function updateContextCounts() {
     const ctx = DATA.contexts[ctxName] || {};
     let total = 0;
     for (const file in ctx) total += ctx[file].length;
-    const label = ctxName === 'contextFree' ? 'Context-Free' : ctxName;
+    const label = ctxName === 'allContexts' ? 'All' : ctxName;
     btn.textContent = label + (total > 0 ? ' (' + total + ')' : '');
   });
 }
@@ -1675,15 +1701,15 @@ def main():
     per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
 
     # Build contexts dict
-    contexts = {"contextFree": {}}
+    contexts = {"allContexts": {}}
     for filename, annotations in aggregated.items():
-        contexts["contextFree"][filename] = annotations
+        contexts["allContexts"][filename] = annotations
 
-    # Merge return annotations into contextFree
+    # Merge return annotations into allContexts
     for filename, ret_anns in return_annotations.items():
-        if filename not in contexts["contextFree"]:
-            contexts["contextFree"][filename] = []
-        contexts["contextFree"][filename].extend(ret_anns)
+        if filename not in contexts["allContexts"]:
+            contexts["allContexts"][filename] = []
+        contexts["allContexts"][filename].extend(ret_anns)
 
     # Add per-graph contexts
     for ctx_name, file_anns in per_graph_roundings.items():
@@ -1705,7 +1731,7 @@ def main():
 
     # Filter out per-graph contexts where all findings are Neither
     for ctx_name in list(contexts.keys()):
-        if ctx_name == "contextFree":
+        if ctx_name == "allContexts":
             continue
         all_neither = all(
             a["rounding"] == "Neither"
