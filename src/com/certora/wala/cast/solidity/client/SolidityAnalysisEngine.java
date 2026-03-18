@@ -33,6 +33,8 @@ import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ssa.SSAOptions.DefaultValues;
+import com.ibm.wala.ssa.SymbolTable;
 
 public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<InstanceKey, CallGraphBuilder<InstanceKey>, A> {
 
@@ -100,9 +102,23 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		}
 	}
 
+	private AnalysisOptions makeOptions() {
+		AnalysisOptions options = new AnalysisOptions();
+		options.getSSAOptions().setDefaultValues(new DefaultValues() {
+
+			@Override
+			public int getDefaultValue(SymbolTable symtab, int valueNumber) {
+				return symtab.getConstant(0);
+			} 
+			
+		});
+		return options;
+		
+	}
+	
 	  @Override
 	  public IAnalysisCacheView makeDefaultCache() {
-	    return new AnalysisCacheImpl(AstIRFactory.makeDefaultFactory());
+	    return new AnalysisCacheImpl(AstIRFactory.makeDefaultFactory(), makeOptions().getSSAOptions());
 	  }
 
 	@Override
@@ -112,7 +128,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 
 	@Override
 	public AnalysisOptions getDefaultOptions(Iterable<Entrypoint> entrypoints) {
-		AnalysisOptions options = new AnalysisOptions();
+		AnalysisOptions options = makeOptions();
 		options.setEntrypoints(entrypoints);
 		return options;
 	}
