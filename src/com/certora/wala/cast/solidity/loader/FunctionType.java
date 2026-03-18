@@ -34,10 +34,13 @@ public class FunctionType implements Method {
 		}
 	}
 
-	private static String signature(String name, CAstType[] args, CAstType returnType) {
+	private static String signature(String name, CAstType[] args, CAstType returnType, boolean method) {
 		String sig = name + " " + arrayToString(args);
 		if (returnType != null && returnType != SolidityCAstType.get("void")) {
 			sig += " --> " + returnType.getName();
+		}
+		if (!method) {
+			sig = "static " + sig;
 		}
 		return sig;
 	}
@@ -47,9 +50,9 @@ public class FunctionType implements Method {
 		this.args = args;
 		this.self = self;
 		
-		this.name = signature(name, args, returnType);
+		this.name = signature(name, args, returnType, self != null);
 		 		
-		if (name.contains("_onJoinPool")) {
+		if (name.contains("_computeScalingFactor")) {
 			System.err.println(name);
 		}
 		
@@ -67,7 +70,7 @@ public class FunctionType implements Method {
 	
 	public static FunctionType findOrCreate(String name, CAstType self, CAstType returnType[], CAstType... args) {
 		CAstType ret = makeReturnType(returnType);
-		String sig = signature(name, args, ret);
+		String sig = signature(name, args, ret, self != null);
 		if (SolidityCAstType.types.containsKey(sig)) {
 			return (FunctionType) SolidityCAstType.get(sig);
 		} else {
