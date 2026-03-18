@@ -83,7 +83,9 @@ public class SolidityCAstType implements CAstType.Primitive {
 			types.put("bytes", SolidityArrayType.get(get("bytes1")));
 			irTypes.put(get("bytes"), irTypes.get(get("bytes1")).getArrayTypeForElementType());
 			
-
+			types.put("message", get("msg"));
+			types.put("rational", get("uint256"));
+			
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			assert false : e;
 		}

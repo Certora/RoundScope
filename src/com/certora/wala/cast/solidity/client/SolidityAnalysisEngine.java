@@ -3,22 +3,18 @@ package com.certora.wala.cast.solidity.client;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.Collections;
 
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
-import com.certora.wala.cast.solidity.loader.SolidityLoaderFactory;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
-import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
-import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.client.AbstractAnalysisEngine;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
@@ -40,9 +36,9 @@ import com.ibm.wala.ipa.cha.IClassHierarchy;
 
 public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<InstanceKey, CallGraphBuilder<InstanceKey>, A> {
 
-	private final File confFile;
-	private final Conf conf;
-	private SingleClassLoaderFactory loaders;
+	protected final File confFile;
+	protected final Conf conf;
+	protected SingleClassLoaderFactory loaders;
 	
 	protected SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
 		this.confFile = confFile;
@@ -75,16 +71,6 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		cgBuilder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, cgBuilder.getContextInterpreter(), ZeroXInstanceKeys.ALLOCATIONS));
 
 		return cgBuilder;
-	}
-
-	@Override
-	public void buildAnalysisScope() throws IOException {
-		loaders = new SolidityLoaderFactory(confFile, conf.getIncludePath());
-
-		Module[] solidityFiles = conf.getFiles().toArray(new Module[conf.getFiles().size()]);
-		
-		scope = new CAstAnalysisScope(solidityFiles, loaders,
-				Collections.singleton(SolidityLoader.solidity));
 	}
 
 	@Override
