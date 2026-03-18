@@ -29,6 +29,7 @@ import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
@@ -125,9 +126,6 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	protected void declareFunction(CAstEntity N, WalkContext context) {
 		assert N.getKind() == CAstEntity.FUNCTION_ENTITY;
-		if (N.getName().contains("hasRole")) {
-			System.err.println(N);
-		}
 		((SolidityLoader)loader).defineFunctionType(N, composeEntityName(context, N), context);
 	}
 
@@ -235,7 +233,7 @@ public class SolidityAstTranslator extends AstTranslator {
 			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
 			MethodReference m;
 			if (! (recCAstType instanceof FunctionType)) {
-				TypeReference retType = SolidityCAstType.getIRType(recCAstType);
+				TypeReference retType = SolidityCAstType.getIRType(recCAstType==null? context.top().getNodeTypeMap().getNodeType(call): recCAstType);
 				TypeName[] argTypes = new TypeName[ arguments.length ];
 				for(int i = 0; i < argTypes.length; i++) {
 					argTypes[i] = SolidityTypes.root.getName();
@@ -249,10 +247,12 @@ public class SolidityAstTranslator extends AstTranslator {
 			boolean superCall = false;
 			 try {
 				 Position p = context.top().getSourceMap().getPosition(call.getChild(0));
+				 if (p != null) {
 				 String selfSrc = new SourceBuffer(p).toString();
 				 if (selfSrc.startsWith("super.")) {
 					 System.err.println(selfSrc);
 					 superCall = true;
+				 }
 				 }
 			 } catch (IOException e) {
 				 assert false : e;
@@ -427,4 +427,8 @@ public class SolidityAstTranslator extends AstTranslator {
 		}
 	}
 
+	  public void translate(final CAstEntity N, final ModuleEntry module) {
+		  System.err.println("CAst translation for " + module);
+		  super.translate(N, module);
+	  }
 }
