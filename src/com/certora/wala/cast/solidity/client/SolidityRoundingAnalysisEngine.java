@@ -18,7 +18,7 @@ import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.util.CancelException;
 
-public class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONObject> {
+public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONObject> {
 
 	public SolidityRoundingAnalysisEngine(File confFile) throws FileNotFoundException {
 		super(confFile);

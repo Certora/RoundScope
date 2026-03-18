@@ -71,6 +71,11 @@
     <artifactId>json-sKema</artifactId>
     <version>0.25.0</version>
    </dependency>
+   <dependency>
+    <groupId>net.pwall.json</groupId>
+    <artifactId>json-kotlin-schema-codegen</artifactId>
+    <version>0.123</version>
+   </dependency>
   </dependencies>
   <repositories>
    <repository>

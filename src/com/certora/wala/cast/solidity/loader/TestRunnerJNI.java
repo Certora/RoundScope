@@ -16,6 +16,7 @@ import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngine;
+import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngineJNI;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
@@ -64,7 +65,7 @@ import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 
-public class TestRunner {
+public class TestRunnerJNI {
 
 	private static boolean useOldAnalysis = false;
 	
@@ -80,7 +81,7 @@ public class TestRunner {
 
 			}
 
-			SingleClassLoaderFactory sl = new SolidityLoaderFactory(confFile, conf.getIncludePath());
+			SingleClassLoaderFactory sl = new SolidityJNILoaderFactory(confFile, conf.getIncludePath());
 
 			Module[] solidityFiles = conf.getFiles().toArray(new Module[conf.getFiles().size()]);
 			
@@ -202,7 +203,7 @@ public class TestRunner {
 				}
 			}
 		} else {
-			SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngine(confFile);
+			SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngineJNI(confFile);
 			JSONObject graphs = E.analyze();
 						
 			try (FileWriter jo = new FileWriter(args[1])) {

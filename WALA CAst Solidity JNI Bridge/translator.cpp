@@ -1292,8 +1292,7 @@ bool Translator::visit(const VariableDeclaration &_node) {
 
     if (_node.isStateVariable() || _node.isStructMember() || _node.isFileLevelVariable()) {
         jobject jname = cast.makeConstant(name);
-        jobject loc = makePosition(_node.location());
-        jobject nameLoc = makePosition(_node.nameLocation());
+         jobject nameLoc = makePosition(_node.nameLocation());
         jobject field = cast.makeFieldEntity(context->entity(), jname, type, false, loc, nameLoc, NULL);
         context->registerVariable(jniEnv->NewStringUTF(name), field);
         
