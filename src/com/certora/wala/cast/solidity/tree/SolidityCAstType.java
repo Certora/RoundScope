@@ -56,6 +56,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"struct", SolidityTypes.struct, null},
 			{"bytes1", SolidityTypes.bytes1, 0},
 			{"bytes2", SolidityTypes.bytes2, 0},
+			{"bytes3", SolidityTypes.bytes3, 0},
 			{"bytes4", SolidityTypes.bytes4, 0},
 			{"bytes8", SolidityTypes.bytes8, 0},
 			{"bytes16", SolidityTypes.bytes16, 0},
@@ -85,6 +86,9 @@ public class SolidityCAstType implements CAstType.Primitive {
 			
 			types.put("message", get("msg"));
 			types.put("rational", get("uint256"));
+			types.put("uint", get("uint256"));
+			types.put("stringliteral", get("string"));
+			types.put("int_const", get("uint256"));
 			
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			assert false : e;

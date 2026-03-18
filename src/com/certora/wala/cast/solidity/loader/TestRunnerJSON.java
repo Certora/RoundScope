@@ -23,12 +23,18 @@ public class TestRunnerJSON {
 
 	public static void main(String... args) throws IllegalArgumentException, IOException, CancelException {
 		String conf = args[0];
+				
+		SolidityRoundingAnalysisEngine E;
+		if ("--combined".equalsIgnoreCase(args[2])) {
+			E = new SolidityRoundingAnalysisEngineJSON(new File(conf), args[3]);
+			
+		} else {
+			List<String> jsonFiles = new ArrayList<>(Arrays.asList(args));
+			jsonFiles.removeFirst();
+			jsonFiles.removeFirst();
+			E = new SolidityRoundingAnalysisEngineJSON(new File(conf), jsonFiles.toArray(i -> new String[i]));
+		}
 		
-		List<String> jsonFiles = new ArrayList<>(Arrays.asList(args));
-		jsonFiles.removeFirst();
-		jsonFiles.removeFirst();
-		
-		SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngineJSON(new File(conf), jsonFiles.toArray(i -> new String[i]));
 		JSONObject graphs = E.analyze();
 					
 		try (FileWriter jo = new FileWriter(args[1])) {
