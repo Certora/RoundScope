@@ -849,6 +849,11 @@ public class JSONToCAst {
 			} 
 	
 			@SuppressWarnings("unused")
+			public CAstNode visitUncheckedBlock(JSONObject o, SolidityWalkContext context) {
+				return visitBlock(o, context);
+			}
+			
+			@SuppressWarnings("unused")
 			public CAstNode visitMemberAccess(JSONObject o, SolidityWalkContext context) {
 				JSONObject decl = getDeclaration(o, context);
 				if (decl == null) {
