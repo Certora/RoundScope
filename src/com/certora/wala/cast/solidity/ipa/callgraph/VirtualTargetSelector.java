@@ -3,6 +3,7 @@ package com.certora.wala.cast.solidity.ipa.callgraph;
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupers;
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
 
+import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
@@ -24,6 +25,7 @@ import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
+import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.types.TypeName;
@@ -131,8 +133,23 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 			} else if (targets.size() == 1) {
 				return targets.iterator().next();
 			} else {
-				System.err.println("what is this?");
-				return null;
+				List<IMethod> ms = targets.stream().filter(m -> m.getDeclaringClass() instanceof TypedCodeBody).toList();
+				IClassHierarchy cha = caller.getClassHierarchy();
+				List<IMethod> topTargets = ms.stream()
+					.filter(m -> {
+						IClass mc = cha.lookupClass(((TypedCodeBody)m.getDeclaringClass()).getSelf());
+						return targets.stream().anyMatch(o -> {
+							IClass oc = cha.lookupClass(((TypedCodeBody)o.getDeclaringClass()).getSelf());							
+							
+							return !(oc.getAllImplementedInterfaces().contains(mc) || cha.isAssignableFrom(mc, oc));
+						});
+					}).toList();
+				if (topTargets.size() == 1) {
+					return topTargets.iterator().next();
+				} else {
+					System.err.println("what is this? " + ms + " " + topTargets);
+					return null;
+				}
 			}
 		}
 		

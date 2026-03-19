@@ -1,6 +1,6 @@
 package com.certora.wala.cast.solidity.json;
 
-import java.util.Map;
+import java.util.Collection;
 
 import org.json.JSONObject;
 
@@ -14,7 +14,7 @@ public interface SolidityWalkContext extends TranslatorToCAst.WalkContext<Solidi
 		return (SolidityWalkContext) getParent();
 	}
 	
-	default Map<String,CAstEntity> variables() {
+	default Collection<CAstEntity> variables() {
 		return parent().variables();
 	}
 	
@@ -22,8 +22,8 @@ public interface SolidityWalkContext extends TranslatorToCAst.WalkContext<Solidi
 		parent().registerVariable(name, field);
 	}
 	
-	default Map<String,CAstEntity> functions() {
-		return parent().variables();
+	default Collection<CAstEntity> functions() {
+		return parent().functions();
 	}
 	
 	default void registerFunction(String name, CAstEntity field) {
