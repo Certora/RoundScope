@@ -13,6 +13,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +77,7 @@ public class JSONToCAst {
 	private int idx = 0;
 
 	private final CAst ast = new CAstImpl();
-	private final Map<String, CAstType> entityTypes = HashMapFactory.make();
+	private final Map<Object, CAstType> entityTypes = HashMapFactory.make();
 	private final Map<CAstType, Set<String>> supers = HashMapFactory.make();
 
 	private final SolidityJSONLoader loader;
@@ -97,7 +98,36 @@ public class JSONToCAst {
 				return SolidityTupleType.get(node.stream().map(x -> x != null? getType(x, context): SolidityCAstType.get("void")).toArray(i -> new CAstType[i]));
 			}
 
-			private JSONObject findSuperCall(JSONObject superDecl, CAstType type) {
+			private JSONObject findSuperCall(JSONObject superDecl, String name, List<CAstType> argTypes, SolidityWalkContext context) {
+				for(Object e : superDecl.getJSONArray("nodes")) {
+					if (e instanceof JSONObject) {
+						JSONObject elt = (JSONObject)e;
+						if ("FunctionDefinition".equals(elt.getString("nodeType"))) {
+							FunctionType et = findOrCreateType(elt, JSONToCAst.this::makeFunctionKey, context, JSONToCAst.this::newFunctionType);
+							System.err.println("looking at " + et + " for " + name + ", " + argTypes);
+							if (argTypes.equals(et.getArgumentTypes()) && et.getName().startsWith(name)) {
+								System.err.println("found it");
+								return elt;
+							}
+						}
+					}
+				}
+				
+				/*
+				if (superDecl.has("baseContracts")) {
+					for(Object spec : superDecl.getJSONArray("baseContracts")) {
+						if (spec instanceof JSONObject) {
+							JSONObject elt = (JSONObject)spec;
+							JSONObject sd = getDeclaration(elt.getJSONObject("baseName"), context);
+							JSONObject o = findSuperCall(sd, name, argTypes, context);
+							if (o != null) {
+								return o;
+							}
+						}
+					}
+				}
+				*/
+				
 				return null;
 			}
 
@@ -275,7 +305,7 @@ public class JSONToCAst {
 
 					@SuppressWarnings("unused")
 					public CAstNode visitFunctionDefinition(JSONObject decl, Void ignore) {
-						CAstType et = findOrCreateType(decl, context, JSONToCAst.this::newFunctionType);
+						CAstType et = findOrCreateType(decl, JSONToCAst.this::makeFunctionKey, context, JSONToCAst.this::newFunctionType);
 						CAstNode selfPtr = null;
 						if (context.contract() != null) {
 							selfPtr = getSelfPtr(context);
@@ -314,8 +344,8 @@ public class JSONToCAst {
 			private SolidityWalkContext contractContext(JSONObject contract, SolidityWalkContext parent) {
 
 				class ContractContext implements VariableContainerContext, FunctionContainerContext {
-					private final Map<String, CAstEntity> vars = HashMapFactory.make();
-					private final Map<String, CAstEntity> functions = HashMapFactory.make();
+					private final Collection<CAstEntity> vars = new ArrayList<>();
+					private final Collection<CAstEntity> functions = new ArrayList<>();
 
 					@Override
 					public WalkContext<SolidityWalkContext, JSONObject> getParent() {
@@ -323,12 +353,12 @@ public class JSONToCAst {
 					}
 
 					@Override
-					public Map<String, CAstEntity> variables() {
+					public Collection<CAstEntity> variables() {
 						return vars;
 					}
 
 					@Override
-					public Map<String, CAstEntity> functions() {
+					public Collection<CAstEntity> functions() {
 						return functions;
 					}
 
@@ -352,7 +382,7 @@ public class JSONToCAst {
 
 			private SolidityWalkContext variableContainerContext(SolidityWalkContext parent) {
 				return new VariableContainerContext() {
-					private final Map<String, CAstEntity> vars = HashMapFactory.make();
+					private final Collection<CAstEntity> vars = new ArrayList<>();
 
 					@Override
 					public WalkContext<SolidityWalkContext, JSONObject> getParent() {
@@ -360,7 +390,7 @@ public class JSONToCAst {
 					}
 
 					@Override
-					public Map<String, CAstEntity> variables() {
+					public Collection<CAstEntity> variables() {
 						return vars;
 					}
 				};
@@ -368,7 +398,7 @@ public class JSONToCAst {
 
 			private SolidityWalkContext codeContext(FunctionEntity funEntity, SolidityWalkContext context) {
 				return new VariableContainerContext() {
-					private final Map<String, CAstEntity> vars = HashMapFactory.make();
+					private final Collection<CAstEntity> vars = new ArrayList<>();
 
 					@Override
 					public WalkContext<SolidityWalkContext, JSONObject> getParent() {
@@ -376,7 +406,7 @@ public class JSONToCAst {
 					}
 
 					@Override
-					public Map<String, CAstEntity> variables() {
+					public Collection<CAstEntity> variables() {
 						return vars;
 					}
 
@@ -530,8 +560,8 @@ public class JSONToCAst {
 				}
 				
 				Set<CAstEntity> elts = HashSetFactory.make(
-						child.variables().entrySet().stream().map(m -> m.getValue()).collect(Collectors.toSet()));
-				elts.addAll(child.functions().entrySet().stream().map(m -> m.getValue()).collect(Collectors.toSet()));
+					child.variables()).stream().collect(Collectors.toSet());
+				elts.addAll(child.functions().stream().collect(Collectors.toSet()));
 
 				ContractEntity contractEntity = new ContractEntity(contractType, getLocation(o.getString("src")), null,
 						elts);
@@ -699,15 +729,16 @@ public class JSONToCAst {
 					if ("constructor".equals(o.getString("kind"))) {
 						Streams.stream(o.getJSONArray("modifiers").iterator()).forEach(x -> {
 							JSONObject scs = (JSONObject) x;
-							JSONObject superDecl = ids
-									.get(scs.getJSONObject("modifierName").getInt("referencedDeclaration"));
-							if ("contractDefinition".equals(superDecl.getString("nodeType"))) {
-								JSONObject ctor = findSuperCall(superDecl, funEntity.getType());
+							JSONObject superDecl = getDeclaration(scs.getJSONObject("modifierName"), context);
+							List<CAstType> argTypes = Streams.stream(scs.getJSONArray("arguments").iterator())
+									.map(a -> getType((JSONObject) a, context)).toList();
+							if ("ContractDefinition".equals(superDecl.getString("nodeType"))) {
+								JSONObject ctor = findSuperCall(superDecl, "<init>", argTypes, context);
 								CAstNode callee;
 								if ((callee = handleIdentifierDeclaration(ctor,
-										getLocation(scs.getString("src")), context)) != null) {
+										getLocation(scs.getString("src")), child)) != null) {
 									CAstNode[] args = Streams.stream(scs.getJSONArray("arguments").iterator())
-											.map(a -> visit((JSONObject) a, context)).toArray(n -> new CAstNode[n]);
+											.map(a -> visit((JSONObject) a, child)).toArray(n -> new CAstNode[n]);
 
 									record(ast.makeNode(CAstNode.CALL, callee, args), getLocation(scs.getString("src")),
 											null, context);
@@ -873,7 +904,7 @@ public class JSONToCAst {
 					}
 
 					public CAstNode visitCallableDefinition(JSONObject fd, Void ignore) {
-						FunctionType type = findOrCreateType(fd, context, JSONToCAst.this::newFunctionType);
+						FunctionType type = findOrCreateType(fd, JSONToCAst.this::makeFunctionKey, context, JSONToCAst.this::newFunctionType);
 						CAstNode ref = makeRef(o, type);
 						context.getNodeTypeMap().add(ref, type);
 						return ref;
@@ -974,8 +1005,7 @@ public class JSONToCAst {
 
 				StructType structType = (StructType) getType(o, context);
 
-				Set<CAstEntity> elts = context.variables().entrySet().stream().map(m -> m.getValue())
-						.collect(Collectors.toSet());
+				Set<CAstEntity> elts = context.variables().stream().collect(Collectors.toSet());
 
 				ContractEntity structEntity = new ContractEntity(structType, getLocation(o.getString("src")), null,
 						elts);
@@ -1389,16 +1419,16 @@ public class JSONToCAst {
 					fileEntity.addScopedEntity(newNode, visit);
 				}
 		
-				private final Map<String, CAstEntity> vars = HashMapFactory.make();
-				private final Map<String, CAstEntity> functions = HashMapFactory.make();
+				private final Collection<CAstEntity> vars = new ArrayList<>();
+				private final Collection<CAstEntity> functions = new ArrayList<>();
 
 				@Override
-				public Map<String, CAstEntity> variables() {
+				public Collection<CAstEntity> variables() {
 					return vars;
 				}
 
 				@Override
-				public Map<String, CAstEntity> functions() {
+				public Collection<CAstEntity> functions() {
 					return functions;
 				}
 
@@ -1516,24 +1546,89 @@ public class JSONToCAst {
 		}
 		return null;
 	}
+
+	abstract class FunctionKey {
+		abstract String name();
+		abstract CAstType self();
+		abstract CAstType[] args();
+		abstract CAstType[] rets();
+		
+		public int hashCode() {
+			return name().hashCode() *
+				(args()==null? 1: Arrays.hashCode(args())) *
+				(rets()==null? 1: Arrays.hashCode(rets())) *
+				(self()==null? 1: self().hashCode());
+		}
+		
+		public boolean equals(Object o) {
+			if (o.getClass() == getClass()) {
+				FunctionKey k = (FunctionKey) o;
+				if (! name().equals(k.name())) {
+					return false;
+				}
+				if (self()==null? k.self()!=null: !self().equals(k.self())) {
+					return false;
+				}
+				if (args()==null? k.args()!=null: !Arrays.equals(args(), k.args()) ) {
+					return false;
+				}
+				if (rets()==null? k.rets()!=null: !Arrays.equals(rets(), k.rets()) ) {
+					return false;
+				}
+				
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
 	
-	private FunctionType newFunctionType(JSONObject functionDefinition, SolidityWalkContext context) {
-		String name = functionDefinition.getString("name");
+	private FunctionKey makeFunctionKey(JSONObject functionDefinition, SolidityWalkContext context) {
+		String name = functionDefinition.has("kind") && functionDefinition.getString("kind").equals("constructor")? "<init>": functionDefinition.getString("name");
 		
 		CAstType selfType = null;
-		if (functionDefinition.has("scope")) {
+		if (functionDefinition.has("scope") && !"freeFunction".equals(functionDefinition.getString("kind"))) {
 			JSONObject contract = getDeclaration(functionDefinition.getInt("scope"), null, context);
 			if (contract != null) {
 				selfType = findOrCreateType(contract, context, JSONToCAst.this::newContractType);
 			}
 		}
 		
-	    CAstType[] parameters = getTypes(functionDefinition.getJSONObject("parameters").getJSONArray("parameters"), context);
+	    CAstType[] parameters = functionDefinition.has("parameters")?
+	    		getTypes(functionDefinition.getJSONObject("parameters").getJSONArray("parameters"), context):
+	    		null;
 	    CAstType[] returnParameters = functionDefinition.has("returnParameters")?
 	    		getTypes(functionDefinition.getJSONObject("returnParameters").getJSONArray("parameters"), context):
 	    		null;
-	
-	    return FunctionType.findOrCreate(name, selfType, returnParameters, parameters);
+	    
+	    CAstType st = selfType;
+		return new FunctionKey() {
+
+			@Override
+			String name() {
+				return name;
+			}
+
+			@Override
+			CAstType self() {
+				return st;
+			}
+
+			@Override
+			CAstType[] args() {
+				return parameters;
+			}
+
+			@Override
+			CAstType[] rets() {
+				return returnParameters;
+			}
+			
+		};
+	}	
+	private FunctionType newFunctionType(JSONObject functionDefinition, SolidityWalkContext context) {
+		FunctionKey k = makeFunctionKey(functionDefinition, context);
+	    return FunctionType.findOrCreate(k.name(), k.self(), k.rets(), k.args());
 	}
 
 	private StructType newStructType(JSONObject structDefinition, SolidityWalkContext context) {
@@ -1550,6 +1645,9 @@ public class JSONToCAst {
 	}
 	
 	private CAstType.Class newContractType(JSONObject contractDefinition, SolidityWalkContext context) {
+		if (! contractDefinition.has("contractKind")) {
+			System.err.println("!!!");
+		}
 		String kind = contractDefinition.getString("contractKind");
 		Set<String> superTypes = HashSetFactory.make();
 		String name = "contract " + (contractDefinition.has("canonicalName")? contractDefinition.getString("canonicalName"): contractDefinition.getString("name"));
@@ -1575,7 +1673,7 @@ public class JSONToCAst {
 	}
 
 	private CAstType getType(JSONObject node, SolidityWalkContext context) {
-		return new JsonNodeTypeOnlyVisitor<CAstType>() {
+		CAstType ret = new JsonNodeTypeOnlyVisitor<CAstType>() {
 			@SuppressWarnings("unused")
 			public CAstType visitContractDefinition(JSONObject o, Void ignore) {
 				return findOrCreateType(o, context, JSONToCAst.this::newContractType);
@@ -1624,6 +1722,10 @@ public class JSONToCAst {
 				return parseTypeIdentifier(typeDesc.getString("typeIdentifier"), context);
 			}
 		}.visit(node, null);
+		if (ret == SolidityCAstType.get("contract")) {
+			System.err.println("seems bad");
+		}
+		return ret;
 	}
 	
 	private Pair<CAstType,String> parseNextTypeIdentifier(String typeId, SolidityWalkContext context) {
@@ -1677,9 +1779,13 @@ public class JSONToCAst {
 		} else if (typeId.startsWith("t_enum$_")) {
 			int typeEndIndex = typeId.indexOf('_', 8);
 			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
-			CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
-			return Pair.make(et, typeId.substring(idEndIndex));
-
+			if (idEndIndex > 0) {
+				CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
+				return Pair.make(et, typeId.substring(idEndIndex));
+			} else {
+				CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2)), null, context), context);
+				return Pair.make(et, "");				
+			}
 		} else if (typeId.startsWith("t_contract$_")) {
 			int typeEndIndex = typeId.indexOf('_', 12);
 			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
@@ -1715,9 +1821,14 @@ public class JSONToCAst {
 		return parseNextTypeIdentifier(typeId, context).fst;
 	}
 
-	@SuppressWarnings("unchecked")
 	private <T extends CAstType> T findOrCreateType(JSONObject typeDefinition, SolidityWalkContext context, BiFunction<JSONObject, SolidityWalkContext, T> factory) {
-		String typeName = typeDefinition.has("canonicalName")? typeDefinition.getString("canonicalName"): typeDefinition.getString("name");
+		BiFunction<JSONObject, SolidityWalkContext, String> key = (k, c) -> (k.has("canonicalName")? k.getString("canonicalName"): k.getString("name"));
+		return findOrCreateType(typeDefinition, key, context, factory);
+	}
+	
+	@SuppressWarnings("unchecked")
+	private <X, T extends CAstType> T findOrCreateType(JSONObject typeDefinition, BiFunction<JSONObject, SolidityWalkContext, X> key, SolidityWalkContext context, BiFunction<JSONObject, SolidityWalkContext, T> factory) {
+		X typeName = key.apply(typeDefinition, context);
 		if (entityTypes.containsKey(typeName)) {
 			return (T) entityTypes.get(typeName);
 		} else {
