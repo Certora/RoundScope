@@ -52,9 +52,11 @@ More specifically, the format is as follows in terms of JSON structure, followin
   }
 ]}
 ```
-Note that `[sl,sc-el,ec]` means a source code position as a string, written as a left square brace, the starting line, the starting column, a hyphen, the ending line, the ending column, a right square brace.  Filenames are in terms of the `.conf` file.
+Note that `[sl,sc-el,ec]` means a source code position as a string, written as a left square brace, the starting line, the starting column, a hyphen, the ending line, the ending column, a right square brace.  Filenames are in terms of the `.conf` file for the C
 
 ## building the code
+
+There is now a JSON-ast-based version of RoundScope that does not need any native code, and, for that, you can skip all the prerequisites except for 5, WALA, and also skip step 4 of the build instructions.
 
 ### RoundScope has some prerequisites that need to be installed first:
 1. C++ needs to support `-std=c++23`, so it must be a reasonably recent version.
@@ -80,5 +82,11 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
    4. run `make`
 
 ### Running RoundScope
+
+#### the JSON-based code
+1. run `certoraRun` as you usually would given a .conf file, but add `--dump_asts --compilation_steps_only`.  This will create `.certora_internal/latest/.asts.json`
+2. _in the same directory_, run RoundScope as `java -jar /path/to/RoundScope-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined  ./.certora_internal/latest/.asts.json`.  You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`.
+
+#### native code
 1. cd into `RS/WALA CAst Solidity JNI Bridge`
 2. `java -Djava.library.path=. -jar ../target/com.certora.RoundScope-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
