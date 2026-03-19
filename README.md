@@ -56,7 +56,7 @@ Note that `[sl,sc-el,ec]` means a source code position as a string, written as a
 
 ## building the code
 
-There is now a JSON-ast-based version of RoundScope that does not need any native code, and, for that, you can skip all the prerequisites except for 5, WALA, and also skip step 4 of the build instructions.
+There is now a JSON-ast-based version of RoundScope that does not need any native code, and, for that, you can skip all the prerequisites except for 5, WALA, and also skip step 3 of the build instructions.
 
 ### RoundScope has some prerequisites that need to be installed first:
 1. C++ needs to support `-std=c++23`, so it must be a reasonably recent version.
@@ -75,7 +75,7 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
    1. `cd RS`
    2. run `mvn install`
 
-4. building the native code
+3. building the native code
    1. cd `RS/WALA CAst Solidity JNI Bridge`
    2. edit the Makefile: set `WALA` and `SOLIDITY` to the values chosen above.  Set `JAVA` to be the JDK home of a recent Java version.
    3. if not using `cpptrace`, then comment out `RS_FLAGS` and `RS_DEVEL_LIBS`
