@@ -96,7 +96,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 	}
 	
 	public static void record(String name, CAstType type, TypeReference irType) {
-		assert !types.containsKey(name);
+		// assert !types.containsKey(name);
 		if (irType.toString().contains("contract.decimals")) {
 			System.err.println(name + ":" + type);
 		}

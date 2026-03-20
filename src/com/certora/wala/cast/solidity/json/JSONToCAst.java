@@ -9,6 +9,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -191,8 +192,8 @@ public class JSONToCAst {
 					@Override
 					public URL getURL() {
 						try {
-							return URI.create("file:" + fileName).toURL();
-						} catch (MalformedURLException e) {
+							return new File(fileName).toURI().toURL();
+						} catch (MalformedURLException | IllegalArgumentException e) {
 							assert false : e;
 							return null;
 						}
