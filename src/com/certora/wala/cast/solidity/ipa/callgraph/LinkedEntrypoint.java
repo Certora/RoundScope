@@ -2,6 +2,7 @@ package com.certora.wala.cast.solidity.ipa.callgraph;
 
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -49,7 +50,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			int vn = super.makeArgument(m, i);
 			if (i == 0) {
 				int self = selfForType(selfType, m);
-				m.addSetInstance(FieldReference.findOrCreate(method.getDeclaringClass().getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference()), vn, self);
+				m.addSetInstance(getCha().resolveField(FieldReference.findOrCreate(method.getDeclaringClass().getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference())).getReference(), vn, self);
 			}
 			return vn;
 		} else {
@@ -66,13 +67,23 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			int objSelf = m.addAllocation(selfType.getReference()).getDef();
 			for(IField f : selfType.getAllInstanceFields()) {
 				if (f.getFieldTypeReference().isArrayType()) {
-					SSANewInstruction alloc = m.add1DArrayAllocation(f.getFieldTypeReference(), 1);
+					int count = 0;
+					TypeReference t = f.getFieldTypeReference();
+					while(t.isArrayType()) {
+						count++;
+						t = t.getArrayElementType();
+					}
+					int d[] = new int[count];
+					for(int i = 0; i < d.length; i++) {
+						d[i] = 1;
+					}
+					SSANewInstruction alloc = m.addArrayAllocation(f.getFieldTypeReference(), d);
 					m.addSetInstance(f.getReference(), objSelf, alloc.getDef());
 				}
 			}
 			linkage.forEach((x, y) -> { 
 				if (selfType.getReference().equals(x.snd)) {
-					FieldReference fr = FieldReference.findOrCreate(x.snd, x.fst, y);
+					FieldReference fr = getCha().resolveField(FieldReference.findOrCreate(x.snd, x.fst, y)).getReference();
 					SSANewInstruction alloc = m.addAllocation(y);
 					m.addSetInstance(fr, objSelf, alloc.getDef());
 				}

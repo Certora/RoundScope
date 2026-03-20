@@ -132,7 +132,11 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 		this.arrayClassLoader = new ArrayClassLoader();
 	}
 
-	
+	 @Override
+	  public IClassLoader getParent() {
+	    return parent;
+	  }
+
 	@Override
 	public IClass lookupClass(String className, IClassHierarchy cha) {
 		return lookupClass(TypeName.string2TypeName(className));
