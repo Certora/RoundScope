@@ -1,0 +1,2226 @@
+{
+  "src/dependencies/openzeppelin/AccessManaged.sol": [
+    {
+      "sl": 61,
+      "sc": 43,
+      "el": 61,
+      "ec": 60,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 1,
+          "n": "0"
+        },
+        {
+          "g": 2,
+          "n": "2"
+        }
+      ]
+    },
+    {
+      "sl": 61,
+      "sc": 43,
+      "el": 61,
+      "ec": 60,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 2,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 78,
+      "sc": 48,
+      "el": 78,
+      "ec": 64,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 0,
+          "n": "0"
+        }
+      ]
+    }
+  ],
+  "src/dependencies/openzeppelin/Context.sol": [
+    {
+      "sl": 17,
+      "sc": 46,
+      "el": 17,
+      "ec": 63,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 2,
+          "n": "1"
+        }
+      ]
+    }
+  ],
+  "src/dependencies/openzeppelin/EnumerableSet.sol": [
+    {
+      "sl": 74,
+      "sc": 56,
+      "el": 74,
+      "ec": 70,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "7"
+        }
+      ]
+    },
+    {
+      "sl": 144,
+      "sc": 66,
+      "el": 144,
+      "ec": 80,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 4,
+          "n": "2"
+        },
+        {
+          "g": 11,
+          "n": "2"
+        },
+        {
+          "g": 22,
+          "n": "2"
+        },
+        {
+          "g": 36,
+          "n": "2"
+        },
+        {
+          "g": 36,
+          "n": "8"
+        }
+      ]
+    },
+    {
+      "sl": 151,
+      "sc": 49,
+      "el": 151,
+      "ec": 66,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 57,
+          "n": "2"
+        }
+      ]
+    },
+    {
+      "sl": 165,
+      "sc": 60,
+      "el": 165,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 41,
+          "n": "2"
+        }
+      ]
+    },
+    {
+      "sl": 325,
+      "sc": 63,
+      "el": 325,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "6"
+        }
+      ]
+    },
+    {
+      "sl": 352,
+      "sc": 73,
+      "el": 352,
+      "ec": 87,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 4,
+          "n": "1"
+        },
+        {
+          "g": 11,
+          "n": "1"
+        },
+        {
+          "g": 22,
+          "n": "1"
+        },
+        {
+          "g": 36,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 359,
+      "sc": 56,
+      "el": 359,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 57,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 373,
+      "sc": 67,
+      "el": 373,
+      "ec": 84,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 41,
+          "n": "1"
+        }
+      ]
+    }
+  ],
+  "src/dependencies/openzeppelin/SafeCast.sol": [
+    {
+      "sl": 152,
+      "sc": 50,
+      "el": 152,
+      "ec": 67,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "7"
+        },
+        {
+          "g": 26,
+          "n": "8"
+        },
+        {
+          "g": 28,
+          "n": "26"
+        },
+        {
+          "g": 28,
+          "n": "28"
+        }
+      ]
+    },
+    {
+      "sl": 322,
+      "sc": 50,
+      "el": 322,
+      "ec": 67,
+      "rounding": "Mixed returns",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 16,
+          "n": "1"
+        },
+        {
+          "g": 16,
+          "n": "2"
+        },
+        {
+          "g": 20,
+          "n": "24"
+        },
+        {
+          "g": 20,
+          "n": "25"
+        },
+        {
+          "g": 26,
+          "n": "6"
+        },
+        {
+          "g": 28,
+          "n": "24"
+        },
+        {
+          "g": 36,
+          "n": "3"
+        },
+        {
+          "g": 43,
+          "n": "24"
+        },
+        {
+          "g": 44,
+          "n": "2"
+        },
+        {
+          "g": 44,
+          "n": "3"
+        },
+        {
+          "g": 48,
+          "n": "23"
+        },
+        {
+          "g": 48,
+          "n": "25"
+        },
+        {
+          "g": 53,
+          "n": "6"
+        },
+        {
+          "g": 53,
+          "n": "8"
+        },
+        {
+          "g": 54,
+          "n": "24"
+        },
+        {
+          "g": 56,
+          "n": "6"
+        },
+        {
+          "g": 56,
+          "n": "9"
+        }
+      ]
+    },
+    {
+      "sl": 373,
+      "sc": 49,
+      "el": 373,
+      "ec": 65,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "5"
+        }
+      ]
+    },
+    {
+      "sl": 492,
+      "sc": 49,
+      "el": 492,
+      "ec": 65,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "4"
+        }
+      ]
+    },
+    {
+      "sl": 574,
+      "sc": 49,
+      "el": 574,
+      "ec": 66,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "17"
+        },
+        {
+          "g": 7,
+          "n": "9"
+        },
+        {
+          "g": 10,
+          "n": "17"
+        },
+        {
+          "g": 10,
+          "n": "9"
+        },
+        {
+          "g": 18,
+          "n": "14"
+        },
+        {
+          "g": 20,
+          "n": "10"
+        },
+        {
+          "g": 20,
+          "n": "18"
+        },
+        {
+          "g": 24,
+          "n": "17"
+        },
+        {
+          "g": 24,
+          "n": "9"
+        },
+        {
+          "g": 28,
+          "n": "10"
+        },
+        {
+          "g": 28,
+          "n": "18"
+        },
+        {
+          "g": 31,
+          "n": "9"
+        },
+        {
+          "g": 34,
+          "n": "6"
+        },
+        {
+          "g": 35,
+          "n": "10"
+        },
+        {
+          "g": 42,
+          "n": "16"
+        },
+        {
+          "g": 42,
+          "n": "8"
+        },
+        {
+          "g": 43,
+          "n": "10"
+        },
+        {
+          "g": 43,
+          "n": "18"
+        },
+        {
+          "g": 46,
+          "n": "7"
+        },
+        {
+          "g": 47,
+          "n": "17"
+        },
+        {
+          "g": 47,
+          "n": "9"
+        },
+        {
+          "g": 48,
+          "n": "17"
+        },
+        {
+          "g": 48,
+          "n": "9"
+        },
+        {
+          "g": 50,
+          "n": "12"
+        },
+        {
+          "g": 50,
+          "n": "8"
+        },
+        {
+          "g": 54,
+          "n": "10"
+        },
+        {
+          "g": 54,
+          "n": "18"
+        },
+        {
+          "g": 58,
+          "n": "14"
+        },
+        {
+          "g": 59,
+          "n": "17"
+        },
+        {
+          "g": 59,
+          "n": "9"
+        }
+      ]
+    },
+    {
+      "sl": 1146,
+      "sc": 49,
+      "el": 1146,
+      "ec": 65,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "16"
+        },
+        {
+          "g": 7,
+          "n": "8"
+        },
+        {
+          "g": 10,
+          "n": "16"
+        },
+        {
+          "g": 10,
+          "n": "8"
+        },
+        {
+          "g": 18,
+          "n": "13"
+        },
+        {
+          "g": 20,
+          "n": "17"
+        },
+        {
+          "g": 20,
+          "n": "9"
+        },
+        {
+          "g": 24,
+          "n": "16"
+        },
+        {
+          "g": 24,
+          "n": "8"
+        },
+        {
+          "g": 28,
+          "n": "17"
+        },
+        {
+          "g": 28,
+          "n": "9"
+        },
+        {
+          "g": 31,
+          "n": "8"
+        },
+        {
+          "g": 34,
+          "n": "5"
+        },
+        {
+          "g": 35,
+          "n": "9"
+        },
+        {
+          "g": 42,
+          "n": "15"
+        },
+        {
+          "g": 42,
+          "n": "7"
+        },
+        {
+          "g": 43,
+          "n": "17"
+        },
+        {
+          "g": 43,
+          "n": "9"
+        },
+        {
+          "g": 46,
+          "n": "6"
+        },
+        {
+          "g": 47,
+          "n": "16"
+        },
+        {
+          "g": 47,
+          "n": "8"
+        },
+        {
+          "g": 48,
+          "n": "16"
+        },
+        {
+          "g": 48,
+          "n": "8"
+        },
+        {
+          "g": 50,
+          "n": "11"
+        },
+        {
+          "g": 50,
+          "n": "7"
+        },
+        {
+          "g": 54,
+          "n": "17"
+        },
+        {
+          "g": 54,
+          "n": "9"
+        },
+        {
+          "g": 58,
+          "n": "13"
+        },
+        {
+          "g": 59,
+          "n": "16"
+        },
+        {
+          "g": 59,
+          "n": "8"
+        }
+      ]
+    }
+  ],
+  "src/hub/Hub.sol": [
+    {
+      "sl": 208,
+      "sc": 62,
+      "el": 208,
+      "ec": 79,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 43,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 217,
+      "sc": 57,
+      "el": 217,
+      "ec": 74,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 241,
+      "sc": 72,
+      "el": 241,
+      "ec": 89,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 266,
+      "sc": 70,
+      "el": 266,
+      "ec": 87,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 461,
+      "sc": 64,
+      "el": 461,
+      "ec": 78,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 4,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 466,
+      "sc": 41,
+      "el": 466,
+      "ec": 58,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 5,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 471,
+      "sc": 77,
+      "el": 471,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 47,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 476,
+      "sc": 77,
+      "el": 476,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 481,
+      "sc": 80,
+      "el": 481,
+      "ec": 97,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 59,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 486,
+      "sc": 80,
+      "el": 486,
+      "ec": 97,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 491,
+      "sc": 78,
+      "el": 491,
+      "ec": 95,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 496,
+      "sc": 78,
+      "el": 496,
+      "ec": 95,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 501,
+      "sc": 81,
+      "el": 501,
+      "ec": 98,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 51,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 506,
+      "sc": 81,
+      "el": 506,
+      "ec": 98,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 40,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 511,
+      "sc": 72,
+      "el": 511,
+      "ec": 96,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 9,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 517,
+      "sc": 61,
+      "el": 517,
+      "ec": 78,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 27,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 522,
+      "sc": 57,
+      "el": 522,
+      "ec": 74,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 42,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 527,
+      "sc": 57,
+      "el": 527,
+      "ec": 74,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 15,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 532,
+      "sc": 55,
+      "el": 532,
+      "ec": 81,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 539,
+      "sc": 60,
+      "el": 539,
+      "ec": 77,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 35,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 545,
+      "sc": 61,
+      "el": 545,
+      "ec": 78,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 34,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 556,
+      "sc": 62,
+      "el": 556,
+      "ec": 79,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 60,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 561,
+      "sc": 62,
+      "el": 561,
+      "ec": 87,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 39,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 567,
+      "sc": 60,
+      "el": 567,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 13,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 572,
+      "sc": 61,
+      "el": 572,
+      "ec": 78,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 30,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 577,
+      "sc": 51,
+      "el": 577,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 52,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 582,
+      "sc": 57,
+      "el": 582,
+      "ec": 85,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 33,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 594,
+      "sc": 62,
+      "el": 594,
+      "ec": 79,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 50,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 600,
+      "sc": 56,
+      "el": 600,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 19,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 605,
+      "sc": 60,
+      "el": 605,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 29,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 610,
+      "sc": 56,
+      "el": 610,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 57,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 615,
+      "sc": 77,
+      "el": 615,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 24,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 620,
+      "sc": 77,
+      "el": 620,
+      "ec": 94,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 23,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 625,
+      "sc": 70,
+      "el": 625,
+      "ec": 96,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 58,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 632,
+      "sc": 75,
+      "el": 632,
+      "ec": 92,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 639,
+      "sc": 76,
+      "el": 639,
+      "ec": 93,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 46,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 646,
+      "sc": 77,
+      "el": 646,
+      "ec": 94,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 12,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 646,
+      "sc": 77,
+      "el": 646,
+      "ec": 94,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 37,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 660,
+      "sc": 76,
+      "el": 660,
+      "ec": 93,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 38,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 665,
+      "sc": 71,
+      "el": 665,
+      "ec": 85,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 11,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 670,
+      "sc": 73,
+      "el": 670,
+      "ec": 90,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 41,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 675,
+      "sc": 66,
+      "el": 675,
+      "ec": 92,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 14,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 675,
+      "sc": 66,
+      "el": 675,
+      "ec": 92,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 32,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 773,
+      "sc": 73,
+      "el": 773,
+      "ec": 90,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 43,
+          "n": "1"
+        },
+        {
+          "g": 54,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 796,
+      "sc": 18,
+      "el": 796,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "7"
+        },
+        {
+          "g": 58,
+          "n": "7"
+        }
+      ]
+    },
+    {
+      "sl": 804,
+      "sc": 18,
+      "el": 804,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "8"
+        },
+        {
+          "g": 46,
+          "n": "1"
+        },
+        {
+          "g": 58,
+          "n": "8"
+        }
+      ]
+    }
+  ],
+  "src/hub/libraries/AssetLogic.sol": [
+    {
+      "sl": 29,
+      "sc": 18,
+      "el": 29,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 37,
+      "sc": 18,
+      "el": 37,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "1"
+        },
+        {
+          "g": 53,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 45,
+      "sc": 18,
+      "el": 45,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "1"
+        },
+        {
+          "g": 51,
+          "n": "1"
+        },
+        {
+          "g": 56,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 58,
+      "sc": 77,
+      "el": 58,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "4"
+        },
+        {
+          "g": 35,
+          "n": "5"
+        }
+      ]
+    },
+    {
+      "sl": 63,
+      "sc": 79,
+      "el": 63,
+      "ec": 96,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "6"
+        },
+        {
+          "g": 35,
+          "n": "7"
+        }
+      ]
+    },
+    {
+      "sl": 75,
+      "sc": 81,
+      "el": 75,
+      "ec": 98,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 35,
+          "n": "4"
+        }
+      ]
+    },
+    {
+      "sl": 80,
+      "sc": 68,
+      "el": 80,
+      "ec": 85,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "2"
+        },
+        {
+          "g": 10,
+          "n": "2"
+        },
+        {
+          "g": 20,
+          "n": "3"
+        },
+        {
+          "g": 24,
+          "n": "2"
+        },
+        {
+          "g": 28,
+          "n": "3"
+        },
+        {
+          "g": 42,
+          "n": "1"
+        },
+        {
+          "g": 43,
+          "n": "3"
+        },
+        {
+          "g": 47,
+          "n": "2"
+        },
+        {
+          "g": 48,
+          "n": "2"
+        },
+        {
+          "g": 54,
+          "n": "3"
+        },
+        {
+          "g": 59,
+          "n": "2"
+        }
+      ]
+    },
+    {
+      "sl": 103,
+      "sc": 18,
+      "el": 103,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "1"
+        },
+        {
+          "g": 24,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 111,
+      "sc": 18,
+      "el": 111,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "2"
+        },
+        {
+          "g": 48,
+          "n": "1"
+        },
+        {
+          "g": 59,
+          "n": "1"
+        }
+      ]
+    },
+    {
+      "sl": 119,
+      "sc": 18,
+      "el": 119,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "2"
+        },
+        {
+          "g": 43,
+          "n": "2"
+        },
+        {
+          "g": 47,
+          "n": "1"
+        },
+        {
+          "g": 54,
+          "n": "2"
+        }
+      ]
+    },
+    {
+      "sl": 162,
+      "sc": 65,
+      "el": 162,
+      "ec": 82,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "3"
+        },
+        {
+          "g": 10,
+          "n": "3"
+        },
+        {
+          "g": 17,
+          "n": "2"
+        },
+        {
+          "g": 18,
+          "n": "3"
+        },
+        {
+          "g": 18,
+          "n": "9"
+        },
+        {
+          "g": 20,
+          "n": "4"
+        },
+        {
+          "g": 24,
+          "n": "3"
+        },
+        {
+          "g": 26,
+          "n": "2"
+        },
+        {
+          "g": 27,
+          "n": "1"
+        },
+        {
+          "g": 28,
+          "n": "4"
+        },
+        {
+          "g": 31,
+          "n": "1"
+        },
+        {
+          "g": 34,
+          "n": "1"
+        },
+        {
+          "g": 35,
+          "n": "1"
+        },
+        {
+          "g": 40,
+          "n": "2"
+        },
+        {
+          "g": 42,
+          "n": "2"
+        },
+        {
+          "g": 43,
+          "n": "4"
+        },
+        {
+          "g": 45,
+          "n": "2"
+        },
+        {
+          "g": 46,
+          "n": "2"
+        },
+        {
+          "g": 47,
+          "n": "3"
+        },
+        {
+          "g": 48,
+          "n": "3"
+        },
+        {
+          "g": 50,
+          "n": "1"
+        },
+        {
+          "g": 51,
+          "n": "2"
+        },
+        {
+          "g": 53,
+          "n": "2"
+        },
+        {
+          "g": 54,
+          "n": "4"
+        },
+        {
+          "g": 56,
+          "n": "2"
+        },
+        {
+          "g": 58,
+          "n": "3"
+        },
+        {
+          "g": 58,
+          "n": "9"
+        },
+        {
+          "g": 59,
+          "n": "3"
+        }
+      ]
+    }
+  ],
+  "src/hub/libraries/SharesMath.sol": [
+    {
+      "sl": 22,
+      "sc": 18,
+      "el": 22,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "21"
+        },
+        {
+          "g": 24,
+          "n": "21"
+        }
+      ]
+    },
+    {
+      "sl": 31,
+      "sc": 18,
+      "el": 31,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "22"
+        },
+        {
+          "g": 48,
+          "n": "21"
+        },
+        {
+          "g": 59,
+          "n": "21"
+        }
+      ]
+    },
+    {
+      "sl": 40,
+      "sc": 18,
+      "el": 40,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "21"
+        }
+      ]
+    }
+  ],
+  "src/libraries/math/MathUtils.sol": [
+    {
+      "sl": 60,
+      "sc": 60,
+      "el": 60,
+      "ec": 77,
+      "rounding": "Up",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "1"
+        },
+        {
+          "g": 28,
+          "n": "25"
+        },
+        {
+          "g": 28,
+          "n": "27"
+        },
+        {
+          "g": 44,
+          "n": "1"
+        },
+        {
+          "g": 48,
+          "n": "24"
+        },
+        {
+          "g": 53,
+          "n": "7"
+        },
+        {
+          "g": 56,
+          "n": "8"
+        }
+      ]
+    },
+    {
+      "sl": 77,
+      "sc": 69,
+      "el": 77,
+      "ec": 88,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "22"
+        },
+        {
+          "g": 20,
+          "n": "23"
+        },
+        {
+          "g": 24,
+          "n": "22"
+        },
+        {
+          "g": 43,
+          "n": "23"
+        },
+        {
+          "g": 47,
+          "n": "22"
+        },
+        {
+          "g": 54,
+          "n": "23"
+        }
+      ]
+    },
+    {
+      "sl": 93,
+      "sc": 67,
+      "el": 93,
+      "ec": 86,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "22"
+        },
+        {
+          "g": 28,
+          "n": "23"
+        },
+        {
+          "g": 48,
+          "n": "22"
+        },
+        {
+          "g": 59,
+          "n": "22"
+        }
+      ]
+    }
+  ],
+  "src/libraries/math/WadRayMath.sol": [
+    {
+      "sl": 74,
+      "sc": 58,
+      "el": 74,
+      "ec": 77,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "5"
+        }
+      ]
+    },
+    {
+      "sl": 88,
+      "sc": 56,
+      "el": 88,
+      "ec": 75,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "5"
+        },
+        {
+          "g": 10,
+          "n": "5"
+        },
+        {
+          "g": 17,
+          "n": "4"
+        },
+        {
+          "g": 18,
+          "n": "11"
+        },
+        {
+          "g": 18,
+          "n": "5"
+        },
+        {
+          "g": 18,
+          "n": "6"
+        },
+        {
+          "g": 20,
+          "n": "6"
+        },
+        {
+          "g": 24,
+          "n": "5"
+        },
+        {
+          "g": 26,
+          "n": "4"
+        },
+        {
+          "g": 27,
+          "n": "3"
+        },
+        {
+          "g": 28,
+          "n": "6"
+        },
+        {
+          "g": 31,
+          "n": "3"
+        },
+        {
+          "g": 31,
+          "n": "5"
+        },
+        {
+          "g": 34,
+          "n": "3"
+        },
+        {
+          "g": 35,
+          "n": "3"
+        },
+        {
+          "g": 35,
+          "n": "6"
+        },
+        {
+          "g": 40,
+          "n": "4"
+        },
+        {
+          "g": 40,
+          "n": "5"
+        },
+        {
+          "g": 42,
+          "n": "4"
+        },
+        {
+          "g": 43,
+          "n": "6"
+        },
+        {
+          "g": 45,
+          "n": "4"
+        },
+        {
+          "g": 46,
+          "n": "4"
+        },
+        {
+          "g": 47,
+          "n": "5"
+        },
+        {
+          "g": 48,
+          "n": "5"
+        },
+        {
+          "g": 50,
+          "n": "3"
+        },
+        {
+          "g": 51,
+          "n": "4"
+        },
+        {
+          "g": 53,
+          "n": "4"
+        },
+        {
+          "g": 54,
+          "n": "6"
+        },
+        {
+          "g": 56,
+          "n": "4"
+        },
+        {
+          "g": 58,
+          "n": "11"
+        },
+        {
+          "g": 58,
+          "n": "5"
+        },
+        {
+          "g": 58,
+          "n": "6"
+        },
+        {
+          "g": 59,
+          "n": "5"
+        }
+      ]
+    },
+    {
+      "sl": 103,
+      "sc": 58,
+      "el": 103,
+      "ec": 77,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "5"
+        },
+        {
+          "g": 51,
+          "n": "5"
+        },
+        {
+          "g": 56,
+          "n": "5"
+        }
+      ]
+    },
+    {
+      "sl": 117,
+      "sc": 56,
+      "el": 117,
+      "ec": 75,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "5"
+        },
+        {
+          "g": 53,
+          "n": "5"
+        }
+      ]
+    },
+    {
+      "sl": 167,
+      "sc": 46,
+      "el": 167,
+      "ec": 65,
+      "rounding": "Mixed returns",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "10"
+        },
+        {
+          "g": 7,
+          "n": "18"
+        },
+        {
+          "g": 7,
+          "n": "19"
+        },
+        {
+          "g": 10,
+          "n": "10"
+        },
+        {
+          "g": 10,
+          "n": "18"
+        },
+        {
+          "g": 10,
+          "n": "19"
+        },
+        {
+          "g": 18,
+          "n": "15"
+        },
+        {
+          "g": 20,
+          "n": "11"
+        },
+        {
+          "g": 20,
+          "n": "19"
+        },
+        {
+          "g": 20,
+          "n": "20"
+        },
+        {
+          "g": 24,
+          "n": "10"
+        },
+        {
+          "g": 24,
+          "n": "18"
+        },
+        {
+          "g": 24,
+          "n": "19"
+        },
+        {
+          "g": 28,
+          "n": "1"
+        },
+        {
+          "g": 28,
+          "n": "11"
+        },
+        {
+          "g": 28,
+          "n": "19"
+        },
+        {
+          "g": 28,
+          "n": "20"
+        },
+        {
+          "g": 31,
+          "n": "10"
+        },
+        {
+          "g": 35,
+          "n": "11"
+        },
+        {
+          "g": 42,
+          "n": "17"
+        },
+        {
+          "g": 42,
+          "n": "18"
+        },
+        {
+          "g": 42,
+          "n": "9"
+        },
+        {
+          "g": 43,
+          "n": "11"
+        },
+        {
+          "g": 43,
+          "n": "19"
+        },
+        {
+          "g": 43,
+          "n": "20"
+        },
+        {
+          "g": 47,
+          "n": "10"
+        },
+        {
+          "g": 47,
+          "n": "18"
+        },
+        {
+          "g": 47,
+          "n": "19"
+        },
+        {
+          "g": 48,
+          "n": "10"
+        },
+        {
+          "g": 48,
+          "n": "18"
+        },
+        {
+          "g": 48,
+          "n": "19"
+        },
+        {
+          "g": 50,
+          "n": "13"
+        },
+        {
+          "g": 50,
+          "n": "14"
+        },
+        {
+          "g": 54,
+          "n": "11"
+        },
+        {
+          "g": 54,
+          "n": "19"
+        },
+        {
+          "g": 54,
+          "n": "20"
+        },
+        {
+          "g": 56,
+          "n": "7"
+        },
+        {
+          "g": 58,
+          "n": "15"
+        },
+        {
+          "g": 59,
+          "n": "10"
+        },
+        {
+          "g": 59,
+          "n": "18"
+        },
+        {
+          "g": 59,
+          "n": "19"
+        }
+      ]
+    }
+  ]
+}
