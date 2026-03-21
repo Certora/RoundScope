@@ -1,0 +1,110 @@
+{
+  "Hub.add": {
+    "file_count": 8,
+    "annotation_count": 122
+  },
+  "Hub.draw": {
+    "file_count": 5,
+    "annotation_count": 52
+  },
+  "Hub.eliminateDeficit": {
+    "file_count": 8,
+    "annotation_count": 133
+  },
+  "Hub.getAddedAssets": {
+    "file_count": 7,
+    "annotation_count": 87
+  },
+  "Hub.getAssetAccruedFees": {
+    "file_count": 7,
+    "annotation_count": 77
+  },
+  "Hub.getAssetDrawnIndex": {
+    "file_count": 4,
+    "annotation_count": 22
+  },
+  "Hub.getAssetOwed": {
+    "file_count": 6,
+    "annotation_count": 57
+  },
+  "Hub.getAssetPremiumRay": {
+    "file_count": 6,
+    "annotation_count": 41
+  },
+  "Hub.getAssetTotalOwed": {
+    "file_count": 6,
+    "annotation_count": 62
+  },
+  "Hub.getSpokeAddedAssets": {
+    "file_count": 8,
+    "annotation_count": 108
+  },
+  "Hub.getSpokeOwed": {
+    "file_count": 6,
+    "annotation_count": 66
+  },
+  "Hub.getSpokePremiumRay": {
+    "file_count": 6,
+    "annotation_count": 46
+  },
+  "Hub.getSpokeTotalOwed": {
+    "file_count": 6,
+    "annotation_count": 67
+  },
+  "Hub.mintFeeShares": {
+    "file_count": 8,
+    "annotation_count": 123
+  },
+  "Hub.previewAddByAssets": {
+    "file_count": 8,
+    "annotation_count": 106
+  },
+  "Hub.previewAddByShares": {
+    "file_count": 8,
+    "annotation_count": 110
+  },
+  "Hub.previewDrawByAssets": {
+    "file_count": 4,
+    "annotation_count": 36
+  },
+  "Hub.previewDrawByShares": {
+    "file_count": 4,
+    "annotation_count": 35
+  },
+  "Hub.previewRemoveByAssets": {
+    "file_count": 8,
+    "annotation_count": 109
+  },
+  "Hub.previewRemoveByShares": {
+    "file_count": 8,
+    "annotation_count": 108
+  },
+  "Hub.previewRestoreByAssets": {
+    "file_count": 4,
+    "annotation_count": 34
+  },
+  "Hub.previewRestoreByShares": {
+    "file_count": 4,
+    "annotation_count": 27
+  },
+  "Hub.remove": {
+    "file_count": 8,
+    "annotation_count": 125
+  },
+  "Hub.reportDeficit": {
+    "file_count": 5,
+    "annotation_count": 61
+  },
+  "Hub.restore": {
+    "file_count": 5,
+    "annotation_count": 65
+  },
+  "Hub.updateAssetConfig": {
+    "file_count": 8,
+    "annotation_count": 123
+  },
+  "allContexts": {
+    "file_count": 11,
+    "annotation_count": 535
+  }
+}
