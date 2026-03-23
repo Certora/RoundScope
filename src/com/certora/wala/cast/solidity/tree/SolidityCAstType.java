@@ -96,7 +96,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 	}
 	
 	public static void record(String name, CAstType type, TypeReference irType) {
-		assert !types.containsKey(name);
+		// assert !types.containsKey(name);
 		if (irType.toString().contains("contract.decimals")) {
 			System.err.println(name + ":" + type);
 		}
@@ -108,10 +108,15 @@ public class SolidityCAstType implements CAstType.Primitive {
 		if (!types.containsKey(name) && name.startsWith("type(")) {
 			return get(name.substring(5, name.length()-1));
 		} else if (!types.containsKey(name) && name.contains(" ")) {
-			return get(name.split(" ")[0]);
+			if (!name.startsWith("contract ") && !name.startsWith("struct ") && !name.startsWith("enum ")) {
+				return get(name.split(" ")[0]);
+			}
 		}
 		if (!types.containsKey(name)) {
 			System.err.println("cannot find type " + name);
+			if (name.contains("super")) {
+				System.err.println("super");
+			}
 		}
 		return types.get(name);
 	}

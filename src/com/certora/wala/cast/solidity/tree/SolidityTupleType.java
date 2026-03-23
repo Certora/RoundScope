@@ -36,6 +36,9 @@ public class SolidityTupleType implements CAstType {
 	private static Map<List<CAstType>, SolidityTupleType> types = HashMapFactory.make();
 	
 	public static CAstType get(CAstType[] values) {
+		if (values == null || values.length == 0) {
+			return SolidityCAstType.get("void");
+		} else {
 		List<CAstType> typeKey = Arrays.asList(values).stream().map(x -> x==null? SolidityCAstType.get("root"): x).collect(Collectors.toList());
 		if (types.containsKey(typeKey)) {
 			return types.get(typeKey);
@@ -48,6 +51,6 @@ public class SolidityTupleType implements CAstType {
 			types.put(typeKey, type);
 			return type;
 		}
-		
+		}
 	}
  }

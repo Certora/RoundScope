@@ -110,6 +110,12 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 	private final IClass enm = new CoreClass(SolidityTypes.enm.getName(), root.getName(), this,
 			null);
 
+	private final IClass abi = new CoreClass(SolidityTypes.abi.getName(), root.getName(), this,
+			null);
+
+	private final IClass block = new CoreClass(SolidityTypes.block.getName(), root.getName(), this,
+			null);
+
 	private final IClass mapping = new CoreClass(SolidityTypes.mapping.getName(), root.getName(), this,
 			null) {
 				@Override
@@ -126,7 +132,11 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 		this.arrayClassLoader = new ArrayClassLoader();
 	}
 
-	
+	 @Override
+	  public IClassLoader getParent() {
+	    return parent;
+	  }
+
 	@Override
 	public IClass lookupClass(String className, IClassHierarchy cha) {
 		return lookupClass(TypeName.string2TypeName(className));

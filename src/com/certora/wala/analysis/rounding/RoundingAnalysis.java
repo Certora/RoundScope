@@ -772,7 +772,7 @@ public class RoundingAnalysis {
 					for (int i = 0; i < ir.getNumberOfParameters(); i++) {
 						try {
 							JSONObject p = new JSONObject();
-							p.put("rounding", getVariable(i + 1).state);
+							p.put("rounding", String.valueOf(getVariable(i + 1).state));
 							params.put(p);
 							Position pos = dbg.getParameterPosition(i);
 							if (pos != null) {
@@ -802,7 +802,7 @@ public class RoundingAnalysis {
 						}
 					}
 					Map<FieldReference, Direction> ret = getResultOrResults();
-					o.put("return", ret.containsKey(null)? ret.get(null): ret);
+					o.put("return", String.valueOf(ret.containsKey(null)? ret.get(null): ret));
 
 					return o;
 				}
@@ -852,7 +852,7 @@ public class RoundingAnalysis {
 								String k = JSONOutput.toLocalPos(p);
 								JSONObject x = new JSONObject();
 								roundings.put(k, x);
-								x.put("rounding", data[i][j]);
+								x.put("rounding", data[i][j].toString());
 								x.put("source", new SourceBuffer(p).toString());
 								if (use) {
 									x.put("expr", new SourceBuffer(dbg.getInstructionPosition(i)).toString());

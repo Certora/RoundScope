@@ -6,7 +6,7 @@ import com.ibm.wala.cast.tree.CAstEntity;
 import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.util.collections.HashSetFactory;
 
-public class TestRunner {
+public class JNICAstRunner {
 	public static void main(String... args) throws Exception {
 		Set<CAstEntity> ces = HashSetFactory.make();
 		try (SolidityJNIBridge test = new SolidityJNIBridge(null)) {

@@ -5,7 +5,7 @@ import com.ibm.wala.cast.tree.CAstEntity;
 interface VariableContainerContext extends SolidityWalkContext {
 	@Override
 	default void registerVariable(String name, CAstEntity field) {
-		variables().put(name, field);
+		variables().add(field);
 	}
 
 }
