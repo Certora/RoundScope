@@ -1,8 +1,8 @@
 package com.certora.wala.cast.solidity.client;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -73,12 +74,17 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 		}
 	}
 	
-	public SolidityRoundingAnalysisEngineJSON(File confFile, String solidityJsonFileName) throws FileNotFoundException {
+	public SolidityRoundingAnalysisEngineJSON(File confFile, String solidityJsonFileName) throws IOException {
 		super(confFile);
-		JSONObject o = (JSONObject) new JSONTokener(new FileReader(solidityJsonFileName)).nextValue();
-		JsonSourceUnits v = new JsonSourceUnits();
-		v.visit(o, null);
-		jsons = v.sources.stream().map(f -> 
+		try (InputStream is = 
+				solidityJsonFileName.endsWith(".bz2")?
+					new BZip2CompressorInputStream(new FileInputStream(solidityJsonFileName)):
+					new FileInputStream(solidityJsonFileName)) 
+		{
+			JSONObject o = (JSONObject) new JSONTokener(is).nextValue();
+			JsonSourceUnits v = new JsonSourceUnits();
+			v.visit(o, null);
+			jsons = v.sources.stream().map(f -> 
 			new SourceJSONModule() {
 
 				@Override
@@ -142,11 +148,12 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 				public JSONObject getJSON() {
 					return f;
 				} 	
-				
+
 				public String toString() {
 					return "<module for " + getName() + ">";
 				}
 			}).toArray(i -> new Module[i]);
+		}
 	}
 	
 	@Override
