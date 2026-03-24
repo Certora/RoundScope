@@ -1,0 +1,119 @@
+[
+    {
+        "card_title": "general",
+        "content_type": "COMPLEX",
+        "content": [
+            {
+                "inner_title": "branch",
+                "content_type": "FLAG",
+                "content": "julian/stable-pool-and-monotonic-invariant",
+                "doc_link": "",
+                "tooltip": "",
+                "unsound": false
+            },
+            {
+                "inner_title": "dirty",
+                "content_type": "FLAG",
+                "content": "true",
+                "doc_link": "",
+                "tooltip": "",
+                "unsound": false
+            },
+            {
+                "inner_title": "revision",
+                "content_type": "FLAG",
+                "content": "a8a0f50eaf42fe1a8ce866f4596f713eb338c3aa",
+                "doc_link": "",
+                "tooltip": "",
+                "unsound": false
+            }
+        ]
+    },
+    {
+        "card_title": "files",
+        "content_type": "SIMPLE",
+        "content": [
+            {
+                "inner_title": "files",
+                "content_type": "SIMPLE",
+                "content": [
+                    "ERC20ish.sol:ERC20A",
+                    "ERC20ish.sol:ERC20B",
+                    "Staker2.sol"
+                ],
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#files",
+                "tooltip": "",
+                "unsound": false
+            }
+        ]
+    },
+    {
+        "card_title": "options",
+        "content_type": "COMPLEX",
+        "content": [
+            {
+                "inner_title": "verify",
+                "content_type": "FLAG",
+                "content": "Staker2:Staker.spec",
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#verify",
+                "tooltip": "",
+                "unsound": false
+            },
+            {
+                "inner_title": "compilation_steps_only",
+                "content_type": "FLAG",
+                "content": "true",
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#compilation-steps-only",
+                "tooltip": "",
+                "unsound": false
+            },
+            {
+                "inner_title": "dump_asts",
+                "content_type": "FLAG",
+                "content": "true",
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#dump-asts",
+                "tooltip": "",
+                "unsound": false
+            },
+            {
+                "inner_title": "msg",
+                "content_type": "FLAG",
+                "content": "Simple staking contract",
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#msg",
+                "tooltip": "",
+                "unsound": false
+            }
+        ]
+    },
+    {
+        "card_title": "link",
+        "content_type": "SIMPLE",
+        "content": [
+            {
+                "inner_title": "link",
+                "content_type": "SIMPLE",
+                "content": [
+                    "Staker2:assets=ERC20A",
+                    "Staker2:receipts=ERC20B"
+                ],
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#link",
+                "tooltip": "",
+                "unsound": false
+            }
+        ]
+    },
+    {
+        "card_title": "solidity_compiler",
+        "content_type": "COMPLEX",
+        "content": [
+            {
+                "inner_title": "solc",
+                "content_type": "FLAG",
+                "content": "/Users/julian/git/os/build/solc/solc",
+                "doc_link": "https://docs.certora.com/en/latest/docs/prover/cli/options.html#solc",
+                "tooltip": "",
+                "unsound": false
+            }
+        ]
+    }
+]
