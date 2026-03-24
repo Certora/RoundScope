@@ -14,13 +14,17 @@ public class TestMorphoSharePrice extends AbstractTest {
 
 	@Override
 	protected String testDir() {
-		return "test/data/MorphoV2/SharePricel";
+		return "test/data/MorphoV2/SharePrice";
 	}
 
 	@Override
 	void checkResult(DocumentContext jsonParser) {
 		
-		JSONArray result = jsonParser.read("$.graphs[*].nodes['0'].metadata[?(@.method == '<Code body of function withdraw>' && @.return contains 'Either' && @.roundings['[76,27-76,84]'].rounding == '< solidity, Ltuple, 0, <solidity,Puint256> >=Down')]");		
+		JSONArray result = jsonParser.read("$.graphs[*].nodes['0'].metadata[?(@.method == '<Code body of function withdraw>' && @.return contains '< solidity, Ltuple, 0, <solidity,Puint256> >=Down')]");		
+		System.err.println(result);
+		assert !result.isEmpty();
+		
+		result = jsonParser.read("$.graphs[*].nodes['0'].metadata[?(@.method == '<Code body of function withdraw>' && @.return contains '< solidity, Ltuple, 1, <solidity,Puint256> >=Up')]");		
 		System.err.println(result);
 		assert !result.isEmpty();
 	}
