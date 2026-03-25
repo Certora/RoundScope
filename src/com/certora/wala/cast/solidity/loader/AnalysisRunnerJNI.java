@@ -1,7 +1,6 @@
 package com.certora.wala.cast.solidity.loader;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
@@ -16,6 +15,7 @@ import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.analysis.rounding.RoundingEstimator;
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngine;
+import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngineJNI;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
@@ -23,11 +23,6 @@ import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
 import com.certora.wala.cast.solidity.util.JSONOutput;
-import com.github.erosb.jsonsKema.JsonParser;
-import com.github.erosb.jsonsKema.Schema;
-import com.github.erosb.jsonsKema.SchemaLoader;
-import com.github.erosb.jsonsKema.ValidationFailure;
-import com.github.erosb.jsonsKema.Validator;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
@@ -64,7 +59,7 @@ import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashMapFactory;
 
-public class TestRunner {
+public class AnalysisRunnerJNI extends AnalysisRunner {
 
 	private static boolean useOldAnalysis = false;
 	
@@ -80,7 +75,7 @@ public class TestRunner {
 
 			}
 
-			SingleClassLoaderFactory sl = new SolidityLoaderFactory(confFile, conf.getIncludePath());
+			SingleClassLoaderFactory sl = new SolidityJNILoaderFactory(confFile, conf.getIncludePath());
 
 			Module[] solidityFiles = conf.getFiles().toArray(new Module[conf.getFiles().size()]);
 			
@@ -183,9 +178,10 @@ public class TestRunner {
 				
 			} else {
 				JSONArray graphs = new JSONArray();
+				RoundingAnalysis ra = new RoundingAnalysis(cg);
 				for(CGNode n : cg.getEntrypointNodes()) {
 					
-					Result G = RoundingAnalysis.analyzeForNode(cg, n);
+					Result G = ra.analyzeForNode(cg, n);
 
 				    graphs.put(JSONOutput.outputAsJSON(PA, n, G));
 
@@ -201,20 +197,15 @@ public class TestRunner {
 				}
 			}
 		} else {
-			SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngine(confFile);
+			SolidityRoundingAnalysisEngine E = new SolidityRoundingAnalysisEngineJNI(confFile);
 			JSONObject graphs = E.analyze();
-						
-			try (FileWriter jo = new FileWriter(args[1])) {
+			String outFile = args[1];
+			
+			try (FileWriter jo = new FileWriter(outFile)) {
 				graphs.write(jo, 4, 0);
 			}
-
-			Schema schema = SchemaLoader.forURL("https://raw.githubusercontent.com/jsongraph/json-graph-specification/refs/heads/master/json-graph-schema_v2.json").load();
-			Validator validator = Validator.forSchema(schema);
-			ValidationFailure failure = validator.validate(new JsonParser(new FileReader(args[1])).parse());
-			if (failure != null) {
-				System.err.println(failure);
-			}
+			
+			validateJSON(outFile);
 		}
 	}
-
 }

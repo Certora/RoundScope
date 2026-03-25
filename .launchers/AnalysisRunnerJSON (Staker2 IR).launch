@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <launchConfiguration type="org.eclipse.jdt.launching.localJavaApplication">
-    <stringAttribute key="bad_container_name" value="/com.certora.wala.cast.solidity/WALA CAst Solidity JNI Bridge/.l"/>
+    <stringAttribute key="bad_container_name" value="/com.certora.wala.cast.solidity/W.launchers"/>
     <booleanAttribute key="org.eclipse.debug.core.ATTR_FORCE_SYSTEM_CONSOLE_ENCODING" value="false"/>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
-        <listEntry value="/com.certora.wala.cast.solidity/src/com/certora/wala/cast/solidity/loader/TestRunner.java"/>
+        <listEntry value="/com.certora.wala.cast.solidity/src/com/certora/wala/cast/solidity/loader/AnalysisRunnerJSON.java"/>
     </listAttribute>
     <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_TYPES">
         <listEntry value="1"/>
     </listAttribute>
-    <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="/tmp/balancer_v3.out"/>
+    <stringAttribute key="org.eclipse.debug.ui.ATTR_CAPTURE_IN_FILE" value="/tmp/staker_ir.out"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_ATTR_USE_ARGFILE" value="false"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_EXCLUDE_TEST_CODE" value="true"/>
     <booleanAttribute key="org.eclipse.jdt.launching.ATTR_SHOW_CODEDETAILS_IN_EXCEPTION_MESSAGES" value="true"/>
@@ -33,11 +33,11 @@
     </listAttribute>
     <stringAttribute key="org.eclipse.jdt.launching.CLASSPATH_PROVIDER" value="org.eclipse.m2e.launchconfig.classpathProvider"/>
     <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
-    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.certora.wala.cast.solidity.loader.TestRunner"/>
+    <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="com.certora.wala.cast.solidity.loader.AnalysisRunnerJSON"/>
     <listAttribute key="org.eclipse.jdt.launching.MODULEPATH"/>
     <stringAttribute key="org.eclipse.jdt.launching.MODULE_NAME" value="com.certora.wala.cast.solidity"/>
-    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="/Users/julian/git/balancer-v3-monorepo/certora/confs/Vault.conf /tmp/balancer_v3_vault.json"/>
+    <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="run.conf /tmp/staker.json --combined .certora_internal/latest/.asts.json"/>
     <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.certora.wala.cast.solidity"/>
     <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.m2e.launchconfig.sourcepathProvider"/>
-    <stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.library.path=&quot;/Users/julian/git/WALA CAst Solidity/WALA CAst Solidity JNI Bridge&quot;"/>
+    <stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="${workspace_loc:com.certora.wala.cast.solidity/test/data/Staker2}"/>
 </launchConfiguration>

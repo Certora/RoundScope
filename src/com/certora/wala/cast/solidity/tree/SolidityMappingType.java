@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.CAstType.Function;
 import com.ibm.wala.types.TypeReference;
