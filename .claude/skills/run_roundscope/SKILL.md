@@ -32,9 +32,10 @@ bash .claude/skills/run_roundscope/run_roundscope.sh certora/conf/MyConf.conf
 ## What It Does
 
 1. Uses the current working directory as the project root
-2. Runs `roundscope.sh` to perform the Java-based rounding analysis
-3. Runs `generate_viewer.py` to produce a self-contained HTML viewer
-4. Prints the path to the generated HTML file
+2. Runs `certoraRun` with `--dump_asts --compilation_steps_only` to produce AST JSON
+3. Runs the RoundScope Java analysis on the dumped ASTs
+4. Runs `generate_viewer.py` to produce a self-contained HTML viewer
+5. Prints the path to the generated HTML file
 
 ## Output
 
