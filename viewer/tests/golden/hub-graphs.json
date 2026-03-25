@@ -1,0 +1,7403 @@
+[
+  {
+    "nodes": {
+      "0": {
+        "label": "isConsumingScheduledOp",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 78,
+        "sc": 2,
+        "el": 80,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "authority",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 61,
+        "sc": 2,
+        "el": 63,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "setAuthority",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 66,
+        "sc": 2,
+        "el": 75,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "_msgSender",
+        "file": "src/dependencies/openzeppelin/Context.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 19,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "authority",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 61,
+        "sc": 2,
+        "el": 63,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 67,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 68,
+        "sc": 18
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "<init>",
+        "file": "src/dependencies/openzeppelin/AccessManaged.sol",
+        "sl": 27,
+        "sc": 2,
+        "el": 29,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "isUnderlyingListed",
+        "file": "src/hub/Hub.sol",
+        "sl": 461,
+        "sc": 2,
+        "el": 463,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 352,
+        "sc": 2,
+        "el": 354,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "_contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 144,
+        "sc": 2,
+        "el": 146,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 462,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 353,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetCount",
+        "file": "src/hub/Hub.sol",
+        "sl": 466,
+        "sc": 2,
+        "el": 468,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "refreshPremium",
+        "file": "src/hub/Hub.sol",
+        "sl": 380,
+        "sc": 2,
+        "el": 392,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewRemoveByShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 486,
+        "sc": 2,
+        "el": 488,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toAddedAssetsDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 108,
+        "sc": 2,
+        "el": 113,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "21": {
+        "label": "toAssetsDown",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 27,
+        "sc": 2,
+        "el": 33,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "22": {
+        "label": "mulDivDown",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 77,
+        "sc": 2,
+        "el": 88,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 487,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 112,
+        "sc": 31
+      },
+      {
+        "source": "1",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 112,
+        "sc": 11
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "11",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "11",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "11",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "11",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "15",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "21",
+        "target": "22",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 32,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "transferShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 410,
+        "sc": 2,
+        "el": 421,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetUnderlyingAndDecimals",
+        "file": "src/hub/Hub.sol",
+        "sl": 511,
+        "sc": 2,
+        "el": 514,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewAddByShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 476,
+        "sc": 2,
+        "el": 478,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toAddedAssetsUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 100,
+        "sc": 2,
+        "el": 105,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "21": {
+        "label": "toAssetsUp",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 45,
+        "sc": 2,
+        "el": 51,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "22": {
+        "label": "mulDivUp",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 93,
+        "sc": 2,
+        "el": 106,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 477,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 104,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 104,
+        "sc": 11
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "11",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "11",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "11",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "11",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "15",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "21",
+        "target": "22",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 50,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "isSpokeListed",
+        "file": "src/hub/Hub.sol",
+        "sl": 665,
+        "sc": 2,
+        "el": 667,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 352,
+        "sc": 2,
+        "el": 354,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "_contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 144,
+        "sc": 2,
+        "el": 146,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 666,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 353,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeDrawnShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 646,
+        "sc": 2,
+        "el": 648,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetLiquidity",
+        "file": "src/hub/Hub.sol",
+        "sl": 567,
+        "sc": 2,
+        "el": 569,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeConfig",
+        "file": "src/hub/Hub.sol",
+        "sl": 680,
+        "sc": 2,
+        "el": 693,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAddedShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 527,
+        "sc": 2,
+        "el": 529,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "reclaim",
+        "file": "src/hub/Hub.sol",
+        "sl": 444,
+        "sc": 2,
+        "el": 458,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 451,
+        "sc": 23
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 452,
+        "sc": 19
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewDrawByAssets",
+        "file": "src/hub/Hub.sol",
+        "sl": 491,
+        "sc": 2,
+        "el": 493,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnSharesUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 42,
+        "sc": 2,
+        "el": 47,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayDivUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 117,
+        "sc": 2,
+        "el": 127,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 492,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 46,
+        "sc": 27
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 46,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeTotalOwed",
+        "file": "src/hub/Hub.sol",
+        "sl": 632,
+        "sc": 2,
+        "el": 636,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "_getSpokeDrawn",
+        "file": "src/hub/Hub.sol",
+        "sl": 793,
+        "sc": 2,
+        "el": 798,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "toDrawnAssetsUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 26,
+        "sc": 2,
+        "el": 31,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "_getSpokePremium",
+        "file": "src/hub/Hub.sol",
+        "sl": 801,
+        "sc": 2,
+        "el": 806,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "_getSpokePremiumRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 809,
+        "sc": 2,
+        "el": 819,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 635,
+        "sc": 11
+      },
+      {
+        "source": "0",
+        "target": "7",
+        "file": "src/hub/Hub.sol",
+        "sl": 635,
+        "sc": 46
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 797,
+        "sc": 11
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "12",
+        "target": "14",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 30,
+        "sc": 27
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 30,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "15",
+        "file": "src/hub/Hub.sol",
+        "sl": 805,
+        "sc": 11
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/Hub.sol",
+        "sl": 805,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "12",
+        "file": "src/hub/Hub.sol",
+        "sl": 814,
+        "sc": 6
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/Hub.sol",
+        "sl": 817,
+        "sc": 20
+      },
+      {
+        "source": "9",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "9",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetSwept",
+        "file": "src/hub/Hub.sol",
+        "sl": 600,
+        "sc": 2,
+        "el": 602,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "add",
+        "file": "src/hub/Hub.sol",
+        "sl": 217,
+        "sc": 2,
+        "el": 238,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "10": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "toAddedSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 124,
+        "sc": 2,
+        "el": 129,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "21": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "22": {
+        "label": "toSharesDown",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "23": {
+        "label": "mulDivDown",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 77,
+        "sc": 2,
+        "el": 88,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "24": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "25": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "3": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 226,
+        "sc": 58
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 227,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "24",
+        "file": "src/hub/Hub.sol",
+        "sl": 227,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "25",
+        "file": "src/hub/Hub.sol",
+        "sl": 231,
+        "sc": 22
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "12",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "12",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "12",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "12",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "13",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "16",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "16",
+        "target": "18",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "22",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 31
+      },
+      {
+        "source": "22",
+        "target": "23",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "3",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "4",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "8",
+        "target": "10",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "setInterestRateData",
+        "file": "src/hub/Hub.sol",
+        "sl": 199,
+        "sc": 2,
+        "el": 205,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "updateSpokeConfig",
+        "file": "src/hub/Hub.sol",
+        "sl": 188,
+        "sc": 2,
+        "el": 196,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 352,
+        "sc": 2,
+        "el": 354,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "_contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 144,
+        "sc": 2,
+        "el": 146,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 194,
+        "sc": 12
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 353,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeAddedShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 620,
+        "sc": 2,
+        "el": 622,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeAddedAssets",
+        "file": "src/hub/Hub.sol",
+        "sl": 615,
+        "sc": 2,
+        "el": 617,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toAddedAssetsDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 108,
+        "sc": 2,
+        "el": 113,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "21": {
+        "label": "toAssetsDown",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 27,
+        "sc": 2,
+        "el": 33,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "22": {
+        "label": "mulDivDown",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 77,
+        "sc": 2,
+        "el": 88,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 616,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 112,
+        "sc": 31
+      },
+      {
+        "source": "1",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 112,
+        "sc": 11
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "11",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "11",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "11",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "11",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "15",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "21",
+        "target": "22",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 32,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "<init>",
+        "file": "src/hub/Hub.sol",
+        "sl": 61,
+        "sc": 2,
+        "el": 63,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "reportDeficit",
+        "file": "src/hub/Hub.sol",
+        "sl": 321,
+        "sc": 2,
+        "el": 348,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 50,
+        "sc": 2,
+        "el": 55,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayDivDown",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 103,
+        "sc": 2,
+        "el": 112,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "toUint200",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 152,
+        "sc": 2,
+        "el": 157,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toUint200",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 152,
+        "sc": 2,
+        "el": 157,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 332,
+        "sc": 26
+      },
+      {
+        "source": "0",
+        "target": "6",
+        "file": "src/hub/Hub.sol",
+        "sl": 332,
+        "sc": 26
+      },
+      {
+        "source": "0",
+        "target": "7",
+        "file": "src/hub/Hub.sol",
+        "sl": 340,
+        "sc": 24
+      },
+      {
+        "source": "0",
+        "target": "8",
+        "file": "src/hub/Hub.sol",
+        "sl": 341,
+        "sc": 24
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 54,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 54,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetDrawnIndex",
+        "file": "src/hub/Hub.sol",
+        "sl": 517,
+        "sc": 2,
+        "el": 519,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 518,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "1",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "eliminateDeficit",
+        "file": "src/hub/Hub.sol",
+        "sl": 351,
+        "sc": 2,
+        "el": 377,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "toAddedSharesUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 116,
+        "sc": 2,
+        "el": 121,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "21": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "22": {
+        "label": "toSharesUp",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 36,
+        "sc": 2,
+        "el": 42,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "23": {
+        "label": "mulDivUp",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 93,
+        "sc": 2,
+        "el": 106,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "24": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "25": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "26": {
+        "label": "toUint200",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 152,
+        "sc": 2,
+        "el": 157,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "27": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "28": {
+        "label": "toUint200",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 152,
+        "sc": 2,
+        "el": 157,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "3": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 366,
+        "sc": 43
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 366,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "24",
+        "file": "src/hub/Hub.sol",
+        "sl": 366,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "25",
+        "file": "src/hub/Hub.sol",
+        "sl": 369,
+        "sc": 23
+      },
+      {
+        "source": "0",
+        "target": "26",
+        "file": "src/hub/Hub.sol",
+        "sl": 369,
+        "sc": 23
+      },
+      {
+        "source": "0",
+        "target": "27",
+        "file": "src/hub/Hub.sol",
+        "sl": 370,
+        "sc": 30
+      },
+      {
+        "source": "0",
+        "target": "28",
+        "file": "src/hub/Hub.sol",
+        "sl": 370,
+        "sc": 30
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "12",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "12",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "12",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "12",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "13",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "16",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "16",
+        "target": "18",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "22",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 120,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 120,
+        "sc": 29
+      },
+      {
+        "source": "22",
+        "target": "23",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 41,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "3",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "4",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "8",
+        "target": "10",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetDrawnRate",
+        "file": "src/hub/Hub.sol",
+        "sl": 605,
+        "sc": 2,
+        "el": 607,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetDeficitRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 572,
+        "sc": 2,
+        "el": 574,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetOwed",
+        "file": "src/hub/Hub.sol",
+        "sl": 532,
+        "sc": 2,
+        "el": 536,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "drawn",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 58,
+        "sc": 2,
+        "el": 60,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "premium",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 63,
+        "sc": 2,
+        "el": 72,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 534,
+        "sc": 25
+      },
+      {
+        "source": "0",
+        "target": "4",
+        "file": "src/hub/Hub.sol",
+        "sl": 535,
+        "sc": 12
+      },
+      {
+        "source": "0",
+        "target": "6",
+        "file": "src/hub/Hub.sol",
+        "sl": 535,
+        "sc": 37
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "1",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 59,
+        "sc": 11
+      },
+      {
+        "source": "6",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 65,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 65,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpoke",
+        "file": "src/hub/Hub.sol",
+        "sl": 675,
+        "sc": 2,
+        "el": 677,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetConfig",
+        "file": "src/hub/Hub.sol",
+        "sl": 582,
+        "sc": 2,
+        "el": 591,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetPremiumRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 545,
+        "sc": 2,
+        "el": 553,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 551,
+        "sc": 20
+      },
+      {
+        "source": "0",
+        "target": "4",
+        "file": "src/hub/Hub.sol",
+        "sl": 548,
+        "sc": 6
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "1",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "4",
+        "target": "6",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetTotalOwed",
+        "file": "src/hub/Hub.sol",
+        "sl": 539,
+        "sc": 2,
+        "el": 542,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "totalOwed",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 75,
+        "sc": 2,
+        "el": 77,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "drawn",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 58,
+        "sc": 2,
+        "el": 60,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "premium",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 63,
+        "sc": 2,
+        "el": 72,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 541,
+        "sc": 27
+      },
+      {
+        "source": "0",
+        "target": "4",
+        "file": "src/hub/Hub.sol",
+        "sl": 541,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "1",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 76,
+        "sc": 11
+      },
+      {
+        "source": "4",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 76,
+        "sc": 37
+      },
+      {
+        "source": "5",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 59,
+        "sc": 11
+      },
+      {
+        "source": "7",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 65,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 65,
+        "sc": 6
+      },
+      {
+        "source": "8",
+        "target": "10",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "addAsset",
+        "file": "src/hub/Hub.sol",
+        "sl": 66,
+        "sc": 2,
+        "el": 130,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 352,
+        "sc": 2,
+        "el": 354,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "_contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 144,
+        "sc": 2,
+        "el": 146,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "3": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "4": {
+        "label": "toUint40",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 492,
+        "sc": 2,
+        "el": 497,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "5": {
+        "label": "toUint96",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 373,
+        "sc": 2,
+        "el": 378,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "6": {
+        "label": "add",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 325,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "7": {
+        "label": "_add",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 74,
+        "sc": 2,
+        "el": 84,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "8": {
+        "label": "_contains",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 144,
+        "sc": 2,
+        "el": 146,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 81,
+        "sc": 13
+      },
+      {
+        "source": "0",
+        "target": "3",
+        "file": "src/hub/Hub.sol",
+        "sl": 103,
+        "sc": 18
+      },
+      {
+        "source": "0",
+        "target": "4",
+        "file": "src/hub/Hub.sol",
+        "sl": 105,
+        "sc": 27
+      },
+      {
+        "source": "0",
+        "target": "5",
+        "file": "src/hub/Hub.sol",
+        "sl": 107,
+        "sc": 17
+      },
+      {
+        "source": "0",
+        "target": "6",
+        "file": "src/hub/Hub.sol",
+        "sl": 114,
+        "sc": 4
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 353,
+        "sc": 11
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 326,
+        "sc": 11
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 75,
+        "sc": 9
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokePremiumData",
+        "file": "src/hub/Hub.sol",
+        "sl": 651,
+        "sc": 2,
+        "el": 657,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeDeficitRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 660,
+        "sc": 2,
+        "el": 662,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetPremiumData",
+        "file": "src/hub/Hub.sol",
+        "sl": 561,
+        "sc": 2,
+        "el": 564,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewRestoreByShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 506,
+        "sc": 2,
+        "el": 508,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnAssetsUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 26,
+        "sc": 2,
+        "el": 31,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 507,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 30,
+        "sc": 27
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 30,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeAddress",
+        "file": "src/hub/Hub.sol",
+        "sl": 670,
+        "sc": 2,
+        "el": 672,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "at",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 373,
+        "sc": 2,
+        "el": 375,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "_at",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 165,
+        "sc": 2,
+        "el": 167,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 671,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 374,
+        "sc": 35
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAddedAssets",
+        "file": "src/hub/Hub.sol",
+        "sl": 522,
+        "sc": 2,
+        "el": 524,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "14": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 523,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "1",
+        "target": "9",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "10",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "10",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "10",
+        "target": "17",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "10",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "10",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "13",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "14",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "5",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "6",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "mintFeeShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 208,
+        "sc": 2,
+        "el": 214,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "_mintFeeShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 773,
+        "sc": 2,
+        "el": 790,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "toAddedSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 124,
+        "sc": 2,
+        "el": 129,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "21": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "22": {
+        "label": "toSharesDown",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "23": {
+        "label": "mulDivDown",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 77,
+        "sc": 2,
+        "el": 88,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "24": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 211,
+        "sc": 24
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 775,
+        "sc": 21
+      },
+      {
+        "source": "1",
+        "target": "24",
+        "file": "src/hub/Hub.sol",
+        "sl": 775,
+        "sc": 21
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "12",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "12",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "12",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "12",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "13",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "16",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "16",
+        "target": "18",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "22",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 31
+      },
+      {
+        "source": "22",
+        "target": "23",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "3",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "4",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "8",
+        "target": "10",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "sweep",
+        "file": "src/hub/Hub.sol",
+        "sl": 424,
+        "sc": 2,
+        "el": 441,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "3": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 434,
+        "sc": 22
+      },
+      {
+        "source": "0",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 434,
+        "sc": 22
+      },
+      {
+        "source": "0",
+        "target": "3",
+        "file": "src/hub/Hub.sol",
+        "sl": 435,
+        "sc": 19
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewDrawByShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 496,
+        "sc": 2,
+        "el": 498,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnAssetsDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 34,
+        "sc": 2,
+        "el": 39,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulDown",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 74,
+        "sc": 2,
+        "el": 83,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 497,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 38,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 38,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokePremiumRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 639,
+        "sc": 2,
+        "el": 643,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "_getSpokePremiumRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 809,
+        "sc": 2,
+        "el": 819,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 642,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 817,
+        "sc": 20
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/Hub.sol",
+        "sl": 814,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "5",
+        "target": "6",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "5",
+        "target": "7",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewAddByAssets",
+        "file": "src/hub/Hub.sol",
+        "sl": 471,
+        "sc": 2,
+        "el": 473,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toAddedSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 124,
+        "sc": 2,
+        "el": 129,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "21": {
+        "label": "toSharesDown",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "22": {
+        "label": "mulDivDown",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 77,
+        "sc": 2,
+        "el": 88,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 472,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 31
+      },
+      {
+        "source": "1",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 11
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "11",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "11",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "11",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "11",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "15",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "21",
+        "target": "22",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "remove",
+        "file": "src/hub/Hub.sol",
+        "sl": 241,
+        "sc": 2,
+        "el": 263,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toAddedSharesUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 116,
+        "sc": 2,
+        "el": 121,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "21": {
+        "label": "toSharesUp",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 36,
+        "sc": 2,
+        "el": 42,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "22": {
+        "label": "mulDivUp",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 93,
+        "sc": 2,
+        "el": 106,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "23": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "24": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "25": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 251,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "23",
+        "file": "src/hub/Hub.sol",
+        "sl": 251,
+        "sc": 21
+      },
+      {
+        "source": "0",
+        "target": "24",
+        "file": "src/hub/Hub.sol",
+        "sl": 254,
+        "sc": 22
+      },
+      {
+        "source": "0",
+        "target": "25",
+        "file": "src/hub/Hub.sol",
+        "sl": 254,
+        "sc": 22
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 120,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 120,
+        "sc": 11
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "11",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "11",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "11",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "11",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "15",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "21",
+        "target": "22",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 41,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "addSpoke",
+        "file": "src/hub/Hub.sol",
+        "sl": 176,
+        "sc": 2,
+        "el": 185,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetAccruedFees",
+        "file": "src/hub/Hub.sol",
+        "sl": 594,
+        "sc": 2,
+        "el": 597,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "11": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "12": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "13": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "2": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 596,
+        "sc": 56
+      },
+      {
+        "source": "0",
+        "target": "4",
+        "file": "src/hub/Hub.sol",
+        "sl": 596,
+        "sc": 32
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "1",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "10",
+        "target": "11",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "10",
+        "target": "12",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "4",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "4",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "4",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "4",
+        "target": "9",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "5",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "6",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "9",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewRestoreByAssets",
+        "file": "src/hub/Hub.sol",
+        "sl": 501,
+        "sc": 2,
+        "el": 503,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 50,
+        "sc": 2,
+        "el": 55,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayDivDown",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 103,
+        "sc": 2,
+        "el": 112,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 502,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 54,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 54,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAsset",
+        "file": "src/hub/Hub.sol",
+        "sl": 577,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "draw",
+        "file": "src/hub/Hub.sol",
+        "sl": 266,
+        "sc": 2,
+        "el": 288,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnSharesUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 42,
+        "sc": 2,
+        "el": 47,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayDivUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 117,
+        "sc": 2,
+        "el": 127,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "8": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 276,
+        "sc": 26
+      },
+      {
+        "source": "0",
+        "target": "6",
+        "file": "src/hub/Hub.sol",
+        "sl": 276,
+        "sc": 26
+      },
+      {
+        "source": "0",
+        "target": "7",
+        "file": "src/hub/Hub.sol",
+        "sl": 279,
+        "sc": 22
+      },
+      {
+        "source": "0",
+        "target": "8",
+        "file": "src/hub/Hub.sol",
+        "sl": 279,
+        "sc": 22
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 46,
+        "sc": 27
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 46,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "updateAssetConfig",
+        "file": "src/hub/Hub.sol",
+        "sl": 133,
+        "sc": 2,
+        "el": 173,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "_mintFeeShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 773,
+        "sc": 2,
+        "el": 790,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "toAddedSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 124,
+        "sc": 2,
+        "el": 129,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "21": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "22": {
+        "label": "toSharesDown",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "23": {
+        "label": "mulDivDown",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 77,
+        "sc": 2,
+        "el": 88,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "24": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 158,
+        "sc": 6
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 775,
+        "sc": 21
+      },
+      {
+        "source": "1",
+        "target": "24",
+        "file": "src/hub/Hub.sol",
+        "sl": 775,
+        "sc": 21
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "12",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "12",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "12",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "12",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "13",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "16",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "16",
+        "target": "18",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "22",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 128,
+        "sc": 31
+      },
+      {
+        "source": "22",
+        "target": "23",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "3",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "4",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "4",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "8",
+        "target": "10",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "payFeeShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 395,
+        "sc": 2,
+        "el": 407,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "restore",
+        "file": "src/hub/Hub.sol",
+        "sl": 291,
+        "sc": 2,
+        "el": 318,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toDrawnSharesDown",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 50,
+        "sc": 2,
+        "el": 55,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayDivDown",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 103,
+        "sc": 2,
+        "el": 112,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "uncheckedSub",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 60,
+        "sc": 2,
+        "el": 64,
+        "ec": 3,
+        "returnRounding": "Up"
+      },
+      "9": {
+        "label": "toUint120",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 322,
+        "sc": 2,
+        "el": 327,
+        "ec": 3,
+        "returnRounding": "Up"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 302,
+        "sc": 26
+      },
+      {
+        "source": "0",
+        "target": "6",
+        "file": "src/hub/Hub.sol",
+        "sl": 302,
+        "sc": 26
+      },
+      {
+        "source": "0",
+        "target": "7",
+        "file": "src/hub/Hub.sol",
+        "sl": 307,
+        "sc": 28
+      },
+      {
+        "source": "0",
+        "target": "8",
+        "file": "src/hub/Hub.sol",
+        "sl": 310,
+        "sc": 58
+      },
+      {
+        "source": "0",
+        "target": "9",
+        "file": "src/hub/Hub.sol",
+        "sl": 311,
+        "sc": 22
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 54,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 54,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "2",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeCount",
+        "file": "src/hub/Hub.sol",
+        "sl": 610,
+        "sc": 2,
+        "el": 612,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "1": {
+        "label": "length",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 359,
+        "sc": 2,
+        "el": 361,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "2": {
+        "label": "_length",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 151,
+        "sc": 2,
+        "el": 153,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 611,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/dependencies/openzeppelin/EnumerableSet.sol",
+        "sl": 360,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getSpokeOwed",
+        "file": "src/hub/Hub.sol",
+        "sl": 625,
+        "sc": 2,
+        "el": 629,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "_getSpokeDrawn",
+        "file": "src/hub/Hub.sol",
+        "sl": 793,
+        "sc": 2,
+        "el": 798,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "15": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "toDrawnAssetsUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 26,
+        "sc": 2,
+        "el": 31,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "_getSpokePremium",
+        "file": "src/hub/Hub.sol",
+        "sl": 801,
+        "sc": 2,
+        "el": 806,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "_getSpokePremiumRay",
+        "file": "src/hub/Hub.sol",
+        "sl": 809,
+        "sc": 2,
+        "el": 819,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 628,
+        "sc": 12
+      },
+      {
+        "source": "0",
+        "target": "7",
+        "file": "src/hub/Hub.sol",
+        "sl": 628,
+        "sc": 46
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/Hub.sol",
+        "sl": 797,
+        "sc": 11
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "12",
+        "target": "14",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 30,
+        "sc": 27
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 30,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "7",
+        "target": "15",
+        "file": "src/hub/Hub.sol",
+        "sl": 805,
+        "sc": 11
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/Hub.sol",
+        "sl": 805,
+        "sc": 11
+      },
+      {
+        "source": "8",
+        "target": "12",
+        "file": "src/hub/Hub.sol",
+        "sl": 814,
+        "sc": 6
+      },
+      {
+        "source": "8",
+        "target": "9",
+        "file": "src/hub/Hub.sol",
+        "sl": 817,
+        "sc": 20
+      },
+      {
+        "source": "9",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "9",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "previewRemoveByAssets",
+        "file": "src/hub/Hub.sol",
+        "sl": 481,
+        "sc": 2,
+        "el": 483,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "1": {
+        "label": "toAddedSharesUp",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 116,
+        "sc": 2,
+        "el": 121,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "10": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "11": {
+        "label": "getUnrealizedFees",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 178,
+        "sc": 2,
+        "el": 217,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "12": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "13": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "14": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "15": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "16": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "17": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": ""
+      },
+      "18": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "19": {
+        "label": "fromRayUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 167,
+        "sc": 2,
+        "el": 172,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "2": {
+        "label": "totalAddedAssets",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 80,
+        "sc": 2,
+        "el": 97,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "20": {
+        "label": "percentMulDown",
+        "file": "src/libraries/math/PercentageMath.sol",
+        "sl": 16,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Inconsistent"
+      },
+      "21": {
+        "label": "toSharesUp",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 36,
+        "sc": 2,
+        "el": 42,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "22": {
+        "label": "mulDivUp",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 93,
+        "sc": 2,
+        "el": 106,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "3": {
+        "label": "getDrawnIndex",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 162,
+        "sc": 2,
+        "el": 174,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "4": {
+        "label": "calculateLinearInterest",
+        "file": "src/libraries/math/MathUtils.sol",
+        "sl": 17,
+        "sc": 2,
+        "el": 28,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "5": {
+        "label": "rayMulUp",
+        "file": "src/libraries/math/WadRayMath.sol",
+        "sl": 88,
+        "sc": 2,
+        "el": 98,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "6": {
+        "label": "_calculateAggregatedOwedRay",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 220,
+        "sc": 2,
+        "el": 233,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "7": {
+        "label": "calculatePremiumRay",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 18,
+        "sc": 2,
+        "el": 24,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "8": {
+        "label": "toInt256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 1146,
+        "sc": 2,
+        "el": 1152,
+        "ec": 3,
+        "returnRounding": "Either"
+      },
+      "9": {
+        "label": "toUint256",
+        "file": "src/dependencies/openzeppelin/SafeCast.sol",
+        "sl": 574,
+        "sc": 2,
+        "el": 579,
+        "ec": 3,
+        "returnRounding": "Either"
+      }
+    },
+    "edges": [
+      {
+        "source": "0",
+        "target": "1",
+        "file": "src/hub/Hub.sol",
+        "sl": 482,
+        "sc": 11
+      },
+      {
+        "source": "1",
+        "target": "2",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 120,
+        "sc": 29
+      },
+      {
+        "source": "1",
+        "target": "21",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 120,
+        "sc": 11
+      },
+      {
+        "source": "11",
+        "target": "12",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 197,
+        "sc": 37
+      },
+      {
+        "source": "11",
+        "target": "14",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 205,
+        "sc": 38
+      },
+      {
+        "source": "11",
+        "target": "18",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 7
+      },
+      {
+        "source": "11",
+        "target": "19",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 44
+      },
+      {
+        "source": "11",
+        "target": "20",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 214,
+        "sc": 6
+      },
+      {
+        "source": "12",
+        "target": "13",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "14",
+        "target": "15",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "15",
+        "target": "16",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "15",
+        "target": "17",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      },
+      {
+        "source": "2",
+        "target": "10",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 94,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "11",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 96,
+        "sc": 6
+      },
+      {
+        "source": "2",
+        "target": "3",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 81,
+        "sc": 25
+      },
+      {
+        "source": "2",
+        "target": "6",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 83,
+        "sc": 32
+      },
+      {
+        "source": "21",
+        "target": "22",
+        "file": "src/hub/libraries/SharesMath.sol",
+        "sl": 41,
+        "sc": 11
+      },
+      {
+        "source": "3",
+        "target": "4",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 172,
+        "sc": 8
+      },
+      {
+        "source": "3",
+        "target": "5",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 171,
+        "sc": 6
+      },
+      {
+        "source": "6",
+        "target": "7",
+        "file": "src/hub/libraries/AssetLogic.sol",
+        "sl": 227,
+        "sc": 25
+      },
+      {
+        "source": "7",
+        "target": "8",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 12
+      },
+      {
+        "source": "7",
+        "target": "9",
+        "file": "src/hub/libraries/Premium.sol",
+        "sl": 23,
+        "sc": 11
+      }
+    ]
+  },
+  {
+    "nodes": {
+      "0": {
+        "label": "getAssetDrawnShares",
+        "file": "src/hub/Hub.sol",
+        "sl": 556,
+        "sc": 2,
+        "el": 558,
+        "ec": 3,
+        "returnRounding": ""
+      }
+    },
+    "edges": []
+  }
+]

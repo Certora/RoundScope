@@ -1,8 +1,11 @@
 package com.certora.wala.cast.solidity.ipa.callgraph;
 
+import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupers;
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
 
+import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
@@ -22,6 +25,8 @@ import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PointsToSetVariable;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
+import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
@@ -80,7 +85,9 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 			System.err.println("found it");
 		}
 		if (receiver instanceof TypedCodeBody && 
-			(((TypedCodeBody)receiver).isVirtual() || ((TypedCodeBody)receiver).getSelfType() instanceof InterfaceType)) {
+			(((TypedCodeBody)receiver).isVirtual() || 
+			 site.getInvocationCode() == Dispatch.SPECIAL ||
+			 ((TypedCodeBody)receiver).getSelfType() instanceof InterfaceType)) {
 			//System.err.println("@@@@ " + receiver + " " + ((TypedCodeBody)receiver).getSelf());						
 			Set<IMethod> targets = HashSetFactory.make();
 			for(SSAAbstractInvokeInstruction call : caller.getIR().getCalls(site)) {
@@ -91,14 +98,31 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 						PointerKey selfField = cgBuilder.getPointerKeyFactory().getPointerKeyForInstanceField(selfKey, selfKey.getConcreteType().getField(Atom.findOrCreateUnicodeAtom("self")));	
 						cgBuilder.getPropagationSystem().newSideEffect(new IndirectOp(caller), selfField);
 						OrdinalSet<InstanceKey> funTypes = cgBuilder.getPointerAnalysis().getPointsToSet(selfField);
-						funTypes.forEach(fk -> {
-							allSupersIncludingSelf(fk.getConcreteType()).forEach(sc -> {
+						funTypes.forEach(new Consumer<InstanceKey>() {
+
+							boolean getFunctionType(IClass sc) {
 								String nm = sc.getName() + "." + ((TypedCodeBody)selfKey.getConcreteType()).functionName();
 								IClass f = caller.getClassHierarchy().lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, TypeName.string2TypeName(nm)));
 								if (f instanceof DynamicCodeBody && ((DynamicCodeBody)f).getCodeBody() != null) {
 									targets.add(((DynamicCodeBody)f).getCodeBody());
+									return true;
+								} else {
+									return false;
 								}
-							});
+							}
+
+							@Override
+							public void accept(InstanceKey fk) {
+								{
+									if (site.getInvocationCode() == Dispatch.SPECIAL) {
+										allSupers(fk.getConcreteType()).forEach(x -> getFunctionType(x));										
+									} else {
+										if (! getFunctionType(fk.getConcreteType())) {
+											allSupersIncludingSelf(fk.getConcreteType()).forEach(x -> getFunctionType(x));
+										}
+									}
+								}
+							}
 						});
 					}
 				});
@@ -109,8 +133,23 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 			} else if (targets.size() == 1) {
 				return targets.iterator().next();
 			} else {
-				System.err.println("what is this?");
-				return null;
+				List<IMethod> ms = targets.stream().filter(m -> m.getDeclaringClass() instanceof TypedCodeBody).toList();
+				IClassHierarchy cha = caller.getClassHierarchy();
+				List<IMethod> topTargets = ms.stream()
+					.filter(m -> {
+						IClass mc = cha.lookupClass(((TypedCodeBody)m.getDeclaringClass()).getSelf());
+						return targets.stream().anyMatch(o -> {
+							IClass oc = cha.lookupClass(((TypedCodeBody)o.getDeclaringClass()).getSelf());							
+							
+							return !(oc.getAllImplementedInterfaces().contains(mc) || cha.isAssignableFrom(mc, oc));
+						});
+					}).toList();
+				if (topTargets.size() == 1) {
+					return topTargets.iterator().next();
+				} else {
+					System.err.println("what is this? " + ms + " " + topTargets);
+					return null;
+				}
 			}
 		}
 		

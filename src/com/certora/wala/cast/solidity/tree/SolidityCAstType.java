@@ -54,11 +54,13 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"bool", SolidityTypes.bool, false},
 			{"function", SolidityTypes.function, null},
 			{"struct", SolidityTypes.struct, null},
-			{"bytes", SolidityTypes.bytes, 0},
-			{"bytes32", SolidityTypes.bytes32, 0},
-			{"bytes4", SolidityTypes.bytes4, 0},
-			{"bytes16", SolidityTypes.bytes16, 0},
 			{"bytes1", SolidityTypes.bytes1, 0},
+			{"bytes2", SolidityTypes.bytes2, 0},
+			{"bytes3", SolidityTypes.bytes3, 0},
+			{"bytes4", SolidityTypes.bytes4, 0},
+			{"bytes8", SolidityTypes.bytes8, 0},
+			{"bytes16", SolidityTypes.bytes16, 0},
+			{"bytes32", SolidityTypes.bytes32, 0},
 			{"error", SolidityTypes.error, null},
 			{"msg", SolidityTypes.msg, null},
 			{"void", TypeReference.Void, null}}) {
@@ -77,15 +79,24 @@ public class SolidityCAstType implements CAstType.Primitive {
 				SolidityCAstType ti = new SolidityCAstType("int" + i, 0);
 				types.put("int" + i, ti);
 				irTypes.put(ti, it);
-
 			}
+			
+			types.put("bytes", SolidityArrayType.get(get("bytes1")));
+			irTypes.put(get("bytes"), irTypes.get(get("bytes1")).getArrayTypeForElementType());
+			
+			types.put("message", get("msg"));
+			types.put("rational", get("uint256"));
+			types.put("uint", get("uint256"));
+			types.put("stringliteral", get("string"));
+			types.put("int_const", get("uint256"));
+			
 		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
 			assert false : e;
 		}
 	}
 	
 	public static void record(String name, CAstType type, TypeReference irType) {
-		assert !types.containsKey(name);
+		// assert !types.containsKey(name);
 		if (irType.toString().contains("contract.decimals")) {
 			System.err.println(name + ":" + type);
 		}
@@ -97,10 +108,15 @@ public class SolidityCAstType implements CAstType.Primitive {
 		if (!types.containsKey(name) && name.startsWith("type(")) {
 			return get(name.substring(5, name.length()-1));
 		} else if (!types.containsKey(name) && name.contains(" ")) {
-			return get(name.split(" ")[0]);
+			if (!name.startsWith("contract ") && !name.startsWith("struct ") && !name.startsWith("enum ")) {
+				return get(name.split(" ")[0]);
+			}
 		}
 		if (!types.containsKey(name)) {
 			System.err.println("cannot find type " + name);
+			if (name.contains("super")) {
+				System.err.println("super");
+			}
 		}
 		return types.get(name);
 	}

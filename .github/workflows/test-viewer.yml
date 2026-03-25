@@ -1,0 +1,22 @@
+name: Test Viewer
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pygments pytest
+
+      - name: Clone aave-v4-pub test data
+        run: git clone --depth 1 --branch certora https://github.com/Certora/aave-v4-pub.git /tmp/aave-v4
+
+      - name: Run viewer tests
+        run: AAVE_V4_ROOT=/tmp/aave-v4 pytest viewer/tests/ -v

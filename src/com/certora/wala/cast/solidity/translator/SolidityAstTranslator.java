@@ -1,5 +1,6 @@
 package com.certora.wala.cast.solidity.translator;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -22,11 +23,13 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.visit.CAstVisitor;
 import com.ibm.wala.cast.types.AstMethodReference;
+import com.ibm.wala.cast.util.SourceBuffer;
 import com.ibm.wala.cfg.AbstractCFG;
 import com.ibm.wala.cfg.IBasicBlock;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IClassLoader;
+import com.ibm.wala.classLoader.ModuleEntry;
 import com.ibm.wala.classLoader.NewSiteReference;
 import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
@@ -123,9 +126,6 @@ public class SolidityAstTranslator extends AstTranslator {
 	@Override
 	protected void declareFunction(CAstEntity N, WalkContext context) {
 		assert N.getKind() == CAstEntity.FUNCTION_ENTITY;
-		if (N.getName().contains("hasRole")) {
-			System.err.println(N);
-		}
 		((SolidityLoader)loader).defineFunctionType(N, composeEntityName(context, N), context);
 	}
 
@@ -233,7 +233,7 @@ public class SolidityAstTranslator extends AstTranslator {
 			CAstType recCAstType = context.top().getNodeTypeMap().getNodeType(call.getChild(0));
 			MethodReference m;
 			if (! (recCAstType instanceof FunctionType)) {
-				TypeReference retType = SolidityCAstType.getIRType(recCAstType);
+				TypeReference retType = SolidityCAstType.getIRType(recCAstType==null? context.top().getNodeTypeMap().getNodeType(call): recCAstType);
 				TypeName[] argTypes = new TypeName[ arguments.length ];
 				for(int i = 0; i < argTypes.length; i++) {
 					argTypes[i] = SolidityTypes.root.getName();
@@ -244,8 +244,22 @@ public class SolidityAstTranslator extends AstTranslator {
 				m = ((SolidityLoader)loader).getReference((FunctionType) recCAstType);
 			}
 			
+			boolean superCall = false;
+			 try {
+				 Position p = context.top().getSourceMap().getPosition(call.getChild(0));
+				 if (p != null) {
+				 String selfSrc = new SourceBuffer(p).toString();
+				 if (selfSrc.startsWith("super.")) {
+					 System.err.println(selfSrc);
+					 superCall = true;
+				 }
+				 }
+			 } catch (IOException e) {
+				 assert false : e;
+			 }
+			
 			int instNum = context.cfg().getCurrentInstruction();
-			CallSiteReference csr = CallSiteReference.make(instNum, m, Dispatch.VIRTUAL);
+			CallSiteReference csr = CallSiteReference.make(instNum, m, superCall? Dispatch.SPECIAL: Dispatch.VIRTUAL);
 
 			Position[] operandPos;
 			if (m.getNumberOfParameters() == argsAndSelf.length && call.getChild(0).getKind() == CAstNode.OBJECT_REF) {
@@ -289,7 +303,8 @@ public class SolidityAstTranslator extends AstTranslator {
 			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, eltType.getName());
 			NewSiteReference ns = NewSiteReference.make(context.cfg().getCurrentInstruction(), t);
 			context.cfg().addInstruction(insts.NewInstruction(ns.getProgramCounter(), result, ns));
-			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), objType);
+			TypeReference selfType = ((FunctionType)eltCAstType).getDeclaringType() != null? SolidityCAstType.getIRType(((FunctionType)eltCAstType).getDeclaringType()): objType;
+			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), selfType);
 			context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, receiver, self));
 		} else {
 			int instNum = context.cfg().getCurrentInstruction();
@@ -412,4 +427,8 @@ public class SolidityAstTranslator extends AstTranslator {
 		}
 	}
 
+	  public void translate(final CAstEntity N, final ModuleEntry module) {
+		  System.err.println("CAst translation for " + module);
+		  super.translate(N, module);
+	  }
 }
