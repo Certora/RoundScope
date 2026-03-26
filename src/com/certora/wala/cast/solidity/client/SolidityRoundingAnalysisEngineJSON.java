@@ -60,9 +60,6 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 		
 		private void visitChildren(JSONObject o) {
 			for(String k : o.keySet()) {
-				if ("2330".equals(k)) {
-					System.err.println(k);
-				}
 				Object v = o.get(k);
 				if (v instanceof JSONObject) {
 					visit((JSONObject)v, null);

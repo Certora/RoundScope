@@ -23,9 +23,11 @@ public class TestBalancerStablePool extends AbstractTest {
 		System.err.println(result);
 		assert !result.isEmpty();
 
-		result = jsonParser.read("$.graphs[?(@.nodes['0'].metadata.method == '<Code body of function onSwap>')]"); 
+		result = jsonParser.read("$.graphs[?(@.nodes['0'].metadata.method == '<Code body of function onSwap>' && $.nodes[*].metadata[?(@.method == '<Code body of function _swapGivenOut>' && @.return == 'Either' && @.roundings['[76,27-76,84]'].rounding == 'Either' && @.roundings['[74,29-74,83]'].rounding == 'Down' && @.roundings['[79,19-79,66]'].rounding == 'Either')] )]");		 
+		System.err.println(result.length());
 		assert !result.isEmpty();
 
+		/*
 		boolean any = false;
 		for(int i = 0; i < result.length(); i++) {
 			DocumentContext onSwap = parse(result.getJSONObject(i));
@@ -34,11 +36,12 @@ public class TestBalancerStablePool extends AbstractTest {
 			any |= !result.isEmpty();
 		}
 		assert any;
+		*/
 		
 		result = jsonParser.read("$.graphs[?(@.nodes['0'].metadata.method == '<Code body of function onJoinPool>')]"); 
 		assert !result.isEmpty();
 
-		any = false;
+		boolean any = false;
 		for(int i = 0; i < result.length(); i++) {
 			DocumentContext onJoinPool = parse(result.getJSONObject(i));
 			result = onJoinPool.read("$.nodes[*].metadata[?(@.method == '<Code body of function _onJoinPool>')]"); 
