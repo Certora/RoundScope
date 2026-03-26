@@ -24,6 +24,15 @@ public class TestAaveV4Liquidation extends AbstractTest {
 		System.err.println(result);
 		assert !result.isEmpty();
 
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function percentMulDown>' && @.return == 'Down')]");		
+		System.err.println(result);
+		assert !result.isEmpty();
+
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function rayMulUp>' && @.return == 'Up')]");		
+		System.err.println(result);
+		assert !result.isEmpty();
+
+
 	}
 
 }
