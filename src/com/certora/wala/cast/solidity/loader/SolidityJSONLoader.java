@@ -1,17 +1,15 @@
 package com.certora.wala.cast.solidity.loader;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
 import com.certora.wala.cast.solidity.json.ImportVisitor;
 import com.certora.wala.cast.solidity.json.JSONToCAst;
-import com.certora.wala.cast.solidity.json.JsonByNodeVisitor;
-import com.certora.wala.cast.solidity.json.JsonNodeTypeOnlyVisitor;
 import com.certora.wala.classLoader.SourceJSONModule;
 import com.google.common.collect.Streams;
 import com.ibm.wala.cast.ir.translator.TranslatorToCAst;
@@ -25,14 +23,15 @@ import com.ibm.wala.util.graph.Graph;
 import com.ibm.wala.util.graph.impl.SlowSparseNumberedGraph;
 import com.ibm.wala.util.graph.traverse.Topological;
 import com.ibm.wala.util.intset.IntSet;
-import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 
 public class SolidityJSONLoader extends SolidityLoader {
+	private final JSONObject originalTree;
 	JSONToCAst solidityCode = new JSONToCAst(this);
 	
-	public SolidityJSONLoader(IClassHierarchy cha, IClassLoader parent) {
+	public SolidityJSONLoader(IClassHierarchy cha, IClassLoader parent, JSONObject originalTree) {
 		super(cha, parent);
+		this.originalTree = originalTree;
 	}
 
 	
@@ -66,6 +65,10 @@ public class SolidityJSONLoader extends SolidityLoader {
 	
 	public JSONObject getSource(int id) {
 		return sources.get(id);
+	}
+	
+	public JSONObject getSources() {
+		return originalTree;
 	}
 	
 	@Override

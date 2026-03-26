@@ -20,6 +20,11 @@ public abstract class AbstractTest {
 	
 	abstract void checkResult(DocumentContext jsonParser);
 
+	protected final Configuration configuration = Configuration.builder()
+		.jsonProvider(new JsonOrgJsonProvider())
+		.mappingProvider(new JsonOrgMappingProvider())
+		.build();
+
 	protected File confFile() {
 		return new File(testDir(), "run.conf");
 	}
@@ -37,15 +42,12 @@ public abstract class AbstractTest {
 		return E.analyze();
 	}
 
-	protected void testAnalysis(JSONObject output) {
-		Configuration configuration = Configuration.builder()
-			    .jsonProvider(new JsonOrgJsonProvider())
-			    .mappingProvider(new JsonOrgMappingProvider())
-			    .build();
-		
-		DocumentContext jsonParser = JsonPath.using(configuration).parse(output);
-        
-		checkResult(jsonParser);
+	protected DocumentContext parse(JSONObject o) {
+		return JsonPath.using(configuration).parse(o);
+	}
+	
+	protected void testAnalysis(JSONObject output) {		
+		checkResult(parse(output));
 
 	}
 

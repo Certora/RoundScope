@@ -3,8 +3,10 @@ package com.certora.wala.cast.solidity.client;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.Arrays;
@@ -32,6 +34,7 @@ import com.ibm.wala.util.collections.NonNullSingletonIterator;
 import com.ibm.wala.util.config.StringFilter;
 
 public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysisEngine {
+	private JSONObject originalTree;
 	private final Module[] jsons;
 	
 	public SolidityRoundingAnalysisEngineJSON(File confFile, String[] jsonFileNames) throws FileNotFoundException {
@@ -76,14 +79,14 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 	
 	public SolidityRoundingAnalysisEngineJSON(File confFile, String solidityJsonFileName) throws IOException {
 		super(confFile);
-		try (InputStream is = 
+		try (Reader is = 
 				solidityJsonFileName.endsWith(".bz2")?
-					new BZip2CompressorInputStream(new FileInputStream(solidityJsonFileName)):
-					new FileInputStream(solidityJsonFileName)) 
+					new InputStreamReader(new BZip2CompressorInputStream(new FileInputStream(solidityJsonFileName))):
+					new FileReader(solidityJsonFileName)) 
 		{
-			JSONObject o = (JSONObject) new JSONTokener(is).nextValue();
+			originalTree = (JSONObject) new JSONTokener(is).nextValue();
 			JsonSourceUnits v = new JsonSourceUnits();
-			v.visit(o, null);
+			v.visit(originalTree, null);
 			jsons = v.sources.stream().map(f -> 
 			new SourceJSONModule() {
 
@@ -158,7 +161,7 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 	
 	@Override
 	protected SolidityLoaderFactory makeClassLoaderFactory(StringFilter exclusions) {
-		return new SolidityJSONLoaderFactory();
+		return new SolidityJSONLoaderFactory(originalTree);
 	}
 
 	@Override
