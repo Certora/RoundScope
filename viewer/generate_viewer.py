@@ -14,14 +14,23 @@ from pygments.lexers.solidity import SolidityLexer
 
 
 def parse_args():
-    if len(sys.argv) < 4 or len(sys.argv) > 5:
+    # Separate flags from positional args
+    positional = []
+    full_context_breakdown = False
+    for arg in sys.argv[1:]:
+        if arg == "--full_context_breakdown":
+            full_context_breakdown = True
+        else:
+            positional.append(arg)
+
+    if len(positional) < 3 or len(positional) > 4:
         print(
-            "Usage: python3 generate_viewer.py <project-root> <roundscope-output.json> <output.html> [conf-file]",
+            "Usage: python3 generate_viewer.py <project-root> <roundscope-output.json> <output.html> [conf-file] [--full_context_breakdown]",
             file=sys.stderr,
         )
         sys.exit(1)
-    conf_file = sys.argv[4] if len(sys.argv) == 5 else None
-    return sys.argv[1], sys.argv[2], sys.argv[3], conf_file
+    conf_file = positional[3] if len(positional) == 4 else None
+    return positional[0], positional[1], positional[2], conf_file, full_context_breakdown
 
 
 def clean_graph_label(label):
@@ -347,6 +356,160 @@ def extract_roundings(data, project_root):
         )
 
     return dict(aggregated)
+
+
+def extract_roundings_root_only(data, project_root):
+    """Extract roundings using only node '0' (root function) from each graph.
+
+    No cross-context aggregation needed since each annotation comes directly
+    from a single graph's entry-point function.
+    """
+    raw = defaultdict(list)  # (filename, range_key) -> list of entries
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        node = graph["nodes"].get("0")
+        if not node:
+            continue
+        md = node["metadata"]
+        method_pos = md.get("methodPosition", "")
+        if not method_pos:
+            continue
+        filename = extract_filename_from_method_position(method_pos)
+
+        for range_key, info in md.get("roundings", {}).items():
+            raw[(filename, range_key)].append({
+                "rounding": info.get("rounding", "Neither"),
+                "source": info.get("source", ""),
+                "expr": info.get("expr", ""),
+                "_graphIdx": graph_idx,
+            })
+
+        for param in md.get("parameters", []):
+            pos = param.get("position")
+            if not pos:
+                continue
+            raw[(filename, pos)].append({
+                "rounding": param.get("rounding", "Neither"),
+                "source": param.get("source", ""),
+                "expr": "",
+                "_graphIdx": graph_idx,
+            })
+
+    # Deduplicate by (filename, range_key), collecting nodeRefs
+    result = defaultdict(list)
+    for (filename, range_key), entries in raw.items():
+        sl, sc, el, ec = parse_range_key(range_key)
+        rel_filename = normalize_path(filename, project_root)
+
+        # If same position appears from multiple graphs, aggregate
+        rounding_values = [e["rounding"] for e in entries]
+        rounding = aggregate_rounding(rounding_values)
+
+        source = ""
+        expr = ""
+        for e in entries:
+            if not source and e.get("source"):
+                source = e["source"]
+            if not expr and e.get("expr"):
+                expr = e["expr"]
+
+        node_refs = []
+        seen = set()
+        for e in entries:
+            if e["_graphIdx"] not in seen:
+                seen.add(e["_graphIdx"])
+                node_refs.append({"g": e["_graphIdx"], "n": "0"})
+
+        result[rel_filename].append({
+            "sl": sl, "sc": sc, "el": el, "ec": ec,
+            "rounding": rounding,
+            "source": source, "expr": expr,
+            "nodeRefs": node_refs,
+        })
+
+    return dict(result)
+
+
+def extract_return_annotations_root_only(data, project_root, source_files):
+    """Extract return-type rounding annotations using only node '0' from each graph."""
+    grouped = defaultdict(list)  # (rel_filename, method_sl, method_el) -> entries
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        node = graph["nodes"].get("0")
+        if not node:
+            continue
+        md = node["metadata"]
+        method_pos = md.get("methodPosition", "")
+        ret = md.get("return")
+        if not method_pos or ret is None:
+            continue
+
+        parsed = parse_method_position(method_pos)
+        if not parsed:
+            continue
+        filename, sl, sc, el, ec = parsed
+        rel_filename = normalize_path(filename, project_root)
+        grouped[(rel_filename, sl, el)].append((ret, graph_idx))
+
+    result = defaultdict(list)
+    for (rel_filename, method_sl, method_el), entries in grouped.items():
+        file_data = source_files.get(rel_filename)
+        if not file_data:
+            continue
+        raw_lines = file_data["raw"].split("\n")
+        clause = find_returns_clause(raw_lines, method_sl, method_el)
+        if not clause:
+            continue
+
+        r_sl, r_sc, r_el, r_ec = clause
+        flat_roundings = []
+        element_roundings = defaultdict(list)
+        node_refs = []
+        seen_refs = set()
+
+        for ret_val, g_idx in entries:
+            if g_idx not in seen_refs:
+                seen_refs.add(g_idx)
+                node_refs.append({"g": g_idx, "n": "0"})
+            if isinstance(ret_val, str):
+                flat_roundings.append(ret_val)
+            elif isinstance(ret_val, dict):
+                for type_key, rounding in ret_val.items():
+                    flat_roundings.append(rounding)
+                    element_roundings[type_key].append(rounding)
+
+        significant = [v for v in flat_roundings if v != "Neither"]
+        if not significant:
+            rounding = "Neither"
+        elif len(set(significant)) == 1:
+            rounding = significant[0]
+        else:
+            rounding = "Mixed returns"
+
+        annotation = {
+            "sl": r_sl, "sc": r_sc, "el": r_el, "ec": r_ec,
+            "rounding": rounding, "source": "return type", "expr": "",
+            "nodeRefs": node_refs,
+        }
+
+        if element_roundings and rounding == "Mixed returns":
+            breakdown = []
+            sorted_keys = sorted(
+                element_roundings.keys(),
+                key=lambda k: int(re.search(r'Ltuple,\s*(\d+)', k).group(1))
+                if re.search(r'Ltuple,\s*(\d+)', k) else 0,
+            )
+            for i, type_key in enumerate(sorted_keys):
+                roundings = element_roundings[type_key]
+                agg = aggregate_rounding(roundings)
+                inner_match = re.search(r'<\s*solidity\s*,\s*[PL]\w+\s*>', type_key)
+                sol_type = clean_wala_type(inner_match.group(0)) if inner_match else f"[{i}]"
+                breakdown.append({"index": i, "type": sol_type, "rounding": agg})
+            annotation["returnBreakdown"] = breakdown
+
+        result[rel_filename].append(annotation)
+
+    return dict(result)
 
 
 def clean_node_label(label):
@@ -982,7 +1145,7 @@ const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', 
 const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', 'Mixed returns':'MR' };
 
 let currentFile = null;
-let currentContext = 'allContexts';
+let currentContext = Object.keys(DATA.contexts)[0] || 'contextFree';
 let currentFindings = [];
 let currentFindingIdx = -1;
 let nodePositionIndex = {};
@@ -998,10 +1161,15 @@ function highlightLine(tr) {
 function init() {
   document.getElementById('project-root-display').textContent = DATA.projectRoot;
   renderTree(DATA.directoryTree, document.getElementById('tree-panel'), '');
-  buildContextBar();
+  const contextNames = Object.keys(DATA.contexts);
+  if (contextNames.length > 1) {
+    buildContextBar();
+    updateContextCounts();
+  } else {
+    document.getElementById('context-bar').style.display = 'none';
+  }
   setupResize();
   setupBottomResize();
-  updateContextCounts();
   updateTreeHighlights();
   buildNodePositionIndex();
   document.getElementById('source-panel').addEventListener('click', (e) => {
@@ -1667,79 +1835,98 @@ init();
 
 
 def main():
-    project_root, json_input, html_output, conf_file = parse_args()
+    project_root, json_input, html_output, conf_file, full_context_breakdown = parse_args()
     project_root = os.path.abspath(project_root)
 
     # Load JSON
     with open(json_input, "r") as f:
         data = json.load(f)
 
-    # Extract and aggregate roundings
-    aggregated = extract_roundings(data, project_root)
-
-    # Extract graphs
+    # Extract graphs (needed for both modes — caller-callee navigation)
     graphs = extract_graphs(data, project_root)
 
-    # Collect all referenced file paths (annotations + graph nodes)
-    all_files = set(aggregated.keys())
-    for g in graphs:
-        for node in g["nodes"].values():
-            if node["file"]:
-                all_files.add(node["file"])
+    if full_context_breakdown:
+        # Full context breakdown: aggregate across all nodes, build per-graph contexts
+        aggregated = extract_roundings(data, project_root)
 
-    # Read source files
-    source_files = collect_referenced_files_from_paths(all_files, project_root)
+        all_files = set(aggregated.keys())
+        for g in graphs:
+            for node in g["nodes"].values():
+                if node["file"]:
+                    all_files.add(node["file"])
+
+        source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+        return_annotations = extract_return_annotations(data, project_root, source_files)
+        per_graph_roundings = extract_per_graph_roundings(data, project_root)
+        per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
+
+        # Build multi-context dict
+        contexts = {"allContexts": {}}
+        for filename, annotations in aggregated.items():
+            contexts["allContexts"][filename] = annotations
+
+        for filename, ret_anns in return_annotations.items():
+            if filename not in contexts["allContexts"]:
+                contexts["allContexts"][filename] = []
+            contexts["allContexts"][filename].extend(ret_anns)
+
+        for ctx_name, file_anns in per_graph_roundings.items():
+            if ctx_name not in contexts:
+                contexts[ctx_name] = {}
+            for filename, anns in file_anns.items():
+                if filename not in contexts[ctx_name]:
+                    contexts[ctx_name][filename] = []
+                contexts[ctx_name][filename].extend(anns)
+
+        for ctx_name, file_anns in per_graph_returns.items():
+            if ctx_name not in contexts:
+                contexts[ctx_name] = {}
+            for filename, anns in file_anns.items():
+                if filename not in contexts[ctx_name]:
+                    contexts[ctx_name][filename] = []
+                contexts[ctx_name][filename].extend(anns)
+
+        # Filter out per-graph contexts where all findings are Neither
+        for ctx_name in list(contexts.keys()):
+            if ctx_name == "allContexts":
+                continue
+            all_neither = all(
+                a["rounding"] == "Neither"
+                for anns in contexts[ctx_name].values()
+                for a in anns
+            )
+            if all_neither:
+                del contexts[ctx_name]
+
+        total_annotations = sum(len(v) for v in aggregated.values())
+        total_return = sum(len(v) for v in return_annotations.values())
+    else:
+        # Default mode: only use node "0" (root function) from each graph
+        aggregated = extract_roundings_root_only(data, project_root)
+
+        all_files = set(aggregated.keys())
+        for g in graphs:
+            for node in g["nodes"].values():
+                if node["file"]:
+                    all_files.add(node["file"])
+
+        source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+        return_annotations = extract_return_annotations_root_only(data, project_root, source_files)
+
+        # Single context — no per-graph breakdown
+        contexts = {"contextFree": {}}
+        for filename, anns in aggregated.items():
+            contexts["contextFree"][filename] = list(anns)
+        for filename, ret_anns in return_annotations.items():
+            contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
+
+        total_annotations = sum(len(v) for v in aggregated.values())
+        total_return = sum(len(v) for v in return_annotations.values())
 
     # Build directory tree
     dir_tree = build_directory_tree(sorted(source_files.keys()))
-
-    # Extract return annotations
-    return_annotations = extract_return_annotations(data, project_root, source_files)
-
-    # Extract per-graph roundings and return annotations
-    per_graph_roundings = extract_per_graph_roundings(data, project_root)
-    per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
-
-    # Build contexts dict
-    contexts = {"allContexts": {}}
-    for filename, annotations in aggregated.items():
-        contexts["allContexts"][filename] = annotations
-
-    # Merge return annotations into allContexts
-    for filename, ret_anns in return_annotations.items():
-        if filename not in contexts["allContexts"]:
-            contexts["allContexts"][filename] = []
-        contexts["allContexts"][filename].extend(ret_anns)
-
-    # Add per-graph contexts
-    for ctx_name, file_anns in per_graph_roundings.items():
-        if ctx_name not in contexts:
-            contexts[ctx_name] = {}
-        for filename, anns in file_anns.items():
-            if filename not in contexts[ctx_name]:
-                contexts[ctx_name][filename] = []
-            contexts[ctx_name][filename].extend(anns)
-
-    # Merge per-graph return annotations
-    for ctx_name, file_anns in per_graph_returns.items():
-        if ctx_name not in contexts:
-            contexts[ctx_name] = {}
-        for filename, anns in file_anns.items():
-            if filename not in contexts[ctx_name]:
-                contexts[ctx_name][filename] = []
-            contexts[ctx_name][filename].extend(anns)
-
-    # Filter out per-graph contexts where all findings are Neither
-    for ctx_name in list(contexts.keys()):
-        if ctx_name == "allContexts":
-            continue
-        all_neither = all(
-            a["rounding"] == "Neither"
-            for anns in contexts[ctx_name].values()
-            for a in anns
-        )
-        if all_neither:
-            del contexts[ctx_name]
 
     # Generate HTML
     if conf_file:
@@ -1754,10 +1941,9 @@ def main():
     with open(html_output, "w") as f:
         f.write(html)
 
-    print(f"Generated: {html_output}")
+    mode = "full context breakdown" if full_context_breakdown else "default (root-only)"
+    print(f"Generated ({mode}): {html_output}")
     print(f"  {len(source_files)} source files")
-    total_annotations = sum(len(v) for v in aggregated.values())
-    total_return = sum(len(v) for v in return_annotations.values())
     print(f"  {total_annotations} rounding annotations")
     print(f"  {total_return} return annotations")
 
