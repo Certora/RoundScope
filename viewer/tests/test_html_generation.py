@@ -13,7 +13,9 @@ from generate_viewer import (
     extract_per_graph_return_annotations,
     extract_per_graph_roundings,
     extract_return_annotations,
+    extract_return_annotations_root_only,
     extract_roundings,
+    extract_roundings_root_only,
     generate_html,
 )
 
@@ -86,6 +88,58 @@ def test_full_generation(hub_data, aave_project_root):
     assert "r-mixed" in html
     assert "allContexts" in html
     assert "Hub.add" in html  # At least one per-graph context should appear
+
+    # Verify it's valid-ish HTML
+    assert html.startswith("<!DOCTYPE html>")
+    assert "</html>" in html
+
+    # Write to temp file to verify it doesn't crash on disk write
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".html", delete=False) as f:
+        f.write(html)
+        tmp_path = f.name
+    assert os.path.getsize(tmp_path) > 10000
+    os.unlink(tmp_path)
+
+
+def test_default_generation(hub_data, aave_project_root):
+    """Run the default (root-only) pipeline end-to-end and verify the output HTML."""
+    project_root = aave_project_root
+
+    # Extract roundings (root-only)
+    aggregated = extract_roundings_root_only(hub_data, project_root)
+    graphs = extract_graphs(hub_data, project_root)
+
+    # Collect files
+    all_files = set(aggregated.keys())
+    for g in graphs:
+        for node in g["nodes"].values():
+            if node["file"]:
+                all_files.add(node["file"])
+
+    source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+    # Extract return annotations (root-only)
+    return_annotations = extract_return_annotations_root_only(hub_data, project_root, source_files)
+
+    # Build single context
+    contexts = {"contextFree": {}}
+    for filename, anns in aggregated.items():
+        contexts["contextFree"][filename] = list(anns)
+    for filename, ret_anns in return_annotations.items():
+        contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
+
+    dir_tree = build_directory_tree(sorted(source_files.keys()))
+    html = generate_html(project_root, source_files, dir_tree, contexts, graphs)
+
+    # Basic sanity checks
+    assert len(html) > 10000, "HTML output is suspiciously small"
+    assert "const DATA =" in html
+    assert "RoundScope" in html
+    assert "contextFree" in html
+
+    # Should NOT have multi-context elements
+    assert "allContexts" not in html
+    assert "Hub.add" not in html  # No per-graph contexts
 
     # Verify it's valid-ish HTML
     assert html.startswith("<!DOCTYPE html>")
