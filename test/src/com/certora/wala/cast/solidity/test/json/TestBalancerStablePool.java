@@ -6,7 +6,7 @@ import org.json.JSONArray;
 
 import com.jayway.jsonpath.DocumentContext;
 
-public class TestBalancerStablePool extends AbstractTest {
+public class TestBalancerStablePool extends AbstractJsonTest {
 
 	protected File confFile() {
 		return new File(testDir(), "stablePool.conf");
@@ -18,7 +18,7 @@ public class TestBalancerStablePool extends AbstractTest {
 	}
 
 	@Override
-	void checkResult(DocumentContext jsonParser) {
+	public void checkResult(DocumentContext jsonParser) {
 		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function _calcOutGivenIn>' && @.return == 'Either')]"); 
 		System.err.println(result);
 		assert !result.isEmpty();
