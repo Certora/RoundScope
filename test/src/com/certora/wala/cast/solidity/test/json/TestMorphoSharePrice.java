@@ -6,7 +6,7 @@ import org.json.JSONArray;
 
 import com.jayway.jsonpath.DocumentContext;
 
-public class TestMorphoSharePrice extends AbstractTest {
+public class TestMorphoSharePrice extends AbstractJsonTest {
 
 	protected File confFile() {
 		return new File(testDir(), "SharePrice.conf");
@@ -18,7 +18,7 @@ public class TestMorphoSharePrice extends AbstractTest {
 	}
 
 	@Override
-	void checkResult(DocumentContext jsonParser) {
+	public void checkResult(DocumentContext jsonParser) {
 		
 		JSONArray result = jsonParser.read("$.graphs[*].nodes['0'].metadata[?(@.method == '<Code body of function withdraw>' && @.return contains '< solidity, Ltuple, 0, <solidity,Puint256> >=Down')]");		
 		System.err.println(result);

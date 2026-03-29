@@ -6,7 +6,7 @@ import org.json.JSONArray;
 
 import com.jayway.jsonpath.DocumentContext;
 
-public class TestInfiniFiMintController extends AbstractTest {
+public class TestInfiniFiMintController extends AbstractJsonTest {
 
 	protected File confFile() {
 		return new File(testDir(), "MintController.conf");
@@ -18,7 +18,7 @@ public class TestInfiniFiMintController extends AbstractTest {
 	}
 
 	@Override
-	void checkResult(DocumentContext jsonParser) {
+	public void checkResult(DocumentContext jsonParser) {
 
 		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function divWadUp>' && @.return == 'Up' && @.parameters[1].rounding == 'Neither' && @.parameters[2].rounding == 'Neither')]");		
 		System.err.println(result);

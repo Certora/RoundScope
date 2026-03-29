@@ -6,7 +6,7 @@ import org.json.JSONArray;
 
 import com.jayway.jsonpath.DocumentContext;
 
-public class TestCorkAuxiliary extends AbstractTest {
+public class TestCorkAuxiliary extends AbstractJsonTest {
 
 	protected File confFile() {
 		return new File(testDir(), "0-auxiliary.conf");
@@ -18,7 +18,7 @@ public class TestCorkAuxiliary extends AbstractTest {
 	}
 
 	@Override
-	void checkResult(DocumentContext jsonParser) {
+	public void checkResult(DocumentContext jsonParser) {
 
 		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function ceilDiv>' && @.return == 'Up' && @.parameters[1].rounding == 'Neither' && @.parameters[2].rounding == 'Neither')]");		
 		System.err.println(result);

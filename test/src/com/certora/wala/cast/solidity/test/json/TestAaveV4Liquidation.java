@@ -6,7 +6,7 @@ import org.json.JSONArray;
 
 import com.jayway.jsonpath.DocumentContext;
 
-public class TestAaveV4Liquidation extends AbstractTest {
+public class TestAaveV4Liquidation extends AbstractJsonTest {
 
 	protected File confFile() {
 		return new File(testDir(), "Liquidation.conf");
@@ -18,7 +18,7 @@ public class TestAaveV4Liquidation extends AbstractTest {
 	}
 
 	@Override
-	void checkResult(DocumentContext jsonParser) {
+	public void checkResult(DocumentContext jsonParser) {
 	
 		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function percentMulUp>' && @.return == 'Up')]");		
 		System.err.println(result);

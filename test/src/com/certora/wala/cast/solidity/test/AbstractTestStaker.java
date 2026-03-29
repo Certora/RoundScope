@@ -1,12 +1,12 @@
-package com.certora.wala.cast.solidity.test.json;
+package com.certora.wala.cast.solidity.test;
 
 import org.json.JSONArray;
 
 import com.jayway.jsonpath.DocumentContext;
 
-public abstract class AbstractTestStaker extends AbstractTest {
+public interface AbstractTestStaker extends CheckResult {
 	
-	protected void checkResult(DocumentContext jsonParser) {
+	default void checkResult(DocumentContext jsonParser) {
 		// at least some mulDivUp should round up. 
 		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function mulDivUp>' && @.return == 'Up') ]");		
 		assert !result.isEmpty();
