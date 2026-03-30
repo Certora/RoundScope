@@ -25,7 +25,7 @@ def parse_args():
 
     if len(positional) < 3 or len(positional) > 4:
         print(
-            "Usage: python3 generate_viewer.py <project-root> <roundscope-output.json> <output.html> [conf-file] [--full_context_breakdown]",
+            "Usage: python3 generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file] [--full_context_breakdown]",
             file=sys.stderr,
         )
         sys.exit(1)
