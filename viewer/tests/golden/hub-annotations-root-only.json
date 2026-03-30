@@ -1,0 +1,3111 @@
+{
+  "src/dependencies/openzeppelin/AccessManaged.sol": [
+    {
+      "sl": 27,
+      "sc": 14,
+      "el": 27,
+      "ec": 38,
+      "rounding": "Neither",
+      "source": "address initialAuthority",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 3,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 66,
+      "sc": 24,
+      "el": 66,
+      "ec": 44,
+      "rounding": "Neither",
+      "source": "address newAuthority",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 2,
+          "n": "0"
+        }
+      ]
+    }
+  ],
+  "src/hub/Hub.sol": [
+    {
+      "sl": 61,
+      "sc": 14,
+      "el": 61,
+      "ec": 32,
+      "rounding": "Neither",
+      "source": "address authority_",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 25,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 67,
+      "sc": 4,
+      "el": 67,
+      "ec": 22,
+      "rounding": "Neither",
+      "source": "address underlying",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 68,
+      "sc": 4,
+      "el": 68,
+      "ec": 18,
+      "rounding": "Neither",
+      "source": "uint8 decimals",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 69,
+      "sc": 4,
+      "el": 69,
+      "ec": 23,
+      "rounding": "Neither",
+      "source": "address feeReceiver",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 70,
+      "sc": 4,
+      "el": 70,
+      "ec": 22,
+      "rounding": "Neither",
+      "source": "address irStrategy",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 71,
+      "sc": 4,
+      "el": 71,
+      "ec": 25,
+      "rounding": "Neither",
+      "source": "bytes calldata irData",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 134,
+      "sc": 4,
+      "el": 134,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 54,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 135,
+      "sc": 4,
+      "el": 135,
+      "ec": 31,
+      "rounding": "Neither",
+      "source": "AssetConfig calldata config",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 54,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 136,
+      "sc": 4,
+      "el": 136,
+      "ec": 25,
+      "rounding": "Neither",
+      "source": "bytes calldata irData",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 54,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 158,
+      "sc": 6,
+      "el": 158,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "_mintFeeShares(asset, assetId)",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 54,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 177,
+      "sc": 4,
+      "el": 177,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 49,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 178,
+      "sc": 4,
+      "el": 178,
+      "ec": 17,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 49,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 179,
+      "sc": 4,
+      "el": 179,
+      "ec": 31,
+      "rounding": "Neither",
+      "source": "SpokeConfig calldata config",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 49,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 189,
+      "sc": 4,
+      "el": 189,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 22,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 190,
+      "sc": 4,
+      "el": 190,
+      "ec": 17,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 22,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 191,
+      "sc": 4,
+      "el": 191,
+      "ec": 31,
+      "rounding": "Neither",
+      "source": "SpokeConfig calldata config",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 22,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 199,
+      "sc": 31,
+      "el": 199,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 21,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 199,
+      "sc": 48,
+      "el": 199,
+      "ec": 69,
+      "rounding": "Neither",
+      "source": "bytes calldata irData",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 21,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 208,
+      "sc": 25,
+      "el": 208,
+      "ec": 40,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 43,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 211,
+      "sc": 24,
+      "el": 211,
+      "ec": 54,
+      "rounding": "Either",
+      "source": "_mintFeeShares(asset, assetId)",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 43,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 213,
+      "sc": 11,
+      "el": 213,
+      "ec": 20,
+      "rounding": "Either",
+      "source": "feeShares",
+      "expr": "return feeShares",
+      "nodeRefs": [
+        {
+          "g": 43,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 217,
+      "sc": 15,
+      "el": 217,
+      "ec": 30,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 217,
+      "sc": 32,
+      "el": 217,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 amount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 227,
+      "sc": 21,
+      "el": 227,
+      "ec": 52,
+      "rounding": "Either",
+      "source": "asset.toAddedSharesDown(amount)",
+      "expr": "asset.toAddedSharesDown(amount).toUint120()",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 227,
+      "sc": 21,
+      "el": 227,
+      "ec": 64,
+      "rounding": "Either",
+      "source": "asset.toAddedSharesDown(amount).toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 228,
+      "sc": 12,
+      "el": 228,
+      "ec": 18,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "shares > 0",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 229,
+      "sc": 4,
+      "el": 229,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "asset.addedShares += shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 229,
+      "sc": 25,
+      "el": 229,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "asset.addedShares += shares",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 230,
+      "sc": 4,
+      "el": 230,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "spoke.addedShares += shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 230,
+      "sc": 25,
+      "el": 230,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "spoke.addedShares += shares",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 235,
+      "sc": 34,
+      "el": 235,
+      "ec": 40,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "emit Add(assetId, msg.sender, shares, amount)",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 237,
+      "sc": 11,
+      "el": 237,
+      "ec": 17,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "return shares",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 241,
+      "sc": 18,
+      "el": 241,
+      "ec": 33,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 241,
+      "sc": 35,
+      "el": 241,
+      "ec": 49,
+      "rounding": "Neither",
+      "source": "uint256 amount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 241,
+      "sc": 51,
+      "el": 241,
+      "ec": 61,
+      "rounding": "Neither",
+      "source": "address to",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 251,
+      "sc": 21,
+      "el": 251,
+      "ec": 50,
+      "rounding": "Either",
+      "source": "asset.toAddedSharesUp(amount)",
+      "expr": "asset.toAddedSharesUp(amount).toUint120()",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 251,
+      "sc": 21,
+      "el": 251,
+      "ec": 62,
+      "rounding": "Either",
+      "source": "asset.toAddedSharesUp(amount).toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 252,
+      "sc": 4,
+      "el": 252,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "asset.addedShares -= shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 252,
+      "sc": 25,
+      "el": 252,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "asset.addedShares -= shares",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 253,
+      "sc": 4,
+      "el": 253,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "spoke.addedShares -= shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 253,
+      "sc": 25,
+      "el": 253,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "spoke.addedShares -= shares",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 260,
+      "sc": 37,
+      "el": 260,
+      "ec": 43,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "emit Remove(assetId, msg.sender, shares, amount)",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 262,
+      "sc": 11,
+      "el": 262,
+      "ec": 17,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "return shares",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 266,
+      "sc": 16,
+      "el": 266,
+      "ec": 31,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 266,
+      "sc": 33,
+      "el": 266,
+      "ec": 47,
+      "rounding": "Neither",
+      "source": "uint256 amount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 266,
+      "sc": 49,
+      "el": 266,
+      "ec": 59,
+      "rounding": "Neither",
+      "source": "address to",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 276,
+      "sc": 26,
+      "el": 276,
+      "ec": 55,
+      "rounding": "Either",
+      "source": "asset.toDrawnSharesUp(amount)",
+      "expr": "asset.toDrawnSharesUp(amount).toUint120()",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 276,
+      "sc": 26,
+      "el": 276,
+      "ec": 67,
+      "rounding": "Either",
+      "source": "asset.toDrawnSharesUp(amount).toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 277,
+      "sc": 4,
+      "el": 277,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "asset.drawnShares += drawnShares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 277,
+      "sc": 25,
+      "el": 277,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "asset.drawnShares += drawnShares",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 278,
+      "sc": 4,
+      "el": 278,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "spoke.drawnShares += drawnShares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 278,
+      "sc": 25,
+      "el": 278,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "spoke.drawnShares += drawnShares",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 285,
+      "sc": 35,
+      "el": 285,
+      "ec": 46,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "emit Draw(assetId, msg.sender, drawnShares, amount)",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 287,
+      "sc": 11,
+      "el": 287,
+      "ec": 22,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "return drawnShares",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 292,
+      "sc": 4,
+      "el": 292,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 293,
+      "sc": 4,
+      "el": 293,
+      "ec": 23,
+      "rounding": "Neither",
+      "source": "uint256 drawnAmount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 294,
+      "sc": 4,
+      "el": 294,
+      "ec": 38,
+      "rounding": "Neither",
+      "source": "PremiumDelta calldata premiumDelta",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 302,
+      "sc": 26,
+      "el": 302,
+      "ec": 62,
+      "rounding": "Either",
+      "source": "asset.toDrawnSharesDown(drawnAmount)",
+      "expr": "asset.toDrawnSharesDown(drawnAmount).toUint120()",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 302,
+      "sc": 26,
+      "el": 302,
+      "ec": 74,
+      "rounding": "Either",
+      "source": "asset.toDrawnSharesDown(drawnAmount).toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 303,
+      "sc": 4,
+      "el": 303,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "asset.drawnShares -= drawnShares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 303,
+      "sc": 25,
+      "el": 303,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "asset.drawnShares -= drawnShares",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 304,
+      "sc": 4,
+      "el": 304,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "spoke.drawnShares -= drawnShares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 304,
+      "sc": 25,
+      "el": 304,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "spoke.drawnShares -= drawnShares",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 307,
+      "sc": 28,
+      "el": 307,
+      "ec": 71,
+      "rounding": "Up",
+      "source": "premiumDelta.restoredPremiumRay.fromRayUp()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 308,
+      "sc": 24,
+      "el": 308,
+      "ec": 69,
+      "rounding": "Up",
+      "source": "asset.liquidity + drawnAmount + premiumAmount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 308,
+      "sc": 56,
+      "el": 308,
+      "ec": 69,
+      "rounding": "Up",
+      "source": "premiumAmount",
+      "expr": "asset.liquidity + drawnAmount + premiumAmount",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 310,
+      "sc": 23,
+      "el": 310,
+      "ec": 32,
+      "rounding": "Up",
+      "source": "liquidity",
+      "expr": "balance >= liquidity",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 310,
+      "sc": 58,
+      "el": 310,
+      "ec": 67,
+      "rounding": "Up",
+      "source": "liquidity",
+      "expr": "liquidity.uncheckedSub(balance)",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 310,
+      "sc": 58,
+      "el": 310,
+      "ec": 89,
+      "rounding": "Up",
+      "source": "liquidity.uncheckedSub(balance)",
+      "expr": "InsufficientTransferred(liquidity.uncheckedSub(balance))",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 311,
+      "sc": 22,
+      "el": 311,
+      "ec": 31,
+      "rounding": "Up",
+      "source": "liquidity",
+      "expr": "liquidity.toUint120()",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 311,
+      "sc": 22,
+      "el": 311,
+      "ec": 43,
+      "rounding": "Up",
+      "source": "liquidity.toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 315,
+      "sc": 38,
+      "el": 315,
+      "ec": 49,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "emit Restore(assetId, msg.sender, drawnShares, premiumDelta, drawnAmount, premiumAmount)",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 315,
+      "sc": 78,
+      "el": 315,
+      "ec": 91,
+      "rounding": "Up",
+      "source": "premiumAmount",
+      "expr": "emit Restore(assetId, msg.sender, drawnShares, premiumDelta, drawnAmount, premiumAmount)",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 317,
+      "sc": 11,
+      "el": 317,
+      "ec": 22,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "return drawnShares",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 322,
+      "sc": 4,
+      "el": 322,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 323,
+      "sc": 4,
+      "el": 323,
+      "ec": 23,
+      "rounding": "Neither",
+      "source": "uint256 drawnAmount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 324,
+      "sc": 4,
+      "el": 324,
+      "ec": 38,
+      "rounding": "Neither",
+      "source": "PremiumDelta calldata premiumDelta",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 332,
+      "sc": 26,
+      "el": 332,
+      "ec": 62,
+      "rounding": "Either",
+      "source": "asset.toDrawnSharesDown(drawnAmount)",
+      "expr": "asset.toDrawnSharesDown(drawnAmount).toUint120()",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 332,
+      "sc": 26,
+      "el": 332,
+      "ec": 74,
+      "rounding": "Either",
+      "source": "asset.toDrawnSharesDown(drawnAmount).toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 333,
+      "sc": 4,
+      "el": 333,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "asset.drawnShares -= drawnShares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 333,
+      "sc": 25,
+      "el": 333,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "asset.drawnShares -= drawnShares",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 334,
+      "sc": 4,
+      "el": 334,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "spoke.drawnShares -= drawnShares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 334,
+      "sc": 25,
+      "el": 334,
+      "ec": 36,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "spoke.drawnShares -= drawnShares",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 337,
+      "sc": 31,
+      "el": 337,
+      "ec": 51,
+      "rounding": "Either",
+      "source": "uint256(drawnShares)",
+      "expr": "uint256(drawnShares) *\n      asset.drawnIndex",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 337,
+      "sc": 31,
+      "el": 338,
+      "ec": 22,
+      "rounding": "Either",
+      "source": "uint256(drawnShares) *\n      asset.drawnIndex",
+      "expr": "uint256(drawnShares) *\n      asset.drawnIndex +\n      premiumDelta.restoredPremiumRay",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 337,
+      "sc": 31,
+      "el": 339,
+      "ec": 37,
+      "rounding": "Either",
+      "source": "uint256(drawnShares) *\n      asset.drawnIndex +\n      premiumDelta.restoredPremiumRay",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 340,
+      "sc": 4,
+      "el": 340,
+      "ec": 52,
+      "rounding": "Either",
+      "source": "asset.deficitRay += deficitAmountRay.toUint200()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 340,
+      "sc": 24,
+      "el": 340,
+      "ec": 40,
+      "rounding": "Either",
+      "source": "deficitAmountRay",
+      "expr": "deficitAmountRay.toUint200()",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 340,
+      "sc": 24,
+      "el": 340,
+      "ec": 52,
+      "rounding": "Either",
+      "source": "deficitAmountRay.toUint200()",
+      "expr": "asset.deficitRay += deficitAmountRay.toUint200()",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 341,
+      "sc": 4,
+      "el": 341,
+      "ec": 52,
+      "rounding": "Either",
+      "source": "spoke.deficitRay += deficitAmountRay.toUint200()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 341,
+      "sc": 24,
+      "el": 341,
+      "ec": 40,
+      "rounding": "Either",
+      "source": "deficitAmountRay",
+      "expr": "deficitAmountRay.toUint200()",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 341,
+      "sc": 24,
+      "el": 341,
+      "ec": 52,
+      "rounding": "Either",
+      "source": "deficitAmountRay.toUint200()",
+      "expr": "spoke.deficitRay += deficitAmountRay.toUint200()",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 345,
+      "sc": 44,
+      "el": 345,
+      "ec": 55,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "emit ReportDeficit(assetId, msg.sender, drawnShares, premiumDelta, deficitAmountRay)",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 345,
+      "sc": 71,
+      "el": 345,
+      "ec": 87,
+      "rounding": "Either",
+      "source": "deficitAmountRay",
+      "expr": "emit ReportDeficit(assetId, msg.sender, drawnShares, premiumDelta, deficitAmountRay)",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 347,
+      "sc": 11,
+      "el": 347,
+      "ec": 22,
+      "rounding": "Either",
+      "source": "drawnShares",
+      "expr": "return drawnShares",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 352,
+      "sc": 4,
+      "el": 352,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 353,
+      "sc": 4,
+      "el": 353,
+      "ec": 18,
+      "rounding": "Neither",
+      "source": "uint256 amount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 354,
+      "sc": 4,
+      "el": 354,
+      "ec": 17,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 366,
+      "sc": 21,
+      "el": 366,
+      "ec": 72,
+      "rounding": "Either",
+      "source": "asset.toAddedSharesUp(deficitAmountRay.fromRayUp())",
+      "expr": "asset.toAddedSharesUp(deficitAmountRay.fromRayUp()).toUint120()",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 366,
+      "sc": 21,
+      "el": 366,
+      "ec": 84,
+      "rounding": "Either",
+      "source": "asset.toAddedSharesUp(deficitAmountRay.fromRayUp()).toUint120()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 366,
+      "sc": 43,
+      "el": 366,
+      "ec": 71,
+      "rounding": "Up",
+      "source": "deficitAmountRay.fromRayUp()",
+      "expr": "asset.toAddedSharesUp(deficitAmountRay.fromRayUp())",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 367,
+      "sc": 4,
+      "el": 367,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "asset.addedShares -= shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 367,
+      "sc": 25,
+      "el": 367,
+      "ec": 31,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "asset.addedShares -= shares",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 368,
+      "sc": 4,
+      "el": 368,
+      "ec": 37,
+      "rounding": "Either",
+      "source": "callerSpoke.addedShares -= shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 368,
+      "sc": 31,
+      "el": 368,
+      "ec": 37,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "callerSpoke.addedShares -= shares",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 374,
+      "sc": 54,
+      "el": 374,
+      "ec": 60,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "emit EliminateDeficit(assetId, msg.sender, spoke, shares, deficitAmountRay)",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 376,
+      "sc": 11,
+      "el": 376,
+      "ec": 17,
+      "rounding": "Either",
+      "source": "shares",
+      "expr": "return shares",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 380,
+      "sc": 26,
+      "el": 380,
+      "ec": 41,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 6,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 380,
+      "sc": 43,
+      "el": 380,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "PremiumDelta calldata premiumDelta",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 6,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 395,
+      "sc": 24,
+      "el": 395,
+      "ec": 39,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 55,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 395,
+      "sc": 41,
+      "el": 395,
+      "ec": 55,
+      "rounding": "Neither",
+      "source": "uint256 shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 55,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 410,
+      "sc": 26,
+      "el": 410,
+      "ec": 41,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 8,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 410,
+      "sc": 43,
+      "el": 410,
+      "ec": 57,
+      "rounding": "Neither",
+      "source": "uint256 shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 8,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 410,
+      "sc": 59,
+      "el": 410,
+      "ec": 74,
+      "rounding": "Neither",
+      "source": "address toSpoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 8,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 424,
+      "sc": 17,
+      "el": 424,
+      "ec": 32,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 44,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 424,
+      "sc": 34,
+      "el": 424,
+      "ec": 48,
+      "rounding": "Neither",
+      "source": "uint256 amount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 44,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 444,
+      "sc": 19,
+      "el": 444,
+      "ec": 34,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 16,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 444,
+      "sc": 36,
+      "el": 444,
+      "ec": 50,
+      "rounding": "Neither",
+      "source": "uint256 amount",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 16,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 461,
+      "sc": 30,
+      "el": 461,
+      "ec": 48,
+      "rounding": "Neither",
+      "source": "address underlying",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 4,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 471,
+      "sc": 30,
+      "el": 471,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 47,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 471,
+      "sc": 47,
+      "el": 471,
+      "ec": 61,
+      "rounding": "Neither",
+      "source": "uint256 assets",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 47,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 472,
+      "sc": 11,
+      "el": 472,
+      "ec": 53,
+      "rounding": "Either",
+      "source": "_assets[assetId].toAddedSharesDown(assets)",
+      "expr": "return _assets[assetId].toAddedSharesDown(assets)",
+      "nodeRefs": [
+        {
+          "g": 47,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 476,
+      "sc": 30,
+      "el": 476,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 476,
+      "sc": 47,
+      "el": 476,
+      "ec": 61,
+      "rounding": "Neither",
+      "source": "uint256 shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 477,
+      "sc": 11,
+      "el": 477,
+      "ec": 51,
+      "rounding": "Either",
+      "source": "_assets[assetId].toAddedAssetsUp(shares)",
+      "expr": "return _assets[assetId].toAddedAssetsUp(shares)",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 481,
+      "sc": 33,
+      "el": 481,
+      "ec": 48,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 59,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 481,
+      "sc": 50,
+      "el": 481,
+      "ec": 64,
+      "rounding": "Neither",
+      "source": "uint256 assets",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 59,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 482,
+      "sc": 11,
+      "el": 482,
+      "ec": 51,
+      "rounding": "Either",
+      "source": "_assets[assetId].toAddedSharesUp(assets)",
+      "expr": "return _assets[assetId].toAddedSharesUp(assets)",
+      "nodeRefs": [
+        {
+          "g": 59,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 486,
+      "sc": 33,
+      "el": 486,
+      "ec": 48,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 486,
+      "sc": 50,
+      "el": 486,
+      "ec": 64,
+      "rounding": "Neither",
+      "source": "uint256 shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 487,
+      "sc": 11,
+      "el": 487,
+      "ec": 53,
+      "rounding": "Either",
+      "source": "_assets[assetId].toAddedAssetsDown(shares)",
+      "expr": "return _assets[assetId].toAddedAssetsDown(shares)",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 491,
+      "sc": 31,
+      "el": 491,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 491,
+      "sc": 48,
+      "el": 491,
+      "ec": 62,
+      "rounding": "Neither",
+      "source": "uint256 assets",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 492,
+      "sc": 11,
+      "el": 492,
+      "ec": 51,
+      "rounding": "Either",
+      "source": "_assets[assetId].toDrawnSharesUp(assets)",
+      "expr": "return _assets[assetId].toDrawnSharesUp(assets)",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 496,
+      "sc": 31,
+      "el": 496,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 496,
+      "sc": 48,
+      "el": 496,
+      "ec": 62,
+      "rounding": "Neither",
+      "source": "uint256 shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 497,
+      "sc": 11,
+      "el": 497,
+      "ec": 53,
+      "rounding": "Either",
+      "source": "_assets[assetId].toDrawnAssetsDown(shares)",
+      "expr": "return _assets[assetId].toDrawnAssetsDown(shares)",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 501,
+      "sc": 34,
+      "el": 501,
+      "ec": 49,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 51,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 501,
+      "sc": 51,
+      "el": 501,
+      "ec": 65,
+      "rounding": "Neither",
+      "source": "uint256 assets",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 51,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 502,
+      "sc": 11,
+      "el": 502,
+      "ec": 53,
+      "rounding": "Either",
+      "source": "_assets[assetId].toDrawnSharesDown(assets)",
+      "expr": "return _assets[assetId].toDrawnSharesDown(assets)",
+      "nodeRefs": [
+        {
+          "g": 51,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 506,
+      "sc": 34,
+      "el": 506,
+      "ec": 49,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 40,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 506,
+      "sc": 51,
+      "el": 506,
+      "ec": 65,
+      "rounding": "Neither",
+      "source": "uint256 shares",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 40,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 507,
+      "sc": 11,
+      "el": 507,
+      "ec": 51,
+      "rounding": "Either",
+      "source": "_assets[assetId].toDrawnAssetsUp(shares)",
+      "expr": "return _assets[assetId].toDrawnAssetsUp(shares)",
+      "nodeRefs": [
+        {
+          "g": 40,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 511,
+      "sc": 41,
+      "el": 511,
+      "ec": 56,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 9,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 517,
+      "sc": 30,
+      "el": 517,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 27,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 518,
+      "sc": 11,
+      "el": 518,
+      "ec": 43,
+      "rounding": "Either",
+      "source": "_assets[assetId].getDrawnIndex()",
+      "expr": "return _assets[assetId].getDrawnIndex()",
+      "nodeRefs": [
+        {
+          "g": 27,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 522,
+      "sc": 26,
+      "el": 522,
+      "ec": 41,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 42,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 523,
+      "sc": 11,
+      "el": 523,
+      "ec": 46,
+      "rounding": "Either",
+      "source": "_assets[assetId].totalAddedAssets()",
+      "expr": "return _assets[assetId].totalAddedAssets()",
+      "nodeRefs": [
+        {
+          "g": 42,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 527,
+      "sc": 26,
+      "el": 527,
+      "ec": 41,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 15,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 532,
+      "sc": 24,
+      "el": 532,
+      "ec": 39,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 534,
+      "sc": 25,
+      "el": 534,
+      "ec": 46,
+      "rounding": "Either",
+      "source": "asset.getDrawnIndex()",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 535,
+      "sc": 12,
+      "el": 535,
+      "ec": 35,
+      "rounding": "Either",
+      "source": "asset.drawn(drawnIndex)",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 535,
+      "sc": 24,
+      "el": 535,
+      "ec": 34,
+      "rounding": "Either",
+      "source": "drawnIndex",
+      "expr": "asset.drawn(drawnIndex)",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 535,
+      "sc": 37,
+      "el": 535,
+      "ec": 62,
+      "rounding": "Either",
+      "source": "asset.premium(drawnIndex)",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 535,
+      "sc": 51,
+      "el": 535,
+      "ec": 61,
+      "rounding": "Either",
+      "source": "drawnIndex",
+      "expr": "asset.premium(drawnIndex)",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 539,
+      "sc": 29,
+      "el": 539,
+      "ec": 44,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 35,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 541,
+      "sc": 11,
+      "el": 541,
+      "ec": 49,
+      "rounding": "Either",
+      "source": "asset.totalOwed(asset.getDrawnIndex())",
+      "expr": "return asset.totalOwed(asset.getDrawnIndex())",
+      "nodeRefs": [
+        {
+          "g": 35,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 541,
+      "sc": 27,
+      "el": 541,
+      "ec": 48,
+      "rounding": "Either",
+      "source": "asset.getDrawnIndex()",
+      "expr": "asset.totalOwed(asset.getDrawnIndex())",
+      "nodeRefs": [
+        {
+          "g": 35,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 545,
+      "sc": 30,
+      "el": 545,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 34,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 548,
+      "sc": 6,
+      "el": 552,
+      "ec": 8,
+      "rounding": "Either",
+      "source": "Premium.calculatePremiumRay({\n        premiumShares: asset.premiumShares,\n        premiumOffsetRay: asset.premiumOffsetRay,\n        drawnIndex: asset.getDrawnIndex()\n      })",
+      "expr": "return\n      Premium.calculatePremiumRay({\n        premiumShares: asset.premiumShares,\n        premiumOffsetRay: asset.premiumOffsetRay,\n        drawnIndex: asset.getDrawnIndex()\n      })",
+      "nodeRefs": [
+        {
+          "g": 34,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 551,
+      "sc": 20,
+      "el": 551,
+      "ec": 41,
+      "rounding": "Either",
+      "source": "asset.getDrawnIndex()",
+      "expr": "Premium.calculatePremiumRay({\n        premiumShares: asset.premiumShares,\n        premiumOffsetRay: asset.premiumOffsetRay,\n        drawnIndex: asset.getDrawnIndex()\n      })",
+      "nodeRefs": [
+        {
+          "g": 34,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 556,
+      "sc": 31,
+      "el": 556,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 60,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 561,
+      "sc": 31,
+      "el": 561,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 39,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 567,
+      "sc": 29,
+      "el": 567,
+      "ec": 44,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 13,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 572,
+      "sc": 30,
+      "el": 572,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 30,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 577,
+      "sc": 20,
+      "el": 577,
+      "ec": 35,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 52,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 582,
+      "sc": 26,
+      "el": 582,
+      "ec": 41,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 33,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 594,
+      "sc": 31,
+      "el": 594,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 50,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 596,
+      "sc": 11,
+      "el": 596,
+      "ec": 78,
+      "rounding": "Either",
+      "source": "asset.realizedFees + asset.getUnrealizedFees(asset.getDrawnIndex())",
+      "expr": "return asset.realizedFees + asset.getUnrealizedFees(asset.getDrawnIndex())",
+      "nodeRefs": [
+        {
+          "g": 50,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 596,
+      "sc": 32,
+      "el": 596,
+      "ec": 78,
+      "rounding": "Either",
+      "source": "asset.getUnrealizedFees(asset.getDrawnIndex())",
+      "expr": "asset.realizedFees + asset.getUnrealizedFees(asset.getDrawnIndex())",
+      "nodeRefs": [
+        {
+          "g": 50,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 596,
+      "sc": 56,
+      "el": 596,
+      "ec": 77,
+      "rounding": "Either",
+      "source": "asset.getDrawnIndex()",
+      "expr": "asset.getUnrealizedFees(asset.getDrawnIndex())",
+      "nodeRefs": [
+        {
+          "g": 50,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 600,
+      "sc": 25,
+      "el": 600,
+      "ec": 40,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 19,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 605,
+      "sc": 29,
+      "el": 605,
+      "ec": 44,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 29,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 610,
+      "sc": 25,
+      "el": 610,
+      "ec": 40,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 57,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 615,
+      "sc": 31,
+      "el": 615,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 24,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 615,
+      "sc": 48,
+      "el": 615,
+      "ec": 61,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 24,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 616,
+      "sc": 11,
+      "el": 616,
+      "ec": 82,
+      "rounding": "Either",
+      "source": "_assets[assetId].toAddedAssetsDown(_spokes[assetId][spoke].addedShares)",
+      "expr": "return _assets[assetId].toAddedAssetsDown(_spokes[assetId][spoke].addedShares)",
+      "nodeRefs": [
+        {
+          "g": 24,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 620,
+      "sc": 31,
+      "el": 620,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 23,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 620,
+      "sc": 48,
+      "el": 620,
+      "ec": 61,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 23,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 625,
+      "sc": 24,
+      "el": 625,
+      "ec": 39,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 58,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 625,
+      "sc": 41,
+      "el": 625,
+      "ec": 54,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 58,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 628,
+      "sc": 12,
+      "el": 628,
+      "ec": 44,
+      "rounding": "Either",
+      "source": "_getSpokeDrawn(asset, spokeData)",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 58,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 628,
+      "sc": 46,
+      "el": 628,
+      "ec": 80,
+      "rounding": "Either",
+      "source": "_getSpokePremium(asset, spokeData)",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 58,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 632,
+      "sc": 29,
+      "el": 632,
+      "ec": 44,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 632,
+      "sc": 46,
+      "el": 632,
+      "ec": 59,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 635,
+      "sc": 11,
+      "el": 635,
+      "ec": 43,
+      "rounding": "Either",
+      "source": "_getSpokeDrawn(asset, spokeData)",
+      "expr": "_getSpokeDrawn(asset, spokeData) + _getSpokePremium(asset, spokeData)",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 635,
+      "sc": 11,
+      "el": 635,
+      "ec": 80,
+      "rounding": "Inconsistent",
+      "source": "_getSpokeDrawn(asset, spokeData) + _getSpokePremium(asset, spokeData)",
+      "expr": "return _getSpokeDrawn(asset, spokeData) + _getSpokePremium(asset, spokeData)",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 635,
+      "sc": 46,
+      "el": 635,
+      "ec": 80,
+      "rounding": "Either",
+      "source": "_getSpokePremium(asset, spokeData)",
+      "expr": "_getSpokeDrawn(asset, spokeData) + _getSpokePremium(asset, spokeData)",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 639,
+      "sc": 30,
+      "el": 639,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 46,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 639,
+      "sc": 47,
+      "el": 639,
+      "ec": 60,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 46,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 642,
+      "sc": 11,
+      "el": 642,
+      "ec": 48,
+      "rounding": "Either",
+      "source": "_getSpokePremiumRay(asset, spokeData)",
+      "expr": "return _getSpokePremiumRay(asset, spokeData)",
+      "nodeRefs": [
+        {
+          "g": 46,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 646,
+      "sc": 31,
+      "el": 646,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 12,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 646,
+      "sc": 48,
+      "el": 646,
+      "ec": 61,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 12,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 652,
+      "sc": 4,
+      "el": 652,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 37,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 653,
+      "sc": 4,
+      "el": 653,
+      "ec": 17,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 37,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 660,
+      "sc": 30,
+      "el": 660,
+      "ec": 45,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 38,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 660,
+      "sc": 47,
+      "el": 660,
+      "ec": 60,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 38,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 665,
+      "sc": 25,
+      "el": 665,
+      "ec": 40,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 11,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 665,
+      "sc": 42,
+      "el": 665,
+      "ec": 55,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 11,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 670,
+      "sc": 27,
+      "el": 670,
+      "ec": 42,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 41,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 670,
+      "sc": 44,
+      "el": 670,
+      "ec": 57,
+      "rounding": "Neither",
+      "source": "uint256 index",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 41,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 675,
+      "sc": 20,
+      "el": 675,
+      "ec": 35,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 32,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 675,
+      "sc": 37,
+      "el": 675,
+      "ec": 50,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 32,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 681,
+      "sc": 4,
+      "el": 681,
+      "ec": 19,
+      "rounding": "Neither",
+      "source": "uint256 assetId",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 14,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 682,
+      "sc": 4,
+      "el": 682,
+      "ec": 17,
+      "rounding": "Neither",
+      "source": "address spoke",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 14,
+          "n": "0"
+        }
+      ]
+    }
+  ]
+}

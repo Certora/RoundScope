@@ -1,6 +1,8 @@
 """Smoke test: full HTML generation pipeline."""
 
+import json
 import os
+import re
 import sys
 import tempfile
 
@@ -137,9 +139,13 @@ def test_default_generation(hub_data, aave_project_root):
     assert "Certora RoundAbout" in html
     assert "contextFree" in html
 
-    # Should NOT have multi-context elements
-    assert "allContexts" not in html
-    assert "Hub.add" not in html  # No per-graph contexts
+    # DATA.contexts should only have contextFree, not allContexts or per-graph contexts
+    data_match = re.search(r'const DATA = ({.*?});\n', html, re.DOTALL)
+    assert data_match, "Could not find DATA object in HTML"
+    data_obj = json.loads(data_match.group(1))
+    assert "allContexts" not in data_obj["contexts"]
+    assert "Hub.add" not in data_obj["contexts"]
+    assert "contextFree" in data_obj["contexts"]
 
     # Verify it's valid-ish HTML
     assert html.startswith("<!DOCTYPE html>")
