@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a self-contained HTML viewer for RoundScope JSON output."""
+"""Generate a self-contained HTML viewer for Certora RoundAbout JSON output."""
 
 import json
 import os
@@ -880,11 +880,11 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs, 
 
     pygments_css = HtmlFormatter(style="default").get_style_defs(".line-content")
 
-    title = "RoundScope — " + os.path.basename(project_root)
+    title = "Certora RoundAbout — " + os.path.basename(project_root)
     if contracts:
         title += " — " + ", ".join(contracts)
     html_start = HTML_TEMPLATE_START.replace(
-        "<title>RoundScope Viewer</title>",
+        "<title>Certora RoundAbout</title>",
         "<title>" + title + "</title>",
     )
 
@@ -906,7 +906,7 @@ HTML_TEMPLATE_START = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoundScope Viewer</title>
+<title>Certora RoundAbout</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1102,14 +1102,13 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 <body>
 
 <div id="top-bar">
-  <span style="font-weight:600;">RoundScope</span>
+  <span style="font-weight:600;">Certora RoundAbout</span>
   <span class="project-root" id="project-root-display"></span>
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#4ade80"></div> Down</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> Neither</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed returns</div>
   </div>
 </div>
@@ -1258,7 +1257,7 @@ function updateTreeHighlights() {
   document.querySelectorAll('.tree-file').forEach(el => {
     const path = el.dataset.path;
     const annotations = ctx[path] || [];
-    const count = annotations.length;
+    const count = annotations.filter(a => a.rounding !== 'Neither').length;
     const old = el.querySelector('.finding-count');
     if (old) old.remove();
     if (count > 0) {
@@ -1278,7 +1277,7 @@ function updateContextCounts() {
     const ctxName = btn.dataset.context;
     const ctx = DATA.contexts[ctxName] || {};
     let total = 0;
-    for (const file in ctx) total += ctx[file].length;
+    for (const file in ctx) total += ctx[file].filter(a => a.rounding !== 'Neither').length;
     const label = ctxName === 'allContexts' ? 'All' : ctxName;
     btn.textContent = label + (total > 0 ? ' (' + total + ')' : '');
   });
@@ -1314,7 +1313,7 @@ function showFile(filePath) {
 
   const annotations = (DATA.contexts[currentContext] || {})[filePath] || [];
   for (let i = 0; i < annotations.length; i++) annotations[i]._id = i;
-  const findingLines = [...new Set(annotations.map(a => a.sl))].sort((a, b) => a - b);
+  const findingLines = [...new Set(annotations.filter(a => a.rounding !== 'Neither').map(a => a.sl))].sort((a, b) => a - b);
   currentFindings = findingLines;
   currentFindingIdx = -1;
 
@@ -1460,6 +1459,7 @@ function getAnnotationsForLine(annotations, lineNum, lineLen) {
   const result = [];
   for (const a of annotations) {
     if (a.sl > lineNum || a.el < lineNum) continue;
+    if (a.rounding === 'Neither') continue;
     // Compute character range on this line (0-based columns, exclusive end)
     let startCol = (a.sl === lineNum) ? a.sc : 0;
     let endCol = (a.el === lineNum) ? a.ec : lineLen;
@@ -1701,13 +1701,15 @@ function showNodeRelationships(nodeRefs, annRange) {
     if (!graph) continue;
     for (const edge of graph.edges) {
       if (edge.target === ref.n) {
-        const key = ref.g + ':' + edge.source;
+        const pNode = graph.nodes[edge.source];
+        const key = pNode ? (pNode.label + ':' + pNode.file + ':' + pNode.sl) : (ref.g + ':' + edge.source);
         if (!parentMap[key]) {
           parentMap[key] = { g: ref.g, n: edge.source, callFile: edge.file, callLine: edge.sl, callCol: edge.sc || 0 };
         }
       }
       if (edge.source === ref.n) {
-        const key = ref.g + ':' + edge.target;
+        const cNode = graph.nodes[edge.target];
+        const key = cNode ? (cNode.label + ':' + cNode.file + ':' + cNode.sl) : (ref.g + ':' + edge.target);
         if (!childMap[key]) {
           childMap[key] = { g: ref.g, n: edge.target, callFile: edge.file, callLine: edge.sl, callCol: edge.sc || 0 };
         }
