@@ -622,9 +622,16 @@ def find_returns_clause(source_lines, method_sl, method_el):
     Searches from a few lines before method_sl through method_sl for the 'returns'
     keyword followed by balanced parentheses.
     """
-    # Search window: up to 10 lines before method body start through the start line
+    # Search window: up to 10 lines before method start through the opening brace
     search_start = max(0, method_sl - 11)  # 0-indexed
-    search_end = min(len(source_lines), method_sl)  # method_sl is 1-indexed, so this includes that line
+
+    # Extend past method_sl to find the opening '{' (covers multi-line signatures)
+    search_end_line = method_sl  # 1-indexed, default to method start
+    for j in range(method_sl - 1, min(len(source_lines), method_sl + 20)):
+        if '{' in source_lines[j]:
+            search_end_line = j + 1  # 0-indexed -> 1-indexed
+            break
+    search_end = min(len(source_lines), search_end_line)
 
     # Join the search window into one string to handle multi-line returns clauses
     window_lines = source_lines[search_start:search_end]
