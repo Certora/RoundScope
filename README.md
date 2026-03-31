@@ -4,6 +4,8 @@
 
 Its first bundled analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior (up, down, either) of variables and functions in the referenced Solidity code.
 
+**NOTE: `RoundAbout` is under active development and constantly improving. It is currently under early beta testing.**
+
 ## Overview
 
 Currently, `RoundAbout` is the main analysis in this repository.
@@ -35,7 +37,7 @@ We recommend following the JSON-AST-based version of `RoundAbout`. For that path
 1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
 2. _In the same directory_, run `RoundAbout` as
 ```
-java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined ./.certora_internal/latest/.asts.json
+java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined .asts.json
 ```
 NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
 
