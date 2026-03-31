@@ -1,6 +1,6 @@
 # wala-solidity
 
-`wala-solidity` is a WALA-based  Solidity analysis framework.
+This repo is a WALA-based  Solidity analysis framework.
 
 Its first bundled analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior (up, down, either) of variables and functions in the referenced Solidity code.
 
@@ -8,28 +8,28 @@ Its first bundled analysis, `RoundAbout`, takes a Certora `.conf` file and gener
 
 ## Overview
 
-Currently, `RoundAbout` is the main analysis in this repository.
+Currently, `RoundAbout` is the main analysis in this repository. To run the tool, you must have a [Certora `.conf` file](https://docs.certora.com/en/latest/docs/prover/cli/conf-file-api.html) for your project.
 
-For most users, the recommended path is the JSON-AST-based workflow. It does not require any native code.
-
-The native JNI-based workflow is still available, but it is intended for advanced users and is described later in this document.
+For most users, the recommended path is the JSON-AST-based workflow. A native JNI-based workflow is still available, but it is intended for advanced users and is described later in this document.
 
 ## Installation
 
 We recommend following the JSON-AST-based version of `RoundAbout`. For that path, you can skip all native prerequisites and only install the WALA dependency described below.
 
 #### Prerequisites
-1. WALA: Clone [our fork of WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
+1. WALA: Clone [our fork of WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called `WALA`.
+2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
 
 #### Steps
 1. Clone this repository with submodules (`--recurse-submodules`) into some directory, hereinafter called `WS`
-2. Ensure the WALA artifacts above have been published to your local Maven repository
+2. Ensure the `WALA` artifacts above have been published to your local Maven repository
 
 ## Compilation
 
 ### JSON-AST Compilation
-1. `cd WS`
-2. run `mvn install` or `mvn -DskipTests package` if you want to skip tests. A clean install would require `mvn clean package -DskipTests`.
+1. make sure that your `WALA` buuld was successful in the previous step.
+2. `cd WS`
+3. run `mvn install` or `mvn -DskipTests package` if you want to skip tests. A clean install would require `mvn clean package -DskipTests`.
 
 ## Usage
 
@@ -95,6 +95,20 @@ More specifically, the format is as follows in terms of JSON structure, followin
 ```
 Note that `[sl,sc-el,ec]` means a source code position as a string, written as a left square bracket, the starting line, the starting column, a hyphen, the ending line, the ending column, and a right square bracket. Filenames are interpreted relative to the `.conf` file being analyzed.
 
+
+## Repository Overview
+
+At the top level, `pom.xml` defines the Maven build, and `roundabout.sh` is a convenience wrapper for the JSON-AST workflow.
+
+- `roundAbout/`: `RoundAbout`-specific Java sources. This contains the main entrypoint plus the rounding analysis implementation and the JSON/JNI analysis engines used by the packaged tool.
+- `src/`: shared Java source for the Solidity frontend and WALA integration, including JSON/JNI loaders, AST translation, call graph support, type models, and analysis utilities.
+- `jni/`: optional native bridge for the JNI workflow. It contains the C++ bridge code, JNI headers, and the `Makefile` used to build `libwalacastsolidity.jnilib` against local Solidity and WALA builds.
+- `test/src/`: JUnit test sources for the JSON-AST and JNI paths.
+- `test/data/`: test fixtures used by the suite. This is a submodule containing Solidity projects, Certora `.conf` files, specs, and pre-generated AST artifacts.
+- `viewer/`: Python tooling for turning RoundAbout JSON output into a self-contained HTML viewer, along with tests and golden files for that viewer.
+- `scripts/`: helper scripts for development tasks around the native bridge, such as generating JNI headers and related stubs.
+- `utils/`: small utility scripts, currently including a batch runner for invoking RoundAbout over multiple inputs.
+- `libs/`: in-repo Maven repository for local jar dependencies referenced by `pom.xml`.
 
 ## Advanced Users: JNI / Native Path
 
