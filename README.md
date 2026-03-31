@@ -29,7 +29,7 @@ We recommend following the JSON-AST-based version of `RoundAbout`. For that path
 
 ### JSON-AST Compilation
 1. `cd WS`
-2. run `mvn install` or `mvn -DskipTests package` if you want to skip tests.
+2. run `mvn install` or `mvn -DskipTests package` if you want to skip tests. A clean install would require `mvn clean package -DskipTests`.
 
 ## Usage
 
