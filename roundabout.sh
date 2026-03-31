@@ -2,7 +2,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-JAR="$SCRIPT_DIR/target/com.certora.RoundScope-0.0.1-SNAPSHOT.jar"
+JAR="$SCRIPT_DIR/target/roundabout-0.0.1-SNAPSHOT.jar"
 
 if [ $# -lt 3 ]; then
     echo "Usage: $0 <project-root> <conf-file> <output-json>" >&2
@@ -30,7 +30,7 @@ if [ ! -f "$ASTS_FILE" ] || [ "$ASTS_FILE" -ot "$TIMESTAMP_REF" ]; then
 fi
 rm -f "$TIMESTAMP_REF"
 
-echo "Running RoundScope analysis..."
+echo "Running RoundAbout analysis..."
 java -jar "$JAR" \
      "$CONF" \
      "$OUTPUT" \

@@ -1,4 +1,4 @@
-package com.certora.wala.cast.solidity.loader;
+package com.certora.roundAbout;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -13,7 +13,7 @@ import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngine;
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngineJSON;
 import com.ibm.wala.util.CancelException;
 
-public class AnalysisRunnerJSON extends AnalysisRunner {
+public class RoundAbout extends AnalysisRunner {
 
 	public static void main(String... args) throws IllegalArgumentException, IOException, CancelException {
 		String conf = args[0];

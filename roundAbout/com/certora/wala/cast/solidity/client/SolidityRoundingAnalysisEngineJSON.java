@@ -1,10 +1,12 @@
 package com.certora.wala.cast.solidity.client;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.URL;
 import java.util.Arrays;
@@ -12,6 +14,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -31,6 +34,7 @@ import com.ibm.wala.util.collections.NonNullSingletonIterator;
 import com.ibm.wala.util.config.StringFilter;
 
 public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysisEngine {
+	private JSONObject originalTree;
 	private final Module[] jsons;
 	
 	public SolidityRoundingAnalysisEngineJSON(File confFile, String[] jsonFileNames) throws FileNotFoundException {
@@ -56,9 +60,6 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 		
 		private void visitChildren(JSONObject o) {
 			for(String k : o.keySet()) {
-				if ("2330".equals(k)) {
-					System.err.println(k);
-				}
 				Object v = o.get(k);
 				if (v instanceof JSONObject) {
 					visit((JSONObject)v, null);
@@ -73,12 +74,17 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 		}
 	}
 	
-	public SolidityRoundingAnalysisEngineJSON(File confFile, String solidityJsonFileName) throws FileNotFoundException {
+	public SolidityRoundingAnalysisEngineJSON(File confFile, String solidityJsonFileName) throws IOException {
 		super(confFile);
-		JSONObject o = (JSONObject) new JSONTokener(new FileReader(solidityJsonFileName)).nextValue();
-		JsonSourceUnits v = new JsonSourceUnits();
-		v.visit(o, null);
-		jsons = v.sources.stream().map(f -> 
+		try (Reader is = 
+				solidityJsonFileName.endsWith(".bz2")?
+					new InputStreamReader(new BZip2CompressorInputStream(new FileInputStream(solidityJsonFileName))):
+					new FileReader(solidityJsonFileName)) 
+		{
+			originalTree = (JSONObject) new JSONTokener(is).nextValue();
+			JsonSourceUnits v = new JsonSourceUnits();
+			v.visit(originalTree, null);
+			jsons = v.sources.stream().map(f -> 
 			new SourceJSONModule() {
 
 				@Override
@@ -142,16 +148,17 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 				public JSONObject getJSON() {
 					return f;
 				} 	
-				
+
 				public String toString() {
 					return "<module for " + getName() + ">";
 				}
 			}).toArray(i -> new Module[i]);
+		}
 	}
 	
 	@Override
 	protected SolidityLoaderFactory makeClassLoaderFactory(StringFilter exclusions) {
-		return new SolidityJSONLoaderFactory();
+		return new SolidityJSONLoaderFactory(originalTree);
 	}
 
 	@Override
