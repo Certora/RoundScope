@@ -1,10 +1,47 @@
 # wala-solidity
 
-`wala-solidity` is a WALA-based codebase for Solidity analysis.
+`wala-solidity` is a WALA-based  Solidity analysis framework.
 
 Its first bundled analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior (up, down, either) of variables and functions in the referenced Solidity code.
 
-## RoundAbout Report Format
+## Overview
+
+Currently, `RoundAbout` is the main analysis in this repository.
+
+For most users, the recommended path is the JSON-AST-based workflow. It does not require any native code.
+
+The native JNI-based workflow is still available, but it is intended for advanced users and is described later in this document.
+
+## Installation
+
+We recommend following the JSON-AST-based version of `RoundAbout`. For that path, you can skip all native prerequisites and only install the WALA dependency described below.
+
+#### Prerequisites
+1. WALA: Clone [our fork of WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
+
+#### Steps
+1. Clone this repository with submodules (`--recurse-submodules`) into some directory, hereinafter called `WS`
+2. Ensure the WALA artifacts above have been published to your local Maven repository
+
+## Compilation
+
+### JSON-AST Compilation
+1. `cd WS`
+2. run `mvn install` or `mvn -DskipTests package` if you want to skip tests.
+
+## Usage
+
+### JSON-AST Workflow
+1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
+2. _In the same directory_, run `RoundAbout` as
+```
+java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined ./.certora_internal/latest/.asts.json
+```
+NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
+
+## Output Format
+
+### RoundAbout Report Format
 
 The report format is an array of [JGF](https://jsongraphformat.info/) graphs, one for each external or public function in the Solidity files specified by the `.conf` file.  The nodes are a refinement of the underlying call graph, with a node for each call graph node and the rounding state of its arguments.  Potentially, the same function could be called with different rounding states for its arguments, so there would be multiple nodes in this JFG graph corresponding to those multiple rounding argument states.  The graph is per-public-function so that someone interested in a specific public function sees a graph specific to that function.
 
@@ -18,13 +55,13 @@ More specifically, the format is as follows in terms of JSON structure, followin
     "nodes": 'dictionary indexed by node ids (numbers as strings)'
     {
       'id 0 is the entry point'
-      id: { 
+      id: {
         "label": string('name of method')
         "metadata": {
          "methodPosition": string('file name:[sl,sc-el,ec]')
          "return": string('rounding of return value')
          "parameters": 'array of info per function parameter'
-	       [  
+	       [
 	         {
 	           "rounding": string('rounding of parameter')
                "position": string('position of parameter as [sl,sc-el,ec]')
@@ -56,11 +93,12 @@ More specifically, the format is as follows in terms of JSON structure, followin
 ```
 Note that `[sl,sc-el,ec]` means a source code position as a string, written as a left square bracket, the starting line, the starting column, a hyphen, the ending line, the ending column, and a right square bracket. Filenames are interpreted relative to the `.conf` file being analyzed.
 
-## Building And Running RoundAbout
 
-There is now a JSON-AST-based version of `RoundAbout` that does not need any native code. For that path, you can skip all prerequisites except 5, `WALA`, and also skip step 3 of the build instructions.
+## Advanced Users: JNI / Native Path
 
-### Prerequisites
+You can also compile to use the JNI code that invokes the Solidity compiler after building it from source. This is more complex and eventually we may stop supporting it.
+
+### Native Prerequisites
 1. C++ needs to support `-std=c++23`, so it must be a reasonably recent version.
 2. The `make` or `gmake` command needs to be a recent version of GNU Make. (On the Mac using [Homebrew](https://brew.sh/), `brew install make` if GNU Make is not standard)
 3. (optional) cpptrace:
@@ -68,27 +106,14 @@ A utility to generate Java-like stack traces in C++. Used in `RoundAbout` develo
 4. Solidity:
 [build the latest Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
 5. WALA:
-While we evaluate this approach, we need to use my version of WALA with minor fixes to its native code support.  These changes can all be folded into the main WALA repository in due course.  Clone [my WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
+  Clone [our fork of WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
 
-### Building
-1. Clone this repository into some directory, hereinafter called `WS`
-   
-2. building the Java code
-   1. `cd WS`
-   2. run `mvn install`
+### Native Compilation
+1. cd `WS/jni`
+2. edit the Makefile: set `WALA` and `SOLIDITY` to the values chosen above.  Set `JAVA` to be the JDK home of a recent Java version.
+3. if not using `cpptrace`, then comment out `RS_FLAGS` and `RS_DEVEL_LIBS`
+4. run `make`
 
-3. building the native code
-   1. cd `WS/jni`
-   2. edit the Makefile: set `WALA` and `SOLIDITY` to the values chosen above.  Set `JAVA` to be the JDK home of a recent Java version.
-   3. if not using `cpptrace`, then comment out `RS_FLAGS` and `RS_DEVEL_LIBS`
-   4. run `make`
-
-### Running RoundAbout
-
-#### the JSON-based path
-1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
-2. _in the same directory_, run `RoundAbout` as `java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined ./.certora_internal/latest/.asts.json`. You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
-
-#### native code
+### Native Usage
 1. cd into `WS/jni`
 2. `java -Djava.library.path=. -jar ../target/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
