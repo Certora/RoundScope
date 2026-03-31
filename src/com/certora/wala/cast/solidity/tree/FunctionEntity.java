@@ -21,9 +21,12 @@ public class FunctionEntity extends CallableEntity {
 			Position[] argLocations,
 			Collection<CAstQualifier> qualifiers,
 			CAstNode ast) {
-		super(name, type, argumentNames, location, nameLocation, argLocations);
+		super(type.getName().startsWith("static ")? type.getName(): name, type, argumentNames, location, nameLocation, argLocations);
 		this.Ast = ast;
 		this.qualifiers = qualifiers;
+		if (name.contains("_upscale")) {
+			System.err.println(this);
+		}
 	}
 
 	public FunctionEntity(String name,

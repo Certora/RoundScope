@@ -84,6 +84,7 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 		if (site.getDeclaredTarget().toString().contains("_onSwapGivenOut")) {
 			System.err.println("found it");
 		}
+
 		if (receiver instanceof TypedCodeBody && 
 			(((TypedCodeBody)receiver).isVirtual() || 
 			 site.getInvocationCode() == Dispatch.SPECIAL ||
