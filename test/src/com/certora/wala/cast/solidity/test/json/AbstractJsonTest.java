@@ -14,8 +14,9 @@ public abstract class AbstractJsonTest extends AbstractTest {
 	private final File astsFile;
 	
 	{
-		File bz2 = new File(testDir(),  ".certora_internal/latest/.asts.json.bz2");
-		astsFile = bz2.exists()? bz2: new File(testDir(), ".certora_internal/latest/.asts.json");
+		File astDir = new File(testDir(), "ast");
+		File bz2 = new File(astDir, ".asts.json.bz2");
+		astsFile = bz2.exists()? bz2: new File(astDir, ".asts.json");
 	}
 
 	protected JSONObject runAnalysis() throws IllegalArgumentException, IOException, CancelException {
