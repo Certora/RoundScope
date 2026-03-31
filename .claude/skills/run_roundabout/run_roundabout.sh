@@ -1,6 +1,4 @@
 #!/bin/bash
-set -e
-
 ROUNDABOUT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 
 if [ $# -lt 1 ]; then
@@ -18,10 +16,20 @@ CONF_BASE="$(basename "$CONF" .conf)"
 OUTPUT_JSON="${CONF_DIR}/${CONF_BASE}_roundabout.json"
 OUTPUT_HTML="${CONF_DIR}/${CONF_BASE}_roundabout.html"
 
-echo "Running RoundAbout analysis..."
-bash "$ROUNDABOUT_DIR/roundabout.sh" "$PROJECT_DIR" "$CONF" "$OUTPUT_JSON"
+# Log verbose output to file
+LOG_FILE=".certora_internal/roundabout.log"
+mkdir -p .certora_internal
+
+echo "Analyzing..."
+if ! bash "$ROUNDABOUT_DIR/roundabout.sh" "$PROJECT_DIR" "$CONF" "$OUTPUT_JSON" >> "$LOG_FILE" 2>&1; then
+    echo "Error: Analysis failed. See $LOG_FILE for details." >&2
+    exit 1
+fi
 
 echo "Generating HTML viewer..."
-python3 "$ROUNDABOUT_DIR/viewer/generate_viewer.py" "$PROJECT_DIR" "$OUTPUT_JSON" "$OUTPUT_HTML" "$CONF"
+if ! python3 "$ROUNDABOUT_DIR/viewer/generate_viewer.py" "$PROJECT_DIR" "$OUTPUT_JSON" "$OUTPUT_HTML" "$CONF"; then
+    echo "Error: HTML viewer generation failed." >&2
+    exit 1
+fi
 
 echo "Done! Viewer generated at: $OUTPUT_HTML"

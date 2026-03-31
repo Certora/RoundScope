@@ -67,17 +67,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			int objSelf = m.addAllocation(selfType.getReference()).getDef();
 			for(IField f : selfType.getAllInstanceFields()) {
 				if (f.getFieldTypeReference().isArrayType()) {
-					int count = 0;
-					TypeReference t = f.getFieldTypeReference();
-					while(t.isArrayType()) {
-						count++;
-						t = t.getArrayElementType();
-					}
-					int d[] = new int[count];
-					for(int i = 0; i < d.length; i++) {
-						d[i] = 1;
-					}
-					SSANewInstruction alloc = m.addArrayAllocation(f.getFieldTypeReference(), d);
+					SSANewInstruction alloc = m.addArrayAllocation(f.getFieldTypeReference());
 					m.addSetInstance(f.getReference(), objSelf, alloc.getDef());
 				}
 			}

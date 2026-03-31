@@ -57,6 +57,7 @@ import com.ibm.wala.shrike.shrikeBT.Constants;
 import com.ibm.wala.shrike.shrikeCT.InvalidClassFileException;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInstructionFactory;
+import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.ClassLoaderReference;
 import com.ibm.wala.types.Descriptor;
@@ -229,7 +230,17 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 			return null;
 		}
 
-		private final AstInstructionFactory insts = new JavaSourceLoaderImpl.InstructionFactory();
+		private final AstInstructionFactory insts = new JavaSourceLoaderImpl.InstructionFactory() {
+
+			@Override
+			public SSAPutInstruction PutInstruction(int iindex, int ref, int value, FieldReference field) {
+				if (value == 1) {
+					System.err.println("this obe");
+				}
+				return super.PutInstruction(iindex, ref, value, field);
+			}
+			
+		};
 
 		@Override
 		public AstInstructionFactory instructionFactory() {
@@ -483,12 +494,12 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 				CAstEntity entity, WalkContext context, TypeReference selfType) {
 			super(codeName, parent, loader, sourcePosition, entity, context);
 			isPure = entity.getQualifiers().contains(CAstQualifier.PURE);
-			this.self = new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType), Collections.emptySet(), types.get(selfType.getName()), cha, Collections.emptySet()) {
+			this.self = selfType != null? new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root), Collections.emptySet(), types.get(selfType.getName()), cha, Collections.emptySet()) {
 				@Override
 				public IClass getDeclaringClass() {
 					return TypedFunctionBody.this;
 				}
-			};
+			}: null;
 		}
 
 		public boolean isPure() {
@@ -497,7 +508,7 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public IField getField(Atom name) {
-			if (self.getName().equals(name)) {
+			if (self != null && self.getName().equals(name)) {
 				return self;
 			} else {
 				return super.getField(name);
@@ -506,7 +517,7 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public IField getField(Atom name, TypeName type) {
-			if (self.getName().equals(name)) {
+			if (self != null && self.getName().equals(name)) {
 				return self;
 			} else {
 				return super.getField(name);
@@ -516,11 +527,13 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 		@Override
 		public Collection<IField> getAllInstanceFields() {
 			Collection<IField> x = super.getAllInstanceFields();
-			if (x.isEmpty()) {
+			if (x.isEmpty() && self != null) {
 				return Collections.singleton(self);
 			} else {
 				Set<IField> y = HashSetFactory.make(x);
-				y.add(self);
+				if (self != null) {
+					y.add(self);
+				}
 				return y;
 			}
 		}
@@ -553,7 +566,6 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 			selfType = null;
 		}
 
-		
 		if (n instanceof EventEntity) {
 			return new TypedFunctionClass(fn, this, n.getPosition()) {
 

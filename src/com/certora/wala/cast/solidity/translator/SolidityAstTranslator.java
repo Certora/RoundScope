@@ -303,8 +303,7 @@ public class SolidityAstTranslator extends AstTranslator {
 			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, eltType.getName());
 			NewSiteReference ns = NewSiteReference.make(context.cfg().getCurrentInstruction(), t);
 			context.cfg().addInstruction(insts.NewInstruction(ns.getProgramCounter(), result, ns));
-			TypeReference selfType = ((FunctionType)eltCAstType).getDeclaringType() != null? SolidityCAstType.getIRType(((FunctionType)eltCAstType).getDeclaringType()): objType;
-			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), selfType);
+			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
 			context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, receiver, self));
 		} else {
 			int instNum = context.cfg().getCurrentInstruction();
@@ -355,11 +354,19 @@ public class SolidityAstTranslator extends AstTranslator {
 			context.cfg().addInstruction(
 					insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
 						resultVal, context.currentScope().getConstantValue(null)));
+		} else if ("this".equals(name) || "super".equals(name)) {		
+			FunctionType funType = (FunctionType) context.top().getType();
+			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, funType.getName());
+			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
+
+			context.cfg().addInstruction(
+				insts.GetInstruction(context.cfg().getCurrentInstruction(), resultVal, 1, self));
+			
 		} else {
-		context.cfg().addInstruction(
-			insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
-				resultVal, 
-				"this".equals(name) || "super".equals(name)? 1:  context.currentScope().lookup(name).valueNumber()));
+			context.cfg().addInstruction(
+				insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
+					resultVal, 
+					context.currentScope().lookup(name).valueNumber()));
 		}
 	}
 
