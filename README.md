@@ -78,7 +78,7 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
    2. run `mvn install`
 
 3. building the native code
-   1. cd `WS/WALA CAst Solidity JNI Bridge`
+   1. cd `WS/jni`
    2. edit the Makefile: set `WALA` and `SOLIDITY` to the values chosen above.  Set `JAVA` to be the JDK home of a recent Java version.
    3. if not using `cpptrace`, then comment out `RS_FLAGS` and `RS_DEVEL_LIBS`
    4. run `make`
@@ -90,5 +90,5 @@ While we evaluate this approach, we need to use my version of WALA with minor fi
 2. _in the same directory_, run `RoundAbout` as `java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined ./.certora_internal/latest/.asts.json`. You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
 
 #### native code
-1. cd into `WS/WALA CAst Solidity JNI Bridge`
+1. cd into `WS/jni`
 2. `java -Djava.library.path=. -jar ../target/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
