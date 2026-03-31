@@ -15,11 +15,23 @@ OUTPUT="$3"
 
 cd "$PROJECT_DIR"
 
+# Record timestamp before running certoraRun
+TIMESTAMP_REF=$(mktemp)
+touch "$TIMESTAMP_REF"
+
 echo "Running certoraRun to dump ASTs..."
-certoraRun "$CONF" --dump_asts --compilation_steps_only
+certoraRun "$CONF" --dump_asts --build_only --disable_local_typechecking --ignore_solidity_warnings --disable_internal_function_instrumentation || true
+
+ASTS_FILE=".certora_internal/latest/.asts.json"
+if [ ! -f "$ASTS_FILE" ] || [ "$ASTS_FILE" -ot "$TIMESTAMP_REF" ]; then
+    rm -f "$TIMESTAMP_REF"
+    echo "Error: $ASTS_FILE not found or not updated by certoraRun." >&2
+    exit 1
+fi
+rm -f "$TIMESTAMP_REF"
 
 echo "Running RoundScope analysis..."
 java -jar "$JAR" \
      "$CONF" \
      "$OUTPUT" \
-     --combined .certora_internal/latest/.asts.json
+     --combined "$ASTS_FILE"
