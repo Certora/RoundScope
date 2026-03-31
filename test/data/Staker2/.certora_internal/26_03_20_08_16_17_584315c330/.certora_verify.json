@@ -1,8 +1,0 @@
-{
-    "importFilesToOrigRelpaths": {},
-    "primary_contract": "Staker2",
-    "specfile": "Staker.spec",
-    "specfileOrigRelpath": "Staker.spec",
-    "specfilesToImportDecls": {},
-    "type": "spec"
-}
