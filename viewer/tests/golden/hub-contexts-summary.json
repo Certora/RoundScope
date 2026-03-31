@@ -1,7 +1,7 @@
 {
   "Hub.add": {
     "file_count": 8,
-    "annotation_count": 128
+    "annotation_count": 125
   },
   "Hub.draw": {
     "file_count": 5,
@@ -9,15 +9,15 @@
   },
   "Hub.eliminateDeficit": {
     "file_count": 8,
-    "annotation_count": 139
+    "annotation_count": 136
   },
   "Hub.getAddedAssets": {
     "file_count": 7,
-    "annotation_count": 92
+    "annotation_count": 90
   },
   "Hub.getAssetAccruedFees": {
     "file_count": 7,
-    "annotation_count": 82
+    "annotation_count": 80
   },
   "Hub.getAssetDrawnIndex": {
     "file_count": 4,
@@ -25,43 +25,43 @@
   },
   "Hub.getAssetOwed": {
     "file_count": 6,
-    "annotation_count": 59
+    "annotation_count": 58
   },
   "Hub.getAssetPremiumRay": {
     "file_count": 6,
-    "annotation_count": 43
+    "annotation_count": 42
   },
   "Hub.getAssetTotalOwed": {
     "file_count": 6,
-    "annotation_count": 64
+    "annotation_count": 63
   },
   "Hub.getSpokeAddedAssets": {
     "file_count": 8,
-    "annotation_count": 113
+    "annotation_count": 111
   },
   "Hub.getSpokeOwed": {
     "file_count": 6,
-    "annotation_count": 70
+    "annotation_count": 66
   },
   "Hub.getSpokePremiumRay": {
     "file_count": 6,
-    "annotation_count": 48
+    "annotation_count": 46
   },
   "Hub.getSpokeTotalOwed": {
     "file_count": 6,
-    "annotation_count": 71
+    "annotation_count": 67
   },
   "Hub.mintFeeShares": {
     "file_count": 8,
-    "annotation_count": 129
+    "annotation_count": 125
   },
   "Hub.previewAddByAssets": {
     "file_count": 8,
-    "annotation_count": 112
+    "annotation_count": 109
   },
   "Hub.previewAddByShares": {
     "file_count": 8,
-    "annotation_count": 116
+    "annotation_count": 114
   },
   "Hub.previewDrawByAssets": {
     "file_count": 4,
@@ -73,11 +73,11 @@
   },
   "Hub.previewRemoveByAssets": {
     "file_count": 8,
-    "annotation_count": 114
+    "annotation_count": 112
   },
   "Hub.previewRemoveByShares": {
     "file_count": 8,
-    "annotation_count": 113
+    "annotation_count": 111
   },
   "Hub.previewRestoreByAssets": {
     "file_count": 4,
@@ -89,7 +89,7 @@
   },
   "Hub.remove": {
     "file_count": 8,
-    "annotation_count": 130
+    "annotation_count": 128
   },
   "Hub.reportDeficit": {
     "file_count": 5,
@@ -101,10 +101,10 @@
   },
   "Hub.updateAssetConfig": {
     "file_count": 8,
-    "annotation_count": 129
+    "annotation_count": 125
   },
   "allContexts": {
     "file_count": 11,
-    "annotation_count": 548
+    "annotation_count": 538
   }
 }
