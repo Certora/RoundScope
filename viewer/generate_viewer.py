@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a self-contained HTML viewer for RoundAbout JSON output."""
+"""Generate a self-contained HTML viewer for Certora RoundAbout JSON output."""
 
 import json
 import os
@@ -14,14 +14,23 @@ from pygments.lexers.solidity import SolidityLexer
 
 
 def parse_args():
-    if len(sys.argv) < 4 or len(sys.argv) > 5:
+    # Separate flags from positional args
+    positional = []
+    full_context_breakdown = False
+    for arg in sys.argv[1:]:
+        if arg == "--full_context_breakdown":
+            full_context_breakdown = True
+        else:
+            positional.append(arg)
+
+    if len(positional) < 3 or len(positional) > 4:
         print(
-            "Usage: python3 generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file]",
+            "Usage: python3 generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file] [--full_context_breakdown]",
             file=sys.stderr,
         )
         sys.exit(1)
-    conf_file = sys.argv[4] if len(sys.argv) == 5 else None
-    return sys.argv[1], sys.argv[2], sys.argv[3], conf_file
+    conf_file = positional[3] if len(positional) == 4 else None
+    return positional[0], positional[1], positional[2], conf_file, full_context_breakdown
 
 
 def clean_graph_label(label):
@@ -349,6 +358,160 @@ def extract_roundings(data, project_root):
     return dict(aggregated)
 
 
+def extract_roundings_root_only(data, project_root):
+    """Extract roundings using only node '0' (root function) from each graph.
+
+    No cross-context aggregation needed since each annotation comes directly
+    from a single graph's entry-point function.
+    """
+    raw = defaultdict(list)  # (filename, range_key) -> list of entries
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        node = graph["nodes"].get("0")
+        if not node:
+            continue
+        md = node["metadata"]
+        method_pos = md.get("methodPosition", "")
+        if not method_pos:
+            continue
+        filename = extract_filename_from_method_position(method_pos)
+
+        for range_key, info in md.get("roundings", {}).items():
+            raw[(filename, range_key)].append({
+                "rounding": info.get("rounding", "Neither"),
+                "source": info.get("source", ""),
+                "expr": info.get("expr", ""),
+                "_graphIdx": graph_idx,
+            })
+
+        for param in md.get("parameters", []):
+            pos = param.get("position")
+            if not pos:
+                continue
+            raw[(filename, pos)].append({
+                "rounding": param.get("rounding", "Neither"),
+                "source": param.get("source", ""),
+                "expr": "",
+                "_graphIdx": graph_idx,
+            })
+
+    # Deduplicate by (filename, range_key), collecting nodeRefs
+    result = defaultdict(list)
+    for (filename, range_key), entries in raw.items():
+        sl, sc, el, ec = parse_range_key(range_key)
+        rel_filename = normalize_path(filename, project_root)
+
+        # If same position appears from multiple graphs, aggregate
+        rounding_values = [e["rounding"] for e in entries]
+        rounding = aggregate_rounding(rounding_values)
+
+        source = ""
+        expr = ""
+        for e in entries:
+            if not source and e.get("source"):
+                source = e["source"]
+            if not expr and e.get("expr"):
+                expr = e["expr"]
+
+        node_refs = []
+        seen = set()
+        for e in entries:
+            if e["_graphIdx"] not in seen:
+                seen.add(e["_graphIdx"])
+                node_refs.append({"g": e["_graphIdx"], "n": "0"})
+
+        result[rel_filename].append({
+            "sl": sl, "sc": sc, "el": el, "ec": ec,
+            "rounding": rounding,
+            "source": source, "expr": expr,
+            "nodeRefs": node_refs,
+        })
+
+    return dict(result)
+
+
+def extract_return_annotations_root_only(data, project_root, source_files):
+    """Extract return-type rounding annotations using only node '0' from each graph."""
+    grouped = defaultdict(list)  # (rel_filename, method_sl, method_el) -> entries
+
+    for graph_idx, graph in enumerate(data["graphs"]):
+        node = graph["nodes"].get("0")
+        if not node:
+            continue
+        md = node["metadata"]
+        method_pos = md.get("methodPosition", "")
+        ret = md.get("return")
+        if not method_pos or ret is None:
+            continue
+
+        parsed = parse_method_position(method_pos)
+        if not parsed:
+            continue
+        filename, sl, sc, el, ec = parsed
+        rel_filename = normalize_path(filename, project_root)
+        grouped[(rel_filename, sl, el)].append((ret, graph_idx))
+
+    result = defaultdict(list)
+    for (rel_filename, method_sl, method_el), entries in grouped.items():
+        file_data = source_files.get(rel_filename)
+        if not file_data:
+            continue
+        raw_lines = file_data["raw"].split("\n")
+        clause = find_returns_clause(raw_lines, method_sl, method_el)
+        if not clause:
+            continue
+
+        r_sl, r_sc, r_el, r_ec = clause
+        flat_roundings = []
+        element_roundings = defaultdict(list)
+        node_refs = []
+        seen_refs = set()
+
+        for ret_val, g_idx in entries:
+            if g_idx not in seen_refs:
+                seen_refs.add(g_idx)
+                node_refs.append({"g": g_idx, "n": "0"})
+            if isinstance(ret_val, str):
+                flat_roundings.append(ret_val)
+            elif isinstance(ret_val, dict):
+                for type_key, rounding in ret_val.items():
+                    flat_roundings.append(rounding)
+                    element_roundings[type_key].append(rounding)
+
+        significant = [v for v in flat_roundings if v != "Neither"]
+        if not significant:
+            rounding = "Neither"
+        elif len(set(significant)) == 1:
+            rounding = significant[0]
+        else:
+            rounding = "Mixed returns"
+
+        annotation = {
+            "sl": r_sl, "sc": r_sc, "el": r_el, "ec": r_ec,
+            "rounding": rounding, "source": "return type", "expr": "",
+            "nodeRefs": node_refs,
+        }
+
+        if element_roundings and rounding == "Mixed returns":
+            breakdown = []
+            sorted_keys = sorted(
+                element_roundings.keys(),
+                key=lambda k: int(re.search(r'Ltuple,\s*(\d+)', k).group(1))
+                if re.search(r'Ltuple,\s*(\d+)', k) else 0,
+            )
+            for i, type_key in enumerate(sorted_keys):
+                roundings = element_roundings[type_key]
+                agg = aggregate_rounding(roundings)
+                inner_match = re.search(r'<\s*solidity\s*,\s*[PL]\w+\s*>', type_key)
+                sol_type = clean_wala_type(inner_match.group(0)) if inner_match else f"[{i}]"
+                breakdown.append({"index": i, "type": sol_type, "rounding": agg})
+            annotation["returnBreakdown"] = breakdown
+
+        result[rel_filename].append(annotation)
+
+    return dict(result)
+
+
 def clean_node_label(label):
     """Clean graph node labels: '<Code body of function repay>' -> 'repay'."""
     if label.startswith("<Code body of "):
@@ -404,6 +567,21 @@ def extract_graphs(data, project_root):
                 if agg != "Neither":
                     return_rounding = agg
 
+            # Parse individual roundings for graph view source rendering
+            parsed_roundings = []
+            for range_key, info in roundings.items():
+                try:
+                    r_sl, r_sc, r_el, r_ec = parse_range_key(range_key)
+                    if info.get("rounding", "Neither") != "Neither":
+                        parsed_roundings.append({
+                            "sl": r_sl, "sc": r_sc, "el": r_el, "ec": r_ec,
+                            "rounding": info["rounding"],
+                            "source": info.get("source", ""),
+                            "expr": info.get("expr", ""),
+                        })
+                except (ValueError, IndexError):
+                    pass
+
             nodes[node_id] = {
                 "label": label,
                 "file": file_path,
@@ -412,6 +590,7 @@ def extract_graphs(data, project_root):
                 "el": el,
                 "ec": ec,
                 "returnRounding": return_rounding,
+                "roundings": parsed_roundings,
             }
 
         for edge in graph.get("edges", []):
@@ -438,7 +617,8 @@ def extract_graphs(data, project_root):
                 "sc": call_sc,
             })
 
-        graphs.append({"nodes": nodes, "edges": edges})
+        graph_label = clean_graph_label(graph.get("label", f"Graph {len(graphs)}"))
+        graphs.append({"nodes": nodes, "edges": edges, "label": graph_label})
 
     return graphs
 
@@ -459,9 +639,16 @@ def find_returns_clause(source_lines, method_sl, method_el):
     Searches from a few lines before method_sl through method_sl for the 'returns'
     keyword followed by balanced parentheses.
     """
-    # Search window: up to 10 lines before method body start through the start line
+    # Search window: up to 10 lines before method start through the opening brace
     search_start = max(0, method_sl - 11)  # 0-indexed
-    search_end = min(len(source_lines), method_sl)  # method_sl is 1-indexed, so this includes that line
+
+    # Extend past method_sl to find the opening '{' (covers multi-line signatures)
+    search_end_line = method_sl  # 1-indexed, default to method start
+    for j in range(method_sl - 1, min(len(source_lines), method_sl + 20)):
+        if '{' in source_lines[j]:
+            search_end_line = j + 1  # 0-indexed -> 1-indexed
+            break
+    search_end = min(len(source_lines), search_end_line)
 
     # Join the search window into one string to handle multi-line returns clauses
     window_lines = source_lines[search_start:search_end]
@@ -717,11 +904,20 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs, 
 
     pygments_css = HtmlFormatter(style="default").get_style_defs(".line-content")
 
-    title = "RoundAbout — " + os.path.basename(project_root)
+    # Load dagre.js for graph visualization
+    dagre_path = os.path.join(os.path.dirname(__file__), "dagre.min.js")
+    try:
+        with open(dagre_path, "r") as f:
+            dagre_js = f.read()
+    except FileNotFoundError:
+        dagre_js = "/* dagre.min.js not found */"
+        print(f"Warning: {dagre_path} not found, graph view will be disabled", file=sys.stderr)
+
+    title = "Certora RoundAbout — " + os.path.basename(project_root)
     if contracts:
         title += " — " + ", ".join(contracts)
     html_start = HTML_TEMPLATE_START.replace(
-        "<title>RoundAbout Viewer</title>",
+        "<title>Certora RoundAbout</title>",
         "<title>" + title + "</title>",
     )
 
@@ -731,7 +927,9 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs, 
         + pygments_css
         + "\n"
         + HTML_TEMPLATE_SCRIPT_START
-        + "\nconst DATA = "
+        + "\n/* dagre.js graph layout library */\n"
+        + dagre_js
+        + "\n\nconst DATA = "
         + data_json
         + ";\n"
         + HTML_TEMPLATE_END
@@ -743,7 +941,7 @@ HTML_TEMPLATE_START = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoundAbout Viewer</title>
+<title>Certora RoundAbout</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -931,6 +1129,63 @@ td.line-content { padding-left: 12px; }
   font-size: 11px; white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15); pointer-events: none;
 }
+
+/* View toggle */
+.view-toggle { display: flex; gap: 4px; margin-left: 16px; }
+.view-btn {
+  padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+  background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 12px;
+}
+.view-btn:hover { background: rgba(255,255,255,0.1); }
+.view-btn.active { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.4); }
+
+/* Method list (graph view left pane) */
+#method-list {
+  display: none; width: 260px; min-width: 180px; background: #f8f9fa;
+  border-right: 1px solid #e0e0e0; overflow-y: auto; padding: 8px 0;
+  flex-shrink: 0; font-size: 13px;
+}
+.method-item {
+  padding: 5px 12px; cursor: pointer; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;
+}
+.method-item:hover { background: #e9ecef; }
+.method-item.active { background: #d0e1fd; color: #1e293b; }
+.method-name { overflow: hidden; text-overflow: ellipsis; }
+.method-badge {
+  flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
+}
+.method-count { flex-shrink: 0; font-size: 11px; color: #94a3b8; }
+
+/* Graph panel */
+#graph-panel { display: none; flex: 1; overflow: auto; position: relative; background: #f1f5f9; }
+#graph-container { position: relative; min-width: 100%; min-height: 100%; }
+#graph-edges { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+.graph-edge { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
+
+/* Graph nodes */
+.graph-node {
+  position: absolute; border: 1px solid #d0d5dd; border-radius: 6px;
+  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden;
+  cursor: pointer; transition: box-shadow 0.15s;
+  width: 320px;
+}
+.graph-node:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.graph-node-header {
+  padding: 5px 10px; font-weight: 600; font-size: 12px;
+  border-bottom: 1px solid #e2e8f0; background: #f8f9fa;
+  display: flex; align-items: center; gap: 6px;
+}
+.graph-node-header .node-rounding-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.graph-node-file { font-size: 10px; color: #64748b; padding: 2px 10px; background: #fafbfc; border-bottom: 1px solid #f0f0f0; }
+.graph-node-source {
+  padding: 4px 8px; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 11px;
+  line-height: 1.4; white-space: pre; overflow-x: auto;
+  color: #333;
+}
+/* Reuse existing .r-up, .r-down, etc. for source annotations inside graph nodes */
 """
 
 HTML_TEMPLATE_SCRIPT_START = r"""
@@ -939,14 +1194,17 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 <body>
 
 <div id="top-bar">
-  <span style="font-weight:600;">RoundAbout</span>
+  <span style="font-weight:600;">Certora RoundAbout</span>
   <span class="project-root" id="project-root-display"></span>
+  <div class="view-toggle">
+    <button class="view-btn active" onclick="switchView('source')">Source</button>
+    <button class="view-btn" onclick="switchView('graph')">Graph</button>
+  </div>
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#4ade80"></div> Down</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> Neither</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed returns</div>
   </div>
 </div>
@@ -955,9 +1213,16 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 
 <div id="main">
   <div id="tree-panel"></div>
+  <div id="method-list"></div>
   <div id="resize-handle"></div>
   <div id="source-panel">
     <div id="source-placeholder">Select a file from the tree to view source</div>
+  </div>
+  <div id="graph-panel">
+    <div id="graph-container">
+      <svg id="graph-edges"><defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/></marker></defs></svg>
+      <div id="graph-nodes"></div>
+    </div>
   </div>
 </div>
 
@@ -982,7 +1247,7 @@ const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', 
 const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', 'Mixed returns':'MR' };
 
 let currentFile = null;
-let currentContext = 'allContexts';
+let currentContext = Object.keys(DATA.contexts)[0] || 'contextFree';
 let currentFindings = [];
 let currentFindingIdx = -1;
 let nodePositionIndex = {};
@@ -998,10 +1263,15 @@ function highlightLine(tr) {
 function init() {
   document.getElementById('project-root-display').textContent = DATA.projectRoot;
   renderTree(DATA.directoryTree, document.getElementById('tree-panel'), '');
-  buildContextBar();
+  const contextNames = Object.keys(DATA.contexts);
+  if (contextNames.length > 1) {
+    buildContextBar();
+    updateContextCounts();
+  } else {
+    document.getElementById('context-bar').style.display = 'none';
+  }
   setupResize();
   setupBottomResize();
-  updateContextCounts();
   updateTreeHighlights();
   buildNodePositionIndex();
   document.getElementById('source-panel').addEventListener('click', (e) => {
@@ -1090,7 +1360,7 @@ function updateTreeHighlights() {
   document.querySelectorAll('.tree-file').forEach(el => {
     const path = el.dataset.path;
     const annotations = ctx[path] || [];
-    const count = annotations.length;
+    const count = annotations.filter(a => a.rounding !== 'Neither').length;
     const old = el.querySelector('.finding-count');
     if (old) old.remove();
     if (count > 0) {
@@ -1110,7 +1380,7 @@ function updateContextCounts() {
     const ctxName = btn.dataset.context;
     const ctx = DATA.contexts[ctxName] || {};
     let total = 0;
-    for (const file in ctx) total += ctx[file].length;
+    for (const file in ctx) total += ctx[file].filter(a => a.rounding !== 'Neither').length;
     const label = ctxName === 'allContexts' ? 'All' : ctxName;
     btn.textContent = label + (total > 0 ? ' (' + total + ')' : '');
   });
@@ -1146,7 +1416,7 @@ function showFile(filePath) {
 
   const annotations = (DATA.contexts[currentContext] || {})[filePath] || [];
   for (let i = 0; i < annotations.length; i++) annotations[i]._id = i;
-  const findingLines = [...new Set(annotations.map(a => a.sl))].sort((a, b) => a - b);
+  const findingLines = [...new Set(annotations.filter(a => a.rounding !== 'Neither').map(a => a.sl))].sort((a, b) => a - b);
   currentFindings = findingLines;
   currentFindingIdx = -1;
 
@@ -1292,6 +1562,7 @@ function getAnnotationsForLine(annotations, lineNum, lineLen) {
   const result = [];
   for (const a of annotations) {
     if (a.sl > lineNum || a.el < lineNum) continue;
+    if (a.rounding === 'Neither') continue;
     // Compute character range on this line (0-based columns, exclusive end)
     let startCol = (a.sl === lineNum) ? a.sc : 0;
     let endCol = (a.el === lineNum) ? a.ec : lineLen;
@@ -1533,13 +1804,15 @@ function showNodeRelationships(nodeRefs, annRange) {
     if (!graph) continue;
     for (const edge of graph.edges) {
       if (edge.target === ref.n) {
-        const key = ref.g + ':' + edge.source;
+        const pNode = graph.nodes[edge.source];
+        const key = pNode ? (pNode.label + ':' + pNode.file + ':' + pNode.sl) : (ref.g + ':' + edge.source);
         if (!parentMap[key]) {
           parentMap[key] = { g: ref.g, n: edge.source, callFile: edge.file, callLine: edge.sl, callCol: edge.sc || 0 };
         }
       }
       if (edge.source === ref.n) {
-        const key = ref.g + ':' + edge.target;
+        const cNode = graph.nodes[edge.target];
+        const key = cNode ? (cNode.label + ':' + cNode.file + ':' + cNode.sl) : (ref.g + ':' + edge.target);
         if (!childMap[key]) {
           childMap[key] = { g: ref.g, n: edge.target, callFile: edge.file, callLine: edge.sl, callCol: edge.sc || 0 };
         }
@@ -1659,6 +1932,349 @@ function createNodeBox(info) {
   return box;
 }
 
+// ---- Graph View ----
+
+let currentView = 'source';
+let currentGraphIdx = -1;
+
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase() === view);
+  });
+
+  const treePanel = document.getElementById('tree-panel');
+  const methodList = document.getElementById('method-list');
+  const sourcePanel = document.getElementById('source-panel');
+  const graphPanel = document.getElementById('graph-panel');
+  const resizeHandle = document.getElementById('resize-handle');
+  const contextBar = document.getElementById('context-bar');
+  const bottomHandle = document.getElementById('bottom-resize-handle');
+  const bottomPane = document.getElementById('bottom-pane');
+
+  if (view === 'source') {
+    treePanel.style.display = 'block';
+    methodList.style.display = 'none';
+    sourcePanel.style.display = 'block';
+    graphPanel.style.display = 'none';
+    resizeHandle.style.display = 'block';
+    if (Object.keys(DATA.contexts).length > 1) contextBar.style.display = 'flex';
+  } else {
+    treePanel.style.display = 'none';
+    methodList.style.display = 'block';
+    sourcePanel.style.display = 'none';
+    graphPanel.style.display = 'block';
+    resizeHandle.style.display = 'none';
+    contextBar.style.display = 'none';
+    bottomHandle.classList.remove('visible');
+    bottomPane.classList.remove('visible');
+    if (methodList.children.length === 0) buildMethodList();
+    if (currentGraphIdx < 0) {
+      // Show the first graph that has roundings
+      const firstItem = methodList.querySelector('.method-item');
+      if (firstItem) showGraph(parseInt(firstItem.dataset.graphIdx));
+    }
+  }
+}
+
+function graphHasRoundings(graph) {
+  // Check if any node has non-Neither roundings
+  for (const nodeId in graph.nodes) {
+    const node = graph.nodes[nodeId];
+    if (node.roundings && node.roundings.length > 0) return true;
+    if (node.returnRounding && node.returnRounding !== 'Neither') return true;
+  }
+  return false;
+}
+
+function buildMethodList() {
+  const list = document.getElementById('method-list');
+  list.innerHTML = '';
+
+  // Build sorted index, filtering out graphs with no real roundings
+  const indices = DATA.graphs.map((g, i) => i).filter(i => graphHasRoundings(DATA.graphs[i]));
+  indices.sort((a, b) => (DATA.graphs[a].label || '').localeCompare(DATA.graphs[b].label || ''));
+
+  for (const idx of indices) {
+    const graph = DATA.graphs[idx];
+    const item = document.createElement('div');
+    item.className = 'method-item';
+    item.dataset.graphIdx = idx;
+
+    // Rounding badge (dot showing aggregated rounding color)
+    const node0 = graph.nodes['0'];
+    if (node0 && node0.returnRounding) {
+      const dot = document.createElement('span');
+      dot.className = 'method-badge';
+      dot.style.background = ROUNDING_COLORS[node0.returnRounding] || '#d1d5db';
+      dot.title = node0.returnRounding;
+      item.appendChild(dot);
+    }
+
+    const name = document.createElement('span');
+    name.className = 'method-name';
+    name.textContent = graph.label || ('Graph ' + idx);
+    item.appendChild(name);
+
+    const count = document.createElement('span');
+    count.className = 'method-count';
+    count.textContent = Object.keys(graph.nodes).length;
+    item.appendChild(count);
+
+    item.addEventListener('click', () => showGraph(idx));
+    list.appendChild(item);
+  }
+}
+
+function showGraph(graphIdx) {
+  currentGraphIdx = graphIdx;
+
+  // Update active state
+  document.querySelectorAll('.method-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.graphIdx) === graphIdx);
+  });
+
+  const graph = DATA.graphs[graphIdx];
+  if (!graph) return;
+
+  const container = document.getElementById('graph-container');
+  const nodesEl = document.getElementById('graph-nodes');
+  const edgesSvg = document.getElementById('graph-edges');
+  nodesEl.innerHTML = '';
+  // Clear edges but keep the defs
+  const defs = edgesSvg.querySelector('defs');
+  edgesSvg.innerHTML = '';
+  edgesSvg.appendChild(defs);
+
+  // Build call-site lookup: nodeId -> {file, sl, sc} (where this node was called from)
+  const callSiteOf = {};
+  for (const edge of graph.edges) {
+    callSiteOf[edge.target] = { file: edge.file, sl: edge.sl, sc: edge.sc };
+  }
+
+  // Create dagre graph
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB', nodesep: 50, ranksep: 70, marginx: 30, marginy: 30 });
+  g.setDefaultEdgeLabel(function() { return {}; });
+
+  // Create node elements and measure them
+  const nodeElements = {};
+  for (const nodeId in graph.nodes) {
+    const node = graph.nodes[nodeId];
+    const callSite = callSiteOf[nodeId] || null;
+    const el = createGraphNode(nodeId, node, callSite);
+    el.style.visibility = 'hidden';
+    el.style.position = 'absolute';
+    nodesEl.appendChild(el);
+    nodeElements[nodeId] = el;
+  }
+
+  // Double-rAF to ensure DOM is painted before measuring node dimensions
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    for (const nodeId in nodeElements) {
+      const el = nodeElements[nodeId];
+      const w = Math.max(el.offsetWidth, 120);
+      const h = Math.max(el.offsetHeight, 40);
+      g.setNode(nodeId, { width: w + 10, height: h + 10 });
+    }
+
+    // Sort edges by call-site position so children are ordered left-to-right
+    const sortedEdges = [...graph.edges].sort((a, b) => {
+      if (a.sl !== b.sl) return a.sl - b.sl;
+      return (a.sc || 0) - (b.sc || 0);
+    });
+    for (const edge of sortedEdges) {
+      g.setEdge(edge.source, edge.target);
+    }
+
+    dagre.layout(g);
+
+    // Position nodes
+    let maxX = 0, maxY = 0;
+    g.nodes().forEach(function(nodeId) {
+      const pos = g.node(nodeId);
+      const el = nodeElements[nodeId];
+      if (!el || !pos) return;
+      const x = pos.x - pos.width / 2;
+      const y = pos.y - pos.height / 2;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.visibility = '';
+      maxX = Math.max(maxX, pos.x + pos.width / 2);
+      maxY = Math.max(maxY, pos.y + pos.height / 2);
+    });
+
+    // Size container
+    container.style.width = (maxX + 40) + 'px';
+    container.style.height = (maxY + 40) + 'px';
+
+    // Size SVG
+    edgesSvg.setAttribute('width', maxX + 40);
+    edgesSvg.setAttribute('height', maxY + 40);
+
+    // Draw edges
+    g.edges().forEach(function(e) {
+      const edgeData = g.edge(e);
+      if (!edgeData || !edgeData.points) return;
+      const points = edgeData.points;
+      if (points.length < 2) return;
+
+      let d = 'M ' + points[0].x + ' ' + points[0].y;
+      if (points.length === 2) {
+        d += ' L ' + points[1].x + ' ' + points[1].y;
+      } else {
+        for (let i = 1; i < points.length - 1; i++) {
+          const p0 = points[i - 1];
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const cx = p1.x;
+          const cy = p1.y;
+          if (i === points.length - 2) {
+            d += ' Q ' + cx + ' ' + cy + ' ' + p2.x + ' ' + p2.y;
+          } else {
+            const mx = (p1.x + p2.x) / 2;
+            const my = (p1.y + p2.y) / 2;
+            d += ' Q ' + cx + ' ' + cy + ' ' + mx + ' ' + my;
+          }
+        }
+      }
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('class', 'graph-edge');
+      path.setAttribute('marker-end', 'url(#arrowhead)');
+      edgesSvg.appendChild(path);
+    });
+
+    // Scroll to root node (node "0")
+    const rootEl = nodeElements['0'];
+    if (rootEl) {
+      const graphPanel = document.getElementById('graph-panel');
+      const rootPos = g.node('0');
+      if (rootPos) {
+        graphPanel.scrollLeft = Math.max(0, rootPos.x - graphPanel.clientWidth / 2);
+        graphPanel.scrollTop = 0;
+      }
+    }
+  }); });
+}
+
+function createGraphNode(nodeId, node, callSite) {
+  const el = document.createElement('div');
+  el.className = 'graph-node';
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'graph-node-header';
+  if (node.returnRounding) {
+    const dot = document.createElement('span');
+    dot.className = 'node-rounding-dot';
+    dot.style.background = ROUNDING_COLORS[node.returnRounding] || '#d1d5db';
+    dot.title = 'Return: ' + node.returnRounding;
+    header.appendChild(dot);
+  }
+  const labelSpan = document.createElement('span');
+  labelSpan.textContent = node.label || nodeId;
+  header.appendChild(labelSpan);
+  el.appendChild(header);
+
+  // File info + call site
+  if (node.file) {
+    const fileEl = document.createElement('div');
+    fileEl.className = 'graph-node-file';
+    let fileText = abbreviatePath(node.file) + ':' + node.sl + '-' + node.el;
+    if (callSite && callSite.file) {
+      fileText += '  \u2190 called at ' + abbreviatePath(callSite.file) + ':' + callSite.sl;
+    }
+    fileEl.textContent = fileText;
+    el.appendChild(fileEl);
+  }
+
+  // Source with annotations
+  const sourceEl = document.createElement('div');
+  sourceEl.className = 'graph-node-source';
+  sourceEl.innerHTML = renderNodeSource(node);
+  el.appendChild(sourceEl);
+
+  // Click to navigate to source view
+  el.addEventListener('click', () => {
+    if (node.file && DATA.sourceFiles[node.file]) {
+      switchView('source');
+      setTimeout(() => {
+        showFile(node.file);
+        setTimeout(() => {
+          const table = document.querySelector('table.source-code');
+          if (table && table.rows[node.sl - 1]) {
+            table.rows[node.sl - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightLine(table.rows[node.sl - 1]);
+          }
+        }, 50);
+      }, 50);
+    }
+  });
+
+  return el;
+}
+
+function renderNodeSource(node) {
+  if (!node.file || !DATA.sourceFiles[node.file]) return '<span style="color:#94a3b8">Source not available</span>';
+
+  const raw = DATA.sourceFiles[node.file].raw;
+  const lines = raw.split('\n');
+  const startLine = Math.max(1, node.sl);
+  const endLine = Math.min(lines.length, node.el);
+
+  const roundings = (node.roundings || []).filter(r => r.rounding !== 'Neither');
+
+  const gutterWidth = String(endLine).length;
+  let html = '';
+  for (let lineNum = startLine; lineNum <= endLine; lineNum++) {
+    const lineText = lines[lineNum - 1] || '';
+    const numStr = String(lineNum).padStart(gutterWidth);
+    html += '<span style="color:#adb5bd;user-select:none">' + numStr + ' </span>';
+    // Find annotations on this line
+    const lineAnns = [];
+    for (const r of roundings) {
+      if (r.sl > lineNum || r.el < lineNum) continue;
+      const sc = (r.sl === lineNum) ? r.sc : 0;
+      const ec = (r.el === lineNum) ? r.ec : lineText.length;
+      lineAnns.push({ sc: sc, ec: ec, rounding: r.rounding, size: (r.el - r.sl) * 10000 + (r.ec - r.sc) });
+    }
+
+    if (lineAnns.length === 0) {
+      html += escapeHtml(lineText) + '\n';
+    } else {
+      // Build char-to-annotation map (smallest wins)
+      const sorted = [...lineAnns].sort((a, b) => a.size - b.size);
+      const charAnn = new Array(lineText.length).fill(null);
+      const byLargest = [...sorted].reverse();
+      for (const ann of byLargest) {
+        for (let i = ann.sc; i < Math.min(ann.ec, lineText.length); i++) {
+          charAnn[i] = ann;
+        }
+      }
+
+      // Build segments
+      let pos = 0;
+      while (pos < lineText.length) {
+        const ann = charAnn[pos];
+        let end = pos + 1;
+        while (end < lineText.length && charAnn[end] === ann) end++;
+        const text = escapeHtml(lineText.substring(pos, end));
+        if (ann) {
+          html += '<span class="' + roundingClass(ann.rounding) + '">' + text + '</span>';
+        } else {
+          html += text;
+        }
+        pos = end;
+      }
+      html += '\n';
+    }
+  }
+
+  return html;
+}
+
 init();
 </script>
 </body>
@@ -1667,79 +2283,98 @@ init();
 
 
 def main():
-    project_root, json_input, html_output, conf_file = parse_args()
+    project_root, json_input, html_output, conf_file, full_context_breakdown = parse_args()
     project_root = os.path.abspath(project_root)
 
     # Load JSON
     with open(json_input, "r") as f:
         data = json.load(f)
 
-    # Extract and aggregate roundings
-    aggregated = extract_roundings(data, project_root)
-
-    # Extract graphs
+    # Extract graphs (needed for both modes — caller-callee navigation)
     graphs = extract_graphs(data, project_root)
 
-    # Collect all referenced file paths (annotations + graph nodes)
-    all_files = set(aggregated.keys())
-    for g in graphs:
-        for node in g["nodes"].values():
-            if node["file"]:
-                all_files.add(node["file"])
+    if full_context_breakdown:
+        # Full context breakdown: aggregate across all nodes, build per-graph contexts
+        aggregated = extract_roundings(data, project_root)
 
-    # Read source files
-    source_files = collect_referenced_files_from_paths(all_files, project_root)
+        all_files = set(aggregated.keys())
+        for g in graphs:
+            for node in g["nodes"].values():
+                if node["file"]:
+                    all_files.add(node["file"])
+
+        source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+        return_annotations = extract_return_annotations(data, project_root, source_files)
+        per_graph_roundings = extract_per_graph_roundings(data, project_root)
+        per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
+
+        # Build multi-context dict
+        contexts = {"allContexts": {}}
+        for filename, annotations in aggregated.items():
+            contexts["allContexts"][filename] = annotations
+
+        for filename, ret_anns in return_annotations.items():
+            if filename not in contexts["allContexts"]:
+                contexts["allContexts"][filename] = []
+            contexts["allContexts"][filename].extend(ret_anns)
+
+        for ctx_name, file_anns in per_graph_roundings.items():
+            if ctx_name not in contexts:
+                contexts[ctx_name] = {}
+            for filename, anns in file_anns.items():
+                if filename not in contexts[ctx_name]:
+                    contexts[ctx_name][filename] = []
+                contexts[ctx_name][filename].extend(anns)
+
+        for ctx_name, file_anns in per_graph_returns.items():
+            if ctx_name not in contexts:
+                contexts[ctx_name] = {}
+            for filename, anns in file_anns.items():
+                if filename not in contexts[ctx_name]:
+                    contexts[ctx_name][filename] = []
+                contexts[ctx_name][filename].extend(anns)
+
+        # Filter out per-graph contexts where all findings are Neither
+        for ctx_name in list(contexts.keys()):
+            if ctx_name == "allContexts":
+                continue
+            all_neither = all(
+                a["rounding"] == "Neither"
+                for anns in contexts[ctx_name].values()
+                for a in anns
+            )
+            if all_neither:
+                del contexts[ctx_name]
+
+        total_annotations = sum(len(v) for v in aggregated.values())
+        total_return = sum(len(v) for v in return_annotations.values())
+    else:
+        # Default mode: only use node "0" (root function) from each graph
+        aggregated = extract_roundings_root_only(data, project_root)
+
+        all_files = set(aggregated.keys())
+        for g in graphs:
+            for node in g["nodes"].values():
+                if node["file"]:
+                    all_files.add(node["file"])
+
+        source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+        return_annotations = extract_return_annotations_root_only(data, project_root, source_files)
+
+        # Single context — no per-graph breakdown
+        contexts = {"contextFree": {}}
+        for filename, anns in aggregated.items():
+            contexts["contextFree"][filename] = list(anns)
+        for filename, ret_anns in return_annotations.items():
+            contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
+
+        total_annotations = sum(len(v) for v in aggregated.values())
+        total_return = sum(len(v) for v in return_annotations.values())
 
     # Build directory tree
     dir_tree = build_directory_tree(sorted(source_files.keys()))
-
-    # Extract return annotations
-    return_annotations = extract_return_annotations(data, project_root, source_files)
-
-    # Extract per-graph roundings and return annotations
-    per_graph_roundings = extract_per_graph_roundings(data, project_root)
-    per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
-
-    # Build contexts dict
-    contexts = {"allContexts": {}}
-    for filename, annotations in aggregated.items():
-        contexts["allContexts"][filename] = annotations
-
-    # Merge return annotations into allContexts
-    for filename, ret_anns in return_annotations.items():
-        if filename not in contexts["allContexts"]:
-            contexts["allContexts"][filename] = []
-        contexts["allContexts"][filename].extend(ret_anns)
-
-    # Add per-graph contexts
-    for ctx_name, file_anns in per_graph_roundings.items():
-        if ctx_name not in contexts:
-            contexts[ctx_name] = {}
-        for filename, anns in file_anns.items():
-            if filename not in contexts[ctx_name]:
-                contexts[ctx_name][filename] = []
-            contexts[ctx_name][filename].extend(anns)
-
-    # Merge per-graph return annotations
-    for ctx_name, file_anns in per_graph_returns.items():
-        if ctx_name not in contexts:
-            contexts[ctx_name] = {}
-        for filename, anns in file_anns.items():
-            if filename not in contexts[ctx_name]:
-                contexts[ctx_name][filename] = []
-            contexts[ctx_name][filename].extend(anns)
-
-    # Filter out per-graph contexts where all findings are Neither
-    for ctx_name in list(contexts.keys()):
-        if ctx_name == "allContexts":
-            continue
-        all_neither = all(
-            a["rounding"] == "Neither"
-            for anns in contexts[ctx_name].values()
-            for a in anns
-        )
-        if all_neither:
-            del contexts[ctx_name]
 
     # Generate HTML
     if conf_file:
@@ -1754,10 +2389,9 @@ def main():
     with open(html_output, "w") as f:
         f.write(html)
 
-    print(f"Generated: {html_output}")
+    mode = "full context breakdown" if full_context_breakdown else "default (root-only)"
+    print(f"Generated ({mode}): {html_output}")
     print(f"  {len(source_files)} source files")
-    total_annotations = sum(len(v) for v in aggregated.values())
-    total_return = sum(len(v) for v in return_annotations.values())
     print(f"  {total_annotations} rounding annotations")
     print(f"  {total_return} return annotations")
 
