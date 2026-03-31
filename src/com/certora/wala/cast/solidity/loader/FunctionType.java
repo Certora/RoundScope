@@ -52,10 +52,6 @@ public class FunctionType implements Method {
 		
 		this.name = signature(name, args, returnType, self != null);
 		 		
-		if (name.contains("_computeScalingFactor")) {
-			System.err.println(name);
-		}
-		
 		TypeReference tr = TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + (self != null? self.getName() + ".": "") + this.name);
 		SolidityCAstType.record((self != null? self.getName() + ".": "") + this.name, this, tr);
 	}
@@ -114,7 +110,7 @@ public class FunctionType implements Method {
 
 	@Override
 	public CAstType getDeclaringType() {
-		return self;
+		return self==null? SolidityCAstType.get("root"): self;
 	}
 
 	@Override
