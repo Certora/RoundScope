@@ -1,10 +1,10 @@
 package com.certora.wala.cast.solidity.jni;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.List;
@@ -189,8 +189,8 @@ public class SolidityJNIBridge extends NativeBridge implements AutoCloseable {
 				@Override
 				public URL getURL() {
 					try {
-						return URI.create("file:" + fileName).toURL();
-					} catch (MalformedURLException e) {
+						return new File(fileName).toURI().toURL();
+					} catch (MalformedURLException | IllegalArgumentException e) {
 						assert false : e;
 						return null;
 					}

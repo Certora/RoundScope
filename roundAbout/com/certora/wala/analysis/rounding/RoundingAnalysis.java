@@ -559,7 +559,7 @@ public class RoundingAnalysis {
 					if (ir.getSymbolTable().isConstant(valueNumber)) {
 						v = new RoundingVariable(valueNumber, Direction.Neither, null);
 
-					} else if (valueNumber <= ir.getSymbolTable().getNumberOfParameters()) {
+					} else if (valueNumber <= parameters.size()) {
 						v = new RoundingVariable(valueNumber, parameters.get(valueNumber - 1), null);
 
 					} else if (du.getDef(valueNumber) instanceof SSAAbstractInvokeInstruction) {

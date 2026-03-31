@@ -19,9 +19,11 @@ public class LibraryType implements Class {
 
 		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 		
-		assert name.startsWith("library ") : name;
-		SolidityCAstType.record(name.substring(8), this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
-		
+		if (name.startsWith("library ")) {
+			SolidityCAstType.record(name.substring(8), this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
+		} else if (name.startsWith("contract ")) {
+			SolidityCAstType.record(name.substring(9), this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
+		}
 	}
 
 	@Override

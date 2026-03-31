@@ -60,6 +60,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"bytes4", SolidityTypes.bytes4, 0},
 			{"bytes8", SolidityTypes.bytes8, 0},
 			{"bytes16", SolidityTypes.bytes16, 0},
+			{"bytes20", SolidityTypes.bytes20, 0},
 			{"bytes32", SolidityTypes.bytes32, 0},
 			{"error", SolidityTypes.error, null},
 			{"msg", SolidityTypes.msg, null},
@@ -114,8 +115,8 @@ public class SolidityCAstType implements CAstType.Primitive {
 		}
 		if (!types.containsKey(name)) {
 			System.err.println("cannot find type " + name);
-			if (name.contains("super")) {
-				System.err.println("super");
+			if (name.contains("ReserveFlags")) {
+				System.err.println("it");
 			}
 		}
 		return types.get(name);
