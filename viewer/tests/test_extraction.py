@@ -16,7 +16,9 @@ from generate_viewer import (
     extract_per_graph_return_annotations,
     extract_per_graph_roundings,
     extract_return_annotations,
+    extract_return_annotations_root_only,
     extract_roundings,
+    extract_roundings_root_only,
 )
 
 
@@ -116,3 +118,50 @@ def test_extract_graphs(hub_data, aave_project_root, update_golden):
         normalized.append(g)
 
     assert_golden(normalized, "hub-graphs.json", update_golden)
+
+
+def test_extract_roundings_root_only(hub_data, aave_project_root, update_golden):
+    """Test root-only rounding extraction against golden file."""
+    result = extract_roundings_root_only(hub_data, aave_project_root)
+
+    normalized = {}
+    for filename in sorted(result.keys()):
+        normalized[filename] = normalize_annotations(result[filename])
+
+    assert_golden(normalized, "hub-annotations-root-only.json", update_golden)
+
+
+def test_extract_return_annotations_root_only(hub_data, aave_project_root, hub_source_files, update_golden):
+    """Test root-only return annotation extraction against golden file."""
+    result = extract_return_annotations_root_only(hub_data, aave_project_root, hub_source_files)
+
+    normalized = {}
+    for filename in sorted(result.keys()):
+        normalized[filename] = normalize_annotations(result[filename])
+
+    assert_golden(normalized, "hub-return-annotations-root-only.json", update_golden)
+
+
+def test_root_only_annotations_are_subset(hub_data, aave_project_root):
+    """Root-only annotations should reference only node '0' in their nodeRefs."""
+    result = extract_roundings_root_only(hub_data, aave_project_root)
+
+    for filename, annotations in result.items():
+        for ann in annotations:
+            for ref in ann["nodeRefs"]:
+                assert ref["n"] == "0", (
+                    f"Root-only annotation in {filename} at line {ann['sl']} "
+                    f"references node '{ref['n']}' instead of '0'"
+                )
+
+
+def test_root_only_has_fewer_or_equal_annotations(hub_data, aave_project_root):
+    """Root-only mode should produce <= annotations compared to full extraction."""
+    full = extract_roundings(hub_data, aave_project_root)
+    root_only = extract_roundings_root_only(hub_data, aave_project_root)
+
+    full_count = sum(len(v) for v in full.values())
+    root_count = sum(len(v) for v in root_only.values())
+    assert root_count <= full_count, (
+        f"Root-only ({root_count}) should have <= annotations than full ({full_count})"
+    )

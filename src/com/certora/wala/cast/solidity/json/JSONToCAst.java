@@ -287,9 +287,6 @@ public class JSONToCAst {
 			}
 			
 			public CAstNode handleIdentifierDeclaration(JSONObject decl, Position location, SolidityWalkContext context) {
-				if (decl.getInt("id") == 464) {
-					System.err.println("this one");
-				}
 				return (new JsonNodeTypeOnlyVisitor<CAstNode>() {
 					@SuppressWarnings("unused")
 					public CAstNode visitVariableDeclaration(JSONObject decl, Void ignore) {
@@ -316,7 +313,9 @@ public class JSONToCAst {
 						if (context.contract() != null) {
 							selfPtr = getSelfPtr(context);
 							return record(ast.makeNode(CAstNode.OBJECT_REF, selfPtr, ast.makeConstant(name)), location, et, context);
-						}  else {
+						} else if (decl.has("kind") && "freeFunction".equals(decl.getString("kind"))) {
+							return record(ast.makeConstant(getType(decl, context)), location, et, context);
+						} else {
 							return record(ast.makeNode(CAstNode.VAR, ast.makeConstant(name)), location, et, context);
 
 						}
@@ -832,6 +831,7 @@ public class JSONToCAst {
 				}
 
 				context.registerFunction(o.getString("name"), funEntity);
+				
 				return ast.makeNode(CAstNode.EMPTY);
 			}
 
@@ -1166,7 +1166,7 @@ public class JSONToCAst {
 			}
 
 			private boolean isStructField(JSONObject decl, SolidityWalkContext context) {
-				return context.contract().getString("nodeType").equals("StructDefinition");
+				return context.contract() != null &&  context.contract().getString("nodeType").equals("StructDefinition");
 			}
 
 			@SuppressWarnings("unused")
@@ -1592,7 +1592,12 @@ public class JSONToCAst {
 				}
 			}
 
-			new TranslationVisitor().visit(tree, new RootContext());
+			RootContext context = new RootContext();
+			
+			new TranslationVisitor().visit(tree, context);
+
+			context.functions.forEach(e -> fileEntity.addScopedEntity(null, e));
+			context.vars.forEach(e -> fileEntity.addScopedEntity(null, e));
 			
 			return fileEntity;
 		}
@@ -1676,10 +1681,10 @@ public class JSONToCAst {
 	
 	private boolean compareNames(String s1, String s2) {
 		if (s1.contains(".")) {
-			s1 = s1.substring(s1.lastIndexOf('.'));
+			s1 = s1.substring(s1.lastIndexOf('.')+1);
 		}
 		if (s2.contains(".")) {
-			s2 = s2.substring(s2.lastIndexOf('.'));
+			s2 = s2.substring(s2.lastIndexOf('.')+1);
 		}
 		return s1.equals(s2);
 	}
@@ -1860,7 +1865,6 @@ public class JSONToCAst {
 			public CAstType visitContractDefinition(JSONObject o, Void ignore) {
 				return findOrCreateType(o, context, JSONToCAst.this::newContractType);
 			}
-
 			@SuppressWarnings("unused")
 			public CAstType visitEnumDefinition(JSONObject o, Void ignore) {
 				return findOrCreateType(o, context, JSONToCAst.this::newEnumType);
@@ -1869,6 +1873,11 @@ public class JSONToCAst {
 			@SuppressWarnings("unused")
 			public CAstType visitStructDefinition(JSONObject o, Void ignore) {
 				return findOrCreateType(o, context, JSONToCAst.this::newStructType);
+			}
+			
+			@SuppressWarnings("unused")
+			public CAstType visitFunctionDefinition(JSONObject o, Void ignore) {
+				return findOrCreateType(o, context, JSONToCAst.this::newFunctionType);
 			}
 			
 			@SuppressWarnings("unused")
@@ -1889,7 +1898,7 @@ public class JSONToCAst {
 
 			@SuppressWarnings("unused")
 			public CAstType visitUserDefinedTypeName(JSONObject o, Void ignore) {
-				if (o.has("referencedDeclaration") && o.getInt("referencedDeclaration") == 8510) {
+				if (o.has("referencedDeclaration") && o.getInt("referencedDeclaration") == 12729) {
 					System.err.println("found it");
 				}
 				return getType(getDeclaration(o, context), context);
@@ -1982,7 +1991,7 @@ public class JSONToCAst {
 		} else if (typeId.startsWith("t_contract$_")) {
 			int typeEndIndex = typeId.indexOf('_', 12);
 			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
-			String name = typeId.substring(12, idEndIndex);
+			String name = typeId.substring(12, typeEndIndex);
 			CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), name, context), context);
 			return Pair.make(et, typeId.substring(idEndIndex));
 

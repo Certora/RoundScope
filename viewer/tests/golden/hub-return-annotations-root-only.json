@@ -1,0 +1,756 @@
+{
+  "src/dependencies/openzeppelin/AccessManaged.sol": [
+    {
+      "sl": 61,
+      "sc": 43,
+      "el": 61,
+      "ec": 60,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 1,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 61,
+      "sc": 43,
+      "el": 61,
+      "ec": 60,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 2,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 78,
+      "sc": 48,
+      "el": 78,
+      "ec": 64,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 0,
+          "n": "0"
+        }
+      ]
+    }
+  ],
+  "src/hub/Hub.sol": [
+    {
+      "sl": 72,
+      "sc": 24,
+      "el": 72,
+      "ec": 41,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 36,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 208,
+      "sc": 62,
+      "el": 208,
+      "ec": 79,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 43,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 217,
+      "sc": 57,
+      "el": 217,
+      "ec": 74,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 20,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 241,
+      "sc": 72,
+      "el": 241,
+      "ec": 89,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 48,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 266,
+      "sc": 70,
+      "el": 266,
+      "ec": 87,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 53,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 295,
+      "sc": 13,
+      "el": 295,
+      "ec": 30,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 56,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 325,
+      "sc": 13,
+      "el": 325,
+      "ec": 30,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 26,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 355,
+      "sc": 13,
+      "el": 355,
+      "ec": 30,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 28,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 461,
+      "sc": 64,
+      "el": 461,
+      "ec": 78,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 4,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 466,
+      "sc": 41,
+      "el": 466,
+      "ec": 58,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 5,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 471,
+      "sc": 77,
+      "el": 471,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 47,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 476,
+      "sc": 77,
+      "el": 476,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 10,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 481,
+      "sc": 80,
+      "el": 481,
+      "ec": 97,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 59,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 486,
+      "sc": 80,
+      "el": 486,
+      "ec": 97,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 7,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 491,
+      "sc": 78,
+      "el": 491,
+      "ec": 95,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 17,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 496,
+      "sc": 78,
+      "el": 496,
+      "ec": 95,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 45,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 501,
+      "sc": 81,
+      "el": 501,
+      "ec": 98,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 51,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 506,
+      "sc": 81,
+      "el": 506,
+      "ec": 98,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 40,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 511,
+      "sc": 72,
+      "el": 511,
+      "ec": 96,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 9,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 517,
+      "sc": 61,
+      "el": 517,
+      "ec": 78,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 27,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 522,
+      "sc": 57,
+      "el": 522,
+      "ec": 74,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 42,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 527,
+      "sc": 57,
+      "el": 527,
+      "ec": 74,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 15,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 532,
+      "sc": 55,
+      "el": 532,
+      "ec": 81,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 31,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 539,
+      "sc": 60,
+      "el": 539,
+      "ec": 77,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 35,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 545,
+      "sc": 61,
+      "el": 545,
+      "ec": 78,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 34,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 556,
+      "sc": 62,
+      "el": 556,
+      "ec": 79,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 60,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 561,
+      "sc": 62,
+      "el": 561,
+      "ec": 87,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 39,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 567,
+      "sc": 60,
+      "el": 567,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 13,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 572,
+      "sc": 61,
+      "el": 572,
+      "ec": 78,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 30,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 577,
+      "sc": 51,
+      "el": 577,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 52,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 582,
+      "sc": 57,
+      "el": 582,
+      "ec": 85,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 33,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 594,
+      "sc": 62,
+      "el": 594,
+      "ec": 79,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 50,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 600,
+      "sc": 56,
+      "el": 600,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 19,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 605,
+      "sc": 60,
+      "el": 605,
+      "ec": 77,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 29,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 610,
+      "sc": 56,
+      "el": 610,
+      "ec": 73,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 57,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 615,
+      "sc": 77,
+      "el": 615,
+      "ec": 94,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 24,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 620,
+      "sc": 77,
+      "el": 620,
+      "ec": 94,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 23,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 625,
+      "sc": 70,
+      "el": 625,
+      "ec": 96,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 58,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 632,
+      "sc": 75,
+      "el": 632,
+      "ec": 92,
+      "rounding": "Inconsistent",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 18,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 639,
+      "sc": 76,
+      "el": 639,
+      "ec": 93,
+      "rounding": "Either",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 46,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 646,
+      "sc": 77,
+      "el": 646,
+      "ec": 94,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 12,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 654,
+      "sc": 18,
+      "el": 654,
+      "ec": 43,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 37,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 660,
+      "sc": 76,
+      "el": 660,
+      "ec": 93,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 38,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 665,
+      "sc": 71,
+      "el": 665,
+      "ec": 85,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 11,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 670,
+      "sc": 73,
+      "el": 670,
+      "ec": 90,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 41,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 675,
+      "sc": 66,
+      "el": 675,
+      "ec": 92,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 32,
+          "n": "0"
+        }
+      ]
+    },
+    {
+      "sl": 683,
+      "sc": 18,
+      "el": 683,
+      "ec": 46,
+      "rounding": "Neither",
+      "source": "return type",
+      "expr": "",
+      "nodeRefs": [
+        {
+          "g": 14,
+          "n": "0"
+        }
+      ]
+    }
+  ]
+}

@@ -1,110 +1,110 @@
 {
   "Hub.add": {
     "file_count": 8,
-    "annotation_count": 122
+    "annotation_count": 128
   },
   "Hub.draw": {
     "file_count": 5,
-    "annotation_count": 52
+    "annotation_count": 53
   },
   "Hub.eliminateDeficit": {
     "file_count": 8,
-    "annotation_count": 133
+    "annotation_count": 139
   },
   "Hub.getAddedAssets": {
     "file_count": 7,
-    "annotation_count": 87
+    "annotation_count": 92
   },
   "Hub.getAssetAccruedFees": {
     "file_count": 7,
-    "annotation_count": 77
+    "annotation_count": 82
   },
   "Hub.getAssetDrawnIndex": {
     "file_count": 4,
-    "annotation_count": 22
+    "annotation_count": 23
   },
   "Hub.getAssetOwed": {
     "file_count": 6,
-    "annotation_count": 57
+    "annotation_count": 59
   },
   "Hub.getAssetPremiumRay": {
     "file_count": 6,
-    "annotation_count": 41
+    "annotation_count": 43
   },
   "Hub.getAssetTotalOwed": {
     "file_count": 6,
-    "annotation_count": 62
+    "annotation_count": 64
   },
   "Hub.getSpokeAddedAssets": {
     "file_count": 8,
-    "annotation_count": 108
+    "annotation_count": 113
   },
   "Hub.getSpokeOwed": {
     "file_count": 6,
-    "annotation_count": 66
+    "annotation_count": 70
   },
   "Hub.getSpokePremiumRay": {
     "file_count": 6,
-    "annotation_count": 46
+    "annotation_count": 48
   },
   "Hub.getSpokeTotalOwed": {
     "file_count": 6,
-    "annotation_count": 67
+    "annotation_count": 71
   },
   "Hub.mintFeeShares": {
     "file_count": 8,
-    "annotation_count": 123
+    "annotation_count": 129
   },
   "Hub.previewAddByAssets": {
     "file_count": 8,
-    "annotation_count": 106
+    "annotation_count": 112
   },
   "Hub.previewAddByShares": {
     "file_count": 8,
-    "annotation_count": 110
+    "annotation_count": 116
   },
   "Hub.previewDrawByAssets": {
     "file_count": 4,
-    "annotation_count": 36
+    "annotation_count": 37
   },
   "Hub.previewDrawByShares": {
     "file_count": 4,
-    "annotation_count": 35
+    "annotation_count": 36
   },
   "Hub.previewRemoveByAssets": {
     "file_count": 8,
-    "annotation_count": 109
+    "annotation_count": 114
   },
   "Hub.previewRemoveByShares": {
     "file_count": 8,
-    "annotation_count": 108
+    "annotation_count": 113
   },
   "Hub.previewRestoreByAssets": {
     "file_count": 4,
-    "annotation_count": 34
+    "annotation_count": 35
   },
   "Hub.previewRestoreByShares": {
     "file_count": 4,
-    "annotation_count": 27
+    "annotation_count": 29
   },
   "Hub.remove": {
     "file_count": 8,
-    "annotation_count": 125
+    "annotation_count": 130
   },
   "Hub.reportDeficit": {
     "file_count": 5,
-    "annotation_count": 61
+    "annotation_count": 63
   },
   "Hub.restore": {
     "file_count": 5,
-    "annotation_count": 65
+    "annotation_count": 67
   },
   "Hub.updateAssetConfig": {
     "file_count": 8,
-    "annotation_count": 123
+    "annotation_count": 129
   },
   "allContexts": {
     "file_count": 11,
-    "annotation_count": 535
+    "annotation_count": 548
   }
 }
