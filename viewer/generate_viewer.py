@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate a self-contained HTML viewer for RoundScope JSON output."""
+"""Generate a self-contained HTML viewer for RoundAbout JSON output."""
 
 import json
 import os
@@ -16,7 +16,7 @@ from pygments.lexers.solidity import SolidityLexer
 def parse_args():
     if len(sys.argv) < 4 or len(sys.argv) > 5:
         print(
-            "Usage: python3 generate_viewer.py <project-root> <roundscope-output.json> <output.html> [conf-file]",
+            "Usage: python3 generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file]",
             file=sys.stderr,
         )
         sys.exit(1)
@@ -717,11 +717,11 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs, 
 
     pygments_css = HtmlFormatter(style="default").get_style_defs(".line-content")
 
-    title = "RoundScope — " + os.path.basename(project_root)
+    title = "RoundAbout — " + os.path.basename(project_root)
     if contracts:
         title += " — " + ", ".join(contracts)
     html_start = HTML_TEMPLATE_START.replace(
-        "<title>RoundScope Viewer</title>",
+        "<title>RoundAbout Viewer</title>",
         "<title>" + title + "</title>",
     )
 
@@ -743,7 +743,7 @@ HTML_TEMPLATE_START = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RoundScope Viewer</title>
+<title>RoundAbout Viewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -939,7 +939,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 <body>
 
 <div id="top-bar">
-  <span style="font-weight:600;">RoundScope</span>
+  <span style="font-weight:600;">RoundAbout</span>
   <span class="project-root" id="project-root-display"></span>
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>

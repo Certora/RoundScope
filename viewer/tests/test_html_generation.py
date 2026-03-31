@@ -81,7 +81,7 @@ def test_full_generation(hub_data, aave_project_root):
     # Basic sanity checks
     assert len(html) > 10000, "HTML output is suspiciously small"
     assert "const DATA =" in html
-    assert "RoundScope" in html
+    assert "RoundAbout" in html
     assert "r-up" in html
     assert "r-mixed" in html
     assert "allContexts" in html
