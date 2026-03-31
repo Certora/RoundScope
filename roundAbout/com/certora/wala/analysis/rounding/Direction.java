@@ -20,7 +20,11 @@ public enum Direction {
 	Either {
 		@Override
 		Direction meet(Direction d) {
-			return Either;
+			if (d == Inconsistent) {
+				return Inconsistent;
+			} else {
+				return Either;
+			}
 		}
 
 		@Override
@@ -50,6 +54,8 @@ public enum Direction {
 				return Down;
 			case Either:
 				return Either;
+			case Inconsistent:
+				return Inconsistent;
 			default:
 				return Either;
 			}
@@ -77,6 +83,8 @@ public enum Direction {
 				return Either;
 			case Either:
 				return Either;
+			case Inconsistent:
+				return Inconsistent;
 			default:
 				return Either;
 			}
@@ -108,6 +116,8 @@ public enum Direction {
 				return Down;
 			case Either:
 				return Either;
+			case Inconsistent:
+				return Inconsistent;
 			default:
 				return Either;
 			}
