@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-ROUNDSCOPE_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
+ROUNDABOUT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <conf-file>" >&2
@@ -15,13 +15,13 @@ PROJECT_DIR="$(pwd)"
 # Derive output paths next to the conf file
 CONF_DIR="$(dirname "$CONF")"
 CONF_BASE="$(basename "$CONF" .conf)"
-OUTPUT_JSON="${CONF_DIR}/${CONF_BASE}_roundscope.json"
-OUTPUT_HTML="${CONF_DIR}/${CONF_BASE}_roundscope.html"
+OUTPUT_JSON="${CONF_DIR}/${CONF_BASE}_roundabout.json"
+OUTPUT_HTML="${CONF_DIR}/${CONF_BASE}_roundabout.html"
 
-echo "Running RoundScope analysis..."
-bash "$ROUNDSCOPE_DIR/roundscope.sh" "$PROJECT_DIR" "$CONF" "$OUTPUT_JSON"
+echo "Running RoundAbout analysis..."
+bash "$ROUNDABOUT_DIR/roundabout.sh" "$PROJECT_DIR" "$CONF" "$OUTPUT_JSON"
 
 echo "Generating HTML viewer..."
-python3 "$ROUNDSCOPE_DIR/viewer/generate_viewer.py" "$PROJECT_DIR" "$OUTPUT_JSON" "$OUTPUT_HTML" "$CONF"
+python3 "$ROUNDABOUT_DIR/viewer/generate_viewer.py" "$PROJECT_DIR" "$OUTPUT_JSON" "$OUTPUT_HTML" "$CONF"
 
 echo "Done! Viewer generated at: $OUTPUT_HTML"
