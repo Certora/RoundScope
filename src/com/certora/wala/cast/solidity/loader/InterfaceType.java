@@ -27,8 +27,11 @@ public class InterfaceType implements Class {
 		
 		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 		
-		assert name.startsWith("interface ") : name;
-		SolidityCAstType.record(name.substring(10), this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
+		if (name.startsWith("interface ")) {
+			SolidityCAstType.record(name.substring(10), this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));
+		} else if (name.startsWith("contract ")) {
+			SolidityCAstType.record(name.substring(9), this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));
+		}
 	}
 
 	@Override

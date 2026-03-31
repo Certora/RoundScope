@@ -29,7 +29,7 @@ def update_golden(request):
 
 @pytest.fixture
 def hub_data():
-    """Load the Hub RoundScope JSON fixture."""
+    """Load the Hub RoundAbout JSON fixture."""
     path = os.path.join(FIXTURE_DIR, "output-Hub.json")
     with open(path, "r") as f:
         return json.load(f)

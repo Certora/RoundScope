@@ -8,8 +8,6 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -58,6 +56,7 @@ import com.ibm.wala.cast.tree.CAstQualifier;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.tree.CAstSymbol;
 import com.ibm.wala.cast.tree.CAstType;
+import com.ibm.wala.cast.tree.impl.CAstControlFlowRecorder;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstNodeTypeMapRecorder;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
@@ -73,6 +72,8 @@ import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.intset.IntIterator;
 import com.ibm.wala.util.intset.IntSet;
+import com.ibm.wala.util.intset.IntSetUtil;
+import com.ibm.wala.util.intset.MutableIntSet;
 
 public class JSONToCAst {
 	private int idx = 0;
@@ -286,6 +287,9 @@ public class JSONToCAst {
 			}
 			
 			public CAstNode handleIdentifierDeclaration(JSONObject decl, Position location, SolidityWalkContext context) {
+				if (decl.getInt("id") == 464) {
+					System.err.println("this one");
+				}
 				return (new JsonNodeTypeOnlyVisitor<CAstNode>() {
 					@SuppressWarnings("unused")
 					public CAstNode visitVariableDeclaration(JSONObject decl, Void ignore) {
@@ -307,16 +311,26 @@ public class JSONToCAst {
 					@SuppressWarnings("unused")
 					public CAstNode visitFunctionDefinition(JSONObject decl, Void ignore) {
 						CAstType et = findOrCreateType(decl, JSONToCAst.this::makeFunctionKey, context, JSONToCAst.this::newFunctionType);
+						String name = decl.has("constructor") && decl.getBoolean("constructor")? "<init>": decl.getString("name");
 						CAstNode selfPtr = null;
 						if (context.contract() != null) {
 							selfPtr = getSelfPtr(context);
-						} 
-						String name = decl.has("constructor") && decl.getBoolean("constructor")? "<init>": decl.getString("name");
-						return record(ast.makeNode(CAstNode.OBJECT_REF, selfPtr, ast.makeConstant(name)), location, et, context);
+							return record(ast.makeNode(CAstNode.OBJECT_REF, selfPtr, ast.makeConstant(name)), location, et, context);
+						}  else {
+							return record(ast.makeNode(CAstNode.VAR, ast.makeConstant(name)), location, et, context);
+
+						}
 					}
 
 					@SuppressWarnings("unused")
 					public CAstNode visitEventDefinition(JSONObject decl, Void ignore) {
+						CAstType et = findOrCreateType(decl, context, JSONToCAst.this::newFunctionType);
+						CAstNode selfPtr = getSelfPtr(context);
+						return record(ast.makeNode(CAstNode.OBJECT_REF, selfPtr, ast.makeConstant(decl.getString("name"))), location, et, context);
+					}
+
+					@SuppressWarnings("unused")
+					public CAstNode visitErrorDefinition(JSONObject decl, Void ignore) {
 						CAstType et = findOrCreateType(decl, context, JSONToCAst.this::newFunctionType);
 						CAstNode selfPtr = getSelfPtr(context);
 						return record(ast.makeNode(CAstNode.OBJECT_REF, selfPtr, ast.makeConstant(decl.getString("name"))), location, et, context);
@@ -339,6 +353,17 @@ public class JSONToCAst {
 						CAstType et = SolidityCAstType.get(decl.getString("canonicalName"));
 						return record(ast.makeNode(CAstNode.TYPE_LITERAL_EXPR, ast.makeConstant(et.getName())), location, et, context);
 					}
+
+					@SuppressWarnings("unused")
+					public CAstNode visitUserDefinedTypeName(JSONObject decl, Void ignore) {
+						return handleIdentifierDeclaration(decl.getJSONObject("referencedDeclaration"), location, context);
+					}
+					@SuppressWarnings("unused")
+					public CAstNode visitUserDefinedValueTypeDefinition(JSONObject decl, Void ignore) {
+						CAstType ut = getType(decl.getJSONObject("underlyingType"), context);
+						return record(ast.makeNode(CAstNode.TYPE_LITERAL_EXPR, ast.makeConstant(ut.getName())), location, ut, context);
+					}
+					
 				}).visit(decl, null);
 			}
 
@@ -381,9 +406,14 @@ public class JSONToCAst {
 				return new ContractContext();
 			}
 
-			private SolidityWalkContext variableContainerContext(SolidityWalkContext parent) {
+			private SolidityWalkContext structContainerContext(JSONObject structDefinition, SolidityWalkContext parent) {
 				return new VariableContainerContext() {
 					private final Collection<CAstEntity> vars = new ArrayList<>();
+
+					@Override
+					public JSONObject contract() {
+						return structDefinition;
+					}
 
 					@Override
 					public WalkContext<SolidityWalkContext, JSONObject> getParent() {
@@ -421,6 +451,11 @@ public class JSONToCAst {
 					}
 
 					
+					@Override
+					public CAstControlFlowRecorder cfg() {
+						return funEntity.getControlFlow();
+					}
+
 					@Override
 					public CAstSourcePositionRecorder pos() {
 						return funEntity.getSourceMap();
@@ -536,6 +571,14 @@ public class JSONToCAst {
 			}
 
 			@SuppressWarnings("unused")
+			public CAstNode visitBreak(JSONObject o, SolidityWalkContext context) {
+				CAstNode result = record(ast.makeNode(CAstNode.GOTO), getLocation(o.getString("src")), context);
+				context.cfg().map(result, result);
+				context.cfg().add(result, context.getBreakFor(null), null);
+				return result;
+			}
+			
+			@SuppressWarnings("unused")
 			public CAstNode visitConditional(JSONObject o, SolidityWalkContext context) {
 				return record(ast.makeNode(CAstNode.IF_EXPR, 
 						visit(o.getJSONObject("condition"), context),
@@ -570,6 +613,14 @@ public class JSONToCAst {
 				context.addScopedEntity(null, contractEntity);
 
 				return ast.makeNode(CAstNode.EMPTY);
+			}
+
+			@SuppressWarnings("unused")
+			public CAstNode visitContinue(JSONObject o, SolidityWalkContext context) {
+				CAstNode result = record(ast.makeNode(CAstNode.GOTO), getLocation(o.getString("src")), context);
+				context.cfg().map(result, result);
+				context.cfg().add(result, context.getContinueFor(null), null);
+				return result;
 			}
 
 			@SuppressWarnings("unused")
@@ -644,7 +695,7 @@ public class JSONToCAst {
 			public CAstNode visitForStatement(JSONObject o, SolidityWalkContext context) {
 				CAstNode init = visit(o.getJSONObject("initializationExpression"), context);
 				CAstNode test = visit(o.getJSONObject("condition"), context);
-				CAstNode update = visit(o.getJSONObject("loopExpression"), context);
+				CAstNode update = o.has("loopExpression")? visit(o.getJSONObject("loopExpression"), context): ast.makeNode(CAstNode.EMPTY);
 				
 				JSONObject contLabel = JSONObject.fromJson("{\"nodeType\": \"Continue\"}", JSONObject.class);
 				JSONObject breakLabel = JSONObject.fromJson("{\"nodeType\": \"Break\"}", JSONObject.class);
@@ -652,7 +703,9 @@ public class JSONToCAst {
 				CAstNode body = visit(o.getJSONObject("body"), lc);
 				
 				if (lc.continued) {
-					body = ast.makeNode(CAstNode.BLOCK_STMT, body, ast.makeNode(CAstNode.LABEL_STMT, ast.makeConstant("cont" + idx++), visit(contLabel, context)));
+					CAstNode cs = ast.makeNode(CAstNode.LABEL_STMT, ast.makeConstant("cont" + idx++), ast.makeNode(CAstNode.EMPTY));
+					context.cfg().map(contLabel, cs);
+					body = ast.makeNode(CAstNode.BLOCK_STMT, body, cs);
 				}
 				
 				CAstNode result = ast.makeNode(CAstNode.BLOCK_STMT, 
@@ -662,7 +715,9 @@ public class JSONToCAst {
 						ast.makeNode(CAstNode.BLOCK_STMT, body, update)));
 				
 				if (lc.broke) {
-					result = ast.makeNode(CAstNode.BLOCK_STMT, result, ast.makeNode(CAstNode.LABEL_STMT, ast.makeConstant("break" + idx++), visit(breakLabel, context)));
+					CAstNode bs = ast.makeNode(CAstNode.LABEL_STMT, ast.makeConstant("break" + idx++), ast.makeNode(CAstNode.EMPTY));
+					context.cfg().map(breakLabel, bs);
+					result = ast.makeNode(CAstNode.BLOCK_STMT, result, bs);
 				}
 				
 				return result;
@@ -671,8 +726,9 @@ public class JSONToCAst {
 			@SuppressWarnings("unused")
 			public CAstNode visitFunctionCall(JSONObject o, SolidityWalkContext context) {
 				CAstNode fun = visit(o.getJSONObject("expression"), context);
-				if (fun.getKind() == CAstNode.EMPTY) {
-					System.err.println(o);
+				if (fun == null) {
+					System.err.println("this");
+					visit(o.getJSONObject("expression"), context);
 				}
 				CAstNode[] args = Streams.concat(Streams.stream(Optional.of(ast.makeNode(CAstNode.EMPTY))), Streams.stream(o.getJSONArray("arguments").iterator()).map(v -> (JSONObject)v).map(v -> visit(v, context))).toArray(i -> new CAstNode[i]);
 				return record(ast.makeNode(CAstNode.CALL, fun, args), getLocation(o.getString("src")), getType(o, context), context);
@@ -740,7 +796,6 @@ public class JSONToCAst {
 										getLocation(scs.getString("src")), child)) != null) {
 									CAstNode[] args = Streams.stream(scs.getJSONArray("arguments").iterator())
 											.map(a -> visit((JSONObject) a, child)).toArray(n -> new CAstNode[n]);
-
 									record(ast.makeNode(CAstNode.CALL, callee, args), getLocation(scs.getString("src")),
 											null, context);
 								}
@@ -835,6 +890,15 @@ public class JSONToCAst {
 					return record(ast.makeNode(CAstNode.TYPE_LITERAL_EXPR, ast.makeConstant(at.getName())),getLocation(o.getString("src")), at, context); 
 				}
 			}
+
+			@SuppressWarnings("unused")
+			public CAstNode visitIndexRangeAccess(JSONObject o, SolidityWalkContext context) {
+				CAstNode obj = visit(o.getJSONObject("baseExpression"), context);
+				CAstType eltType = getType(o, context);
+				JSONObject stIdxExpr = o.getJSONObject("startExpression");
+				JSONObject endIdxExpr = o.getJSONObject("startExpression");
+				return record(ast.makeNode(CAstNode.ARRAY_REF, obj, ast.makeConstant(eltType), visit(stIdxExpr, context), visit(endIdxExpr, context)), getLocation(o.getString("src")), eltType, context);
+			}
 			
 			@SuppressWarnings("unused")
 			public CAstNode visitInheritanceSpecifier(JSONObject o, SolidityWalkContext context) {
@@ -850,9 +914,10 @@ public class JSONToCAst {
 				case "bool": return record(ast.makeConstant(o.getBoolean("value")), getLocation(o.getString("src")), getType(o, context), context);
 				case "number": 
 					Number n;
+					String rawValue = o.getString("value").replace("_", "");
 					try {
 						int radix = 10;
-						String biv = o.getString("value");
+						String biv = rawValue;
 						if (biv.startsWith("0x")) {
 							biv = biv.substring(2);
 							radix = 16;
@@ -869,9 +934,9 @@ public class JSONToCAst {
 					}
 					} catch (NumberFormatException e) {
 						try {
-							n = new BigDecimal(o.getString("value"));
+							n = new BigDecimal(rawValue);
 						} catch (NumberFormatException e1) {
-							n = Integer.decode(o.getString("value"));
+							n = Integer.decode(rawValue);
 						}
 					}
 					return record(ast.makeConstant(n), getLocation(o.getString("src")), getType(o, context), context);
@@ -887,11 +952,26 @@ public class JSONToCAst {
 			
 			@SuppressWarnings("unused")
 			public CAstNode visitMemberAccess(JSONObject o, SolidityWalkContext context) {
+				if ("toStringWithFallback".equals(o.getString("memberName"))) {
+					System.err.println("it");
+				}
 				JSONObject decl = getDeclaration(o, context);
+				if (decl != null && !o.getString("memberName").equals(decl.getString("name"))) {
+					System.err.println("here");
+					decl = getDeclaration(o.getInt("referencedDeclaration"), o.getString("memberName"), context);
+				}
+				if (decl == null && o.has("referencedDeclaration")) {
+					decl = getDeclaration(o.getInt("referencedDeclaration"), o.getString("memberName"), context);
+				}
 				if (decl == null) {
+					CAstNode baseObj = visit(o.getJSONObject("expression"), context);
+					if (baseObj == null) {
+						System.err.println(o);
+						baseObj = visit(o.getJSONObject("expression"), context);
+					}
 					return record(
 							ast.makeNode(CAstNode.OBJECT_REF, 
-								TranslationVisitor.this.visit(o.getJSONObject("expression"), context),
+								baseObj,
 								ast.makeConstant(o.getString("memberName"))),
 							getLocation(o.getString("src")), getType(o, context), context);
 				}
@@ -920,11 +1000,19 @@ public class JSONToCAst {
 								getLocation(o.getString("src")), et, context);
 					}
 	
+					public CAstNode visitEnumValue(JSONObject ev, Void ignore) {
+						return record(
+								ast.makeNode(CAstNode.OBJECT_REF, 
+									TranslationVisitor.this.visit(o.getJSONObject("expression"), context),
+									ast.makeConstant(o.getString("memberName"))),
+								getLocation(o.getString("src")), SolidityCAstType.get("uint256"), context);
+					}
+	
 					public CAstNode visitFunctionDefinition(JSONObject fd, Void ignore) {
 						return visitCallableDefinition(fd, null);
 					}
 					
-					public CAstNode visitEventDfinition(JSONObject fd, Void ignore) {
+					public CAstNode visitEventDefinition(JSONObject fd, Void ignore) {
 						return visitCallableDefinition(fd, null);
 					}
 					
@@ -988,7 +1076,12 @@ public class JSONToCAst {
 					return record(ast.makeNode(CAstNode.RETURN), getLocation(o.getString("src")), context);					
 				}
 			}
-			
+
+			@SuppressWarnings("unused")
+			public CAstNode visitRevertStatement(JSONObject o, SolidityWalkContext context) {
+				return record(ast.makeNode(CAstNode.THROW, visit(o.getJSONObject("errorCall"), context)), getLocation(o.getString("src")), context);					
+			}
+				
 			@SuppressWarnings("unused")
 			public CAstNode visitSourceUnit(JSONObject o, SolidityWalkContext context) {
 				return ast.makeNode(CAstNode.BLOCK_STMT, Streams.stream(o.getJSONArray("nodes").iterator())
@@ -998,7 +1091,7 @@ public class JSONToCAst {
 			@SuppressWarnings("unused")
 			public CAstNode visitStructDefinition(JSONObject o, SolidityWalkContext context) {
 				ids.put(o.getInt("id"), o);
-				SolidityWalkContext child = variableContainerContext(context);
+				SolidityWalkContext child = structContainerContext(o, context);
 
 				o.getJSONArray("members").forEach(m -> {
 					visit((JSONObject) m, child);
@@ -1006,7 +1099,7 @@ public class JSONToCAst {
 
 				StructType structType = (StructType) getType(o, context);
 
-				Set<CAstEntity> elts = context.variables().stream().collect(Collectors.toSet());
+				Set<CAstEntity> elts = child.variables().stream().collect(Collectors.toSet());
 
 				ContractEntity structEntity = new ContractEntity(structType, getLocation(o.getString("src")), null,
 						elts);
@@ -1016,6 +1109,11 @@ public class JSONToCAst {
 				return ast.makeNode(CAstNode.EMPTY);
 			}
 
+			@SuppressWarnings("unused")
+			public CAstNode visitTryStatement(JSONObject o, SolidityWalkContext context) {
+				return visit(o.getJSONObject("externalCall"), context);
+			}
+			
 			@SuppressWarnings("unused")
 			public CAstNode visitTupleExpression(JSONObject o, SolidityWalkContext context) {
 				JSONArray components = o.getJSONArray("components");
@@ -1056,13 +1154,19 @@ public class JSONToCAst {
 			}
 
 			@SuppressWarnings("unused")
+			public CAstNode visitUserDefinedValueTypeDefinition(JSONObject o, SolidityWalkContext context) {
+				CAstType realType = getType(o.getJSONObject("underlyingType"), context);
+				SolidityCAstType.record(o.getString("name"), realType, SolidityCAstType.getIRType(realType));
+				return ast.makeNode(CAstNode.EMPTY);
+			}
+			
+			@SuppressWarnings("unused")
 			public CAstNode visitUsingForDirective(JSONObject o, SolidityWalkContext context) {
 				return ast.makeNode(CAstNode.EMPTY);
 			}
 
-			private boolean isStructField(JSONObject decl) {
-				int scope = decl.getInt("scope");
-				return ids.containsKey(scope) && "StructDefinition".equals(ids.get(scope).getString("nodeType"));
+			private boolean isStructField(JSONObject decl, SolidityWalkContext context) {
+				return context.contract().getString("nodeType").equals("StructDefinition");
 			}
 
 			@SuppressWarnings("unused")
@@ -1073,7 +1177,7 @@ public class JSONToCAst {
 				boolean isFinal = o.has("constant") && o.getBoolean("constant");
 				String name = o.getString("name");
 
-				if (isStructField(o) || isContractField(o)) {
+				if (isStructField(o, context) || isContractField(o)) {
 					CAstEntity f = new AbstractFieldEntity(name, type,
 							isFinal ? Collections.singleton(CAstQualifier.FINAL) : Collections.emptySet(), false, pos,
 							null);
@@ -1096,32 +1200,61 @@ public class JSONToCAst {
 				decls = new ArrayList<>(decls);
 				if (o.has("initialValue")) {
 					if (decls.size() > 1) {
-					String name = "decl" + idx++;
-					decls.add(ast.makeNode(CAstNode.DECL_STMT,
-							ast.makeConstant(new CAstSymbolImpl(name, CAstType.DYNAMIC))));
-					decls.add(ast.makeNode(CAstNode.ASSIGN, ast.makeNode(CAstNode.VAR, ast.makeConstant(name)),
-							visit(o.getJSONObject("initialValue"), context)));
-					decls.add(ast.makeNode(CAstNode.ASSIGN,
-							ast.makeNode(CAstNode.NEW,
-									ast.makeConstant(getTupleType(Streams.stream(o.getJSONArray("declarations").iterator())
-											.map(x -> x instanceof JSONObject? ((JSONObject)x).getJSONObject("typeName"): null).toList(), context)),
-									Streams.stream(o.getJSONArray("declarations").iterator())
-											.map(d -> !(d instanceof JSONObject) ? ast.makeNode(CAstNode.EMPTY)
-													: ast.makeNode(CAstNode.VAR,
-															ast.makeConstant(((JSONObject) d).getString("name"))))
-											.toArray(i -> new CAstNode[i])),
-							ast.makeNode(CAstNode.VAR, ast.makeConstant(name))));
+						String name = "decl" + idx++;
+						decls.add(ast.makeNode(CAstNode.DECL_STMT,
+								ast.makeConstant(new CAstSymbolImpl(name, CAstType.DYNAMIC))));
+						decls.add(ast.makeNode(CAstNode.ASSIGN, ast.makeNode(CAstNode.VAR, ast.makeConstant(name)),
+								visit(o.getJSONObject("initialValue"), context)));
+						decls.add(ast.makeNode(CAstNode.ASSIGN,
+								ast.makeNode(CAstNode.NEW,
+										ast.makeConstant(getTupleType(Streams.stream(o.getJSONArray("declarations").iterator())
+												.map(x -> x instanceof JSONObject? ((JSONObject)x).getJSONObject("typeName"): null).toList(), context)),
+										Streams.stream(o.getJSONArray("declarations").iterator())
+										.map(d -> !(d instanceof JSONObject) ? ast.makeNode(CAstNode.EMPTY)
+												: ast.makeNode(CAstNode.VAR,
+														ast.makeConstant(((JSONObject) d).getString("name"))))
+										.toArray(i -> new CAstNode[i])),
+								ast.makeNode(CAstNode.VAR, ast.makeConstant(name))));
 					} else {
 						JSONObject d = (JSONObject) o.getJSONArray("declarations").iterator().next();
 						decls.add(ast.makeNode(CAstNode.ASSIGN, 
-							ast.makeNode(CAstNode.VAR, ast.makeConstant(d.getString("name"))),
-							visit(o.getJSONObject("initialValue"), context)));
+								ast.makeNode(CAstNode.VAR, ast.makeConstant(d.getString("name"))),
+								visit(o.getJSONObject("initialValue"), context)));
 					}
 				}
-				
+
 				return ast.makeNode(CAstNode.BLOCK_STMT, decls);
 			}
 
+			@SuppressWarnings("unused")
+			public CAstNode visitWhileStatement(JSONObject o, SolidityWalkContext context) {
+				CAstNode test = visit(o.getJSONObject("condition"), context);
+				
+				JSONObject contLabel = JSONObject.fromJson("{\"nodeType\": \"Continue\"}", JSONObject.class);
+				JSONObject breakLabel = JSONObject.fromJson("{\"nodeType\": \"Break\"}", JSONObject.class);
+				SolidityLoopContext lc = new SolidityLoopContext(context, breakLabel, contLabel);
+				CAstNode body = visit(o.getJSONObject("body"), lc);
+				
+				if (lc.continued) {
+					CAstNode cs = ast.makeNode(CAstNode.LABEL_STMT, ast.makeConstant("cont" + idx++), ast.makeNode(CAstNode.EMPTY));
+					context.cfg().map(contLabel, cs);
+					body = record(ast.makeNode(CAstNode.BLOCK_STMT, body, cs), getLocation(o.getString("src")), context);
+				}
+				
+				CAstNode result = 
+					record(ast.makeNode(CAstNode.LOOP, 
+						test,
+						body), getLocation(o.getString("src")), context);
+				
+				if (lc.broke) {
+					CAstNode bs = ast.makeNode(CAstNode.LABEL_STMT, ast.makeConstant("break" + idx++), ast.makeNode(CAstNode.EMPTY));
+					context.cfg().map(breakLabel, bs);
+					result = record(ast.makeNode(CAstNode.BLOCK_STMT, result, bs), getLocation(o.getString("src")), context);
+				}
+				
+				return result;
+			}
+			
 			@SuppressWarnings("unused")
 			public CAstNode visitInlineAssembly(JSONObject o, SolidityWalkContext context) {
 				JSONObject yulAst = o.getJSONObject("AST");
@@ -1191,7 +1324,12 @@ public class JSONToCAst {
 						JSONArray args = o.getJSONArray("arguments");
 						CAstNode[] as = Streams.stream(args.iterator()).map(v -> (JSONObject)v).map(v -> visit(v, null)).toArray(i -> new CAstNode[i]);
 						if (!"YulIdentifier".equals(fun.getString("nodeType")) || info.containsKey(fun.getString("src"))) {
-							return ast.makeNode(CAstNode.CALL, visit(fun, null), as);
+							CAstNode callee = visit(fun, null);
+							if (callee != null) {
+								return ast.makeNode(CAstNode.CALL, callee, as);
+							} else {
+								return ast.makeNode(CAstNode.EMPTY);
+							}
 						} else {
 							switch (fun.getString("name")) {
 							case "add":
@@ -1280,6 +1418,11 @@ public class JSONToCAst {
 							return ast.makeNode(CAstNode.EMPTY);
 						}
 					}
+					
+					public CAstNode visitYulForLoop(JSONObject o, Void ignore) {
+						return ast.makeNode(CAstNode.EMPTY);					
+					}
+
 				}
 
 				return new YulStatementVisitor().visit(yulAst, null);
@@ -1307,7 +1450,7 @@ public class JSONToCAst {
 		@Override
 		public CAstEntity translateToCAst() throws Error, IOException {
 			sourceFile = new File(tree.getString("absolutePath"));
-			String[] lines = new String(Files.readAllBytes(Paths.get(sourceFile.toURI())), "UTF-8").split("\n");
+			String[] lines = Files.readAllLines(Paths.get(sourceFile.toURI())).toArray(i -> new String[i]);
 			linePositionMap = new int[lines.length + 1];
 			int total = 0;
 			for (int i = 0; i < lines.length; i++) {
@@ -1480,11 +1623,25 @@ public class JSONToCAst {
 			return null;
 		}
 
+		
+		public Void visitUserDefinedValueTypeDefinition(JSONObject o, Void context) {
+			if (id == o.getInt("id") && (name == null || (o.has("name") && o.getString("name").equals(name)))) {
+				decl = o;
+			} else {
+				visitNode(o, null);
+			}
+			return null;
+		}
+
 		public Void visitFunctionDefinition(JSONObject o, Void context) {
 			return check(o);
 		}
 
 		public Void visitEnumDefinition(JSONObject o, Void context) {
+			return check(o);
+		}
+
+		public Void visitEnumValue(JSONObject o, Void context) {
 			return check(o);
 		}
 
@@ -1518,7 +1675,13 @@ public class JSONToCAst {
 	}
 	
 	private boolean compareNames(String s1, String s2) {
-		return s1.equals(s2) || s1.endsWith(s2) || s2.endsWith(s1);
+		if (s1.contains(".")) {
+			s1 = s1.substring(s1.lastIndexOf('.'));
+		}
+		if (s2.contains(".")) {
+			s2 = s2.substring(s2.lastIndexOf('.'));
+		}
+		return s1.equals(s2);
 	}
 	
 	private JSONObject getDeclaration(int decl, String name, SolidityWalkContext context) {
@@ -1532,16 +1695,34 @@ public class JSONToCAst {
 				ids.put(decl, df.decl);
 				return df.decl;
 			} else {
+				MutableIntSet done = IntSetUtil.make();
 				ImportVisitor imports = new ImportVisitor();
 				imports.visit(su, null);
 				IntSet imported = imports.imports;
-				IntIterator sus = imported.intIterator();
-				while (sus.hasNext()) {
-					df.visit(loader.getSource(sus.next()), null);
+				do {
+					MutableIntSet next = IntSetUtil.make();
+					IntIterator sus = imported.intIterator();
+					while (sus.hasNext()) {
+						int importedID = sus.next();
+						JSONObject importedSU = loader.getSource(importedID);
+						df.visit(importedSU, null);
+						if (df.decl != null) {
+							ids.put(decl, df.decl);
+							return df.decl;
+						}					
+						imports.visit(importedSU, null);
+						next.addAll(imports.imports);
+					}
+					done.addAll(imported);
+					imported = IntSetUtil.diff(next, done);
+				} while (imported.size() > 0);
+				
+				if (name != null) {
+					df.visit(loader.getSources(), null);
 					if (df.decl != null) {
 						ids.put(decl, df.decl);
-						return df.decl;
-					}					
+						return df.decl;					
+					}
 				}
 			}
 		}
@@ -1590,7 +1771,7 @@ public class JSONToCAst {
 		CAstType selfType = null;
 		if (functionDefinition.has("scope") && !"freeFunction".equals(functionDefinition.getString("kind"))) {
 			JSONObject contract = getDeclaration(functionDefinition.getInt("scope"), null, context);
-			if (contract != null) {
+			if (contract != null && contract.has("contractKind")) {
 				selfType = findOrCreateType(contract, context, JSONToCAst.this::newContractType);
 			}
 		}
@@ -1708,7 +1889,15 @@ public class JSONToCAst {
 
 			@SuppressWarnings("unused")
 			public CAstType visitUserDefinedTypeName(JSONObject o, Void ignore) {
+				if (o.has("referencedDeclaration") && o.getInt("referencedDeclaration") == 8510) {
+					System.err.println("found it");
+				}
 				return getType(getDeclaration(o, context), context);
+			}
+
+			@SuppressWarnings("unused")
+			public CAstType visitUserDefinedValueTypeDefinition(JSONObject o, Void ignore) {
+				return getType(o.getJSONObject("underlyingType"), context);
 			}
 			
 			@Override
@@ -1748,7 +1937,10 @@ public class JSONToCAst {
 					remaining = remaining.substring(2);
 					if (remaining.startsWith("dyn_memory_ptr")) {
 						remaining = remaining.substring(14);
+					} else 	if (remaining.startsWith("dyn_calldata_ptr")) {
+						remaining = remaining.substring(16);
 					}
+
 
 					return Pair.make(SolidityArrayType.get(keyType.fst), remaining);
 				}
@@ -1790,26 +1982,64 @@ public class JSONToCAst {
 		} else if (typeId.startsWith("t_contract$_")) {
 			int typeEndIndex = typeId.indexOf('_', 12);
 			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
-			CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
+			String name = typeId.substring(12, idEndIndex);
+			CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), name, context), context);
 			return Pair.make(et, typeId.substring(idEndIndex));
+
+		} else if (typeId.startsWith("t_super$_")) {
+			int typeEndIndex = typeId.indexOf('_', 9);
+			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
+			if (idEndIndex >= 0) {
+				CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
+				return Pair.make(et, typeId.substring(idEndIndex));
+			} else {
+				CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2)), null, context), context);
+				return Pair.make(et, "");
+			}
+
+		} else if (typeId.startsWith("t_userDefinedValueType$_")) {
+			int typeEndIndex = typeId.indexOf('_', 24);
+			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
+			if (idEndIndex >= 0) {
+				CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
+				return Pair.make(et, typeId.substring(idEndIndex));
+			} else {
+				CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2)), null, context), context);
+				return Pair.make(et, "");
+			}
 
 		} else if (typeId.startsWith("t_struct$_")) {
 			int typeEndIndex = typeId.indexOf('_', 10);
 			int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
-			CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
+			String name = typeId.substring(10, typeEndIndex);
+			CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), name, context), context);
 			String remaining = typeId.substring(idEndIndex);
 			if (remaining.startsWith("_storage_ptr")) {
 				remaining = remaining.substring(12);
+			} else if (remaining.startsWith("_memory_ptr")) {
+				remaining = remaining.substring(11);
 			} else if (remaining.startsWith("_storage")) {
 				remaining = remaining.substring(8);
+			} else if (remaining.startsWith("_calldata_ptr")) {
+				remaining = remaining.substring(13);
 			}
 			return Pair.make(et, remaining);
-
+			
+		} else if (typeId.startsWith("t_type$_")) {
+			Pair<CAstType, String> x = parseNextTypeIdentifier(typeId.substring(8), context);
+			if (x.snd.startsWith("_$")) {
+				return Pair.make(x.fst, x.snd.substring(2));
+			}
+			
 		} else if (typeId.startsWith("t_")) {
 			int endIndex = typeId.indexOf('_', 2);
 			if (endIndex > 0) {
 				String type = typeId.substring(2, endIndex);
-				return Pair.make(SolidityCAstType.get(type), typeId.substring(endIndex));
+				String remaining = typeId.substring(endIndex);
+				if (remaining.startsWith("_memory_ptr")) {
+					remaining = remaining.substring(11);
+				}
+				return Pair.make(SolidityCAstType.get(type), remaining);
 			} else {
 				return Pair.make(SolidityCAstType.get(typeId.substring(2)),"");
 			}
