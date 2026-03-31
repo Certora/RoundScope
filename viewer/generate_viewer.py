@@ -567,6 +567,21 @@ def extract_graphs(data, project_root):
                 if agg != "Neither":
                     return_rounding = agg
 
+            # Parse individual roundings for graph view source rendering
+            parsed_roundings = []
+            for range_key, info in roundings.items():
+                try:
+                    r_sl, r_sc, r_el, r_ec = parse_range_key(range_key)
+                    if info.get("rounding", "Neither") != "Neither":
+                        parsed_roundings.append({
+                            "sl": r_sl, "sc": r_sc, "el": r_el, "ec": r_ec,
+                            "rounding": info["rounding"],
+                            "source": info.get("source", ""),
+                            "expr": info.get("expr", ""),
+                        })
+                except (ValueError, IndexError):
+                    pass
+
             nodes[node_id] = {
                 "label": label,
                 "file": file_path,
@@ -575,6 +590,7 @@ def extract_graphs(data, project_root):
                 "el": el,
                 "ec": ec,
                 "returnRounding": return_rounding,
+                "roundings": parsed_roundings,
             }
 
         for edge in graph.get("edges", []):
@@ -601,7 +617,8 @@ def extract_graphs(data, project_root):
                 "sc": call_sc,
             })
 
-        graphs.append({"nodes": nodes, "edges": edges})
+        graph_label = clean_graph_label(graph.get("label", f"Graph {len(graphs)}"))
+        graphs.append({"nodes": nodes, "edges": edges, "label": graph_label})
 
     return graphs
 
@@ -887,6 +904,15 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs, 
 
     pygments_css = HtmlFormatter(style="default").get_style_defs(".line-content")
 
+    # Load dagre.js for graph visualization
+    dagre_path = os.path.join(os.path.dirname(__file__), "dagre.min.js")
+    try:
+        with open(dagre_path, "r") as f:
+            dagre_js = f.read()
+    except FileNotFoundError:
+        dagre_js = "/* dagre.min.js not found */"
+        print(f"Warning: {dagre_path} not found, graph view will be disabled", file=sys.stderr)
+
     title = "Certora RoundAbout — " + os.path.basename(project_root)
     if contracts:
         title += " — " + ", ".join(contracts)
@@ -901,7 +927,9 @@ def generate_html(project_root, source_files, directory_tree, contexts, graphs, 
         + pygments_css
         + "\n"
         + HTML_TEMPLATE_SCRIPT_START
-        + "\nconst DATA = "
+        + "\n/* dagre.js graph layout library */\n"
+        + dagre_js
+        + "\n\nconst DATA = "
         + data_json
         + ";\n"
         + HTML_TEMPLATE_END
@@ -1101,6 +1129,63 @@ td.line-content { padding-left: 12px; }
   font-size: 11px; white-space: nowrap;
   box-shadow: 0 2px 8px rgba(0,0,0,0.15); pointer-events: none;
 }
+
+/* View toggle */
+.view-toggle { display: flex; gap: 4px; margin-left: 16px; }
+.view-btn {
+  padding: 4px 12px; border: 1px solid rgba(255,255,255,0.2); border-radius: 4px;
+  background: transparent; color: rgba(255,255,255,0.7); cursor: pointer; font-size: 12px;
+}
+.view-btn:hover { background: rgba(255,255,255,0.1); }
+.view-btn.active { background: rgba(255,255,255,0.2); color: #fff; border-color: rgba(255,255,255,0.4); }
+
+/* Method list (graph view left pane) */
+#method-list {
+  display: none; width: 260px; min-width: 180px; background: #f8f9fa;
+  border-right: 1px solid #e0e0e0; overflow-y: auto; padding: 8px 0;
+  flex-shrink: 0; font-size: 13px;
+}
+.method-item {
+  padding: 5px 12px; cursor: pointer; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px;
+}
+.method-item:hover { background: #e9ecef; }
+.method-item.active { background: #d0e1fd; color: #1e293b; }
+.method-name { overflow: hidden; text-overflow: ellipsis; }
+.method-badge {
+  flex-shrink: 0; width: 8px; height: 8px; border-radius: 50%;
+}
+.method-count { flex-shrink: 0; font-size: 11px; color: #94a3b8; }
+
+/* Graph panel */
+#graph-panel { display: none; flex: 1; overflow: auto; position: relative; background: #f1f5f9; }
+#graph-container { position: relative; min-width: 100%; min-height: 100%; }
+#graph-edges { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
+.graph-edge { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
+
+/* Graph nodes */
+.graph-node {
+  position: absolute; border: 1px solid #d0d5dd; border-radius: 6px;
+  background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden;
+  cursor: pointer; transition: box-shadow 0.15s;
+  width: 320px;
+}
+.graph-node:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.graph-node-header {
+  padding: 5px 10px; font-weight: 600; font-size: 12px;
+  border-bottom: 1px solid #e2e8f0; background: #f8f9fa;
+  display: flex; align-items: center; gap: 6px;
+}
+.graph-node-header .node-rounding-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+}
+.graph-node-file { font-size: 10px; color: #64748b; padding: 2px 10px; background: #fafbfc; border-bottom: 1px solid #f0f0f0; }
+.graph-node-source {
+  padding: 4px 8px; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 11px;
+  line-height: 1.4; white-space: pre; overflow-x: auto;
+  color: #333;
+}
+/* Reuse existing .r-up, .r-down, etc. for source annotations inside graph nodes */
 """
 
 HTML_TEMPLATE_SCRIPT_START = r"""
@@ -1111,6 +1196,10 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 <div id="top-bar">
   <span style="font-weight:600;">Certora RoundAbout</span>
   <span class="project-root" id="project-root-display"></span>
+  <div class="view-toggle">
+    <button class="view-btn active" onclick="switchView('source')">Source</button>
+    <button class="view-btn" onclick="switchView('graph')">Graph</button>
+  </div>
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#4ade80"></div> Down</div>
@@ -1124,9 +1213,16 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 
 <div id="main">
   <div id="tree-panel"></div>
+  <div id="method-list"></div>
   <div id="resize-handle"></div>
   <div id="source-panel">
     <div id="source-placeholder">Select a file from the tree to view source</div>
+  </div>
+  <div id="graph-panel">
+    <div id="graph-container">
+      <svg id="graph-edges"><defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/></marker></defs></svg>
+      <div id="graph-nodes"></div>
+    </div>
   </div>
 </div>
 
@@ -1834,6 +1930,349 @@ function createNodeBox(info) {
   });
 
   return box;
+}
+
+// ---- Graph View ----
+
+let currentView = 'source';
+let currentGraphIdx = -1;
+
+function switchView(view) {
+  currentView = view;
+  document.querySelectorAll('.view-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.toLowerCase() === view);
+  });
+
+  const treePanel = document.getElementById('tree-panel');
+  const methodList = document.getElementById('method-list');
+  const sourcePanel = document.getElementById('source-panel');
+  const graphPanel = document.getElementById('graph-panel');
+  const resizeHandle = document.getElementById('resize-handle');
+  const contextBar = document.getElementById('context-bar');
+  const bottomHandle = document.getElementById('bottom-resize-handle');
+  const bottomPane = document.getElementById('bottom-pane');
+
+  if (view === 'source') {
+    treePanel.style.display = 'block';
+    methodList.style.display = 'none';
+    sourcePanel.style.display = 'block';
+    graphPanel.style.display = 'none';
+    resizeHandle.style.display = 'block';
+    if (Object.keys(DATA.contexts).length > 1) contextBar.style.display = 'flex';
+  } else {
+    treePanel.style.display = 'none';
+    methodList.style.display = 'block';
+    sourcePanel.style.display = 'none';
+    graphPanel.style.display = 'block';
+    resizeHandle.style.display = 'none';
+    contextBar.style.display = 'none';
+    bottomHandle.classList.remove('visible');
+    bottomPane.classList.remove('visible');
+    if (methodList.children.length === 0) buildMethodList();
+    if (currentGraphIdx < 0) {
+      // Show the first graph that has roundings
+      const firstItem = methodList.querySelector('.method-item');
+      if (firstItem) showGraph(parseInt(firstItem.dataset.graphIdx));
+    }
+  }
+}
+
+function graphHasRoundings(graph) {
+  // Check if any node has non-Neither roundings
+  for (const nodeId in graph.nodes) {
+    const node = graph.nodes[nodeId];
+    if (node.roundings && node.roundings.length > 0) return true;
+    if (node.returnRounding && node.returnRounding !== 'Neither') return true;
+  }
+  return false;
+}
+
+function buildMethodList() {
+  const list = document.getElementById('method-list');
+  list.innerHTML = '';
+
+  // Build sorted index, filtering out graphs with no real roundings
+  const indices = DATA.graphs.map((g, i) => i).filter(i => graphHasRoundings(DATA.graphs[i]));
+  indices.sort((a, b) => (DATA.graphs[a].label || '').localeCompare(DATA.graphs[b].label || ''));
+
+  for (const idx of indices) {
+    const graph = DATA.graphs[idx];
+    const item = document.createElement('div');
+    item.className = 'method-item';
+    item.dataset.graphIdx = idx;
+
+    // Rounding badge (dot showing aggregated rounding color)
+    const node0 = graph.nodes['0'];
+    if (node0 && node0.returnRounding) {
+      const dot = document.createElement('span');
+      dot.className = 'method-badge';
+      dot.style.background = ROUNDING_COLORS[node0.returnRounding] || '#d1d5db';
+      dot.title = node0.returnRounding;
+      item.appendChild(dot);
+    }
+
+    const name = document.createElement('span');
+    name.className = 'method-name';
+    name.textContent = graph.label || ('Graph ' + idx);
+    item.appendChild(name);
+
+    const count = document.createElement('span');
+    count.className = 'method-count';
+    count.textContent = Object.keys(graph.nodes).length;
+    item.appendChild(count);
+
+    item.addEventListener('click', () => showGraph(idx));
+    list.appendChild(item);
+  }
+}
+
+function showGraph(graphIdx) {
+  currentGraphIdx = graphIdx;
+
+  // Update active state
+  document.querySelectorAll('.method-item').forEach(el => {
+    el.classList.toggle('active', parseInt(el.dataset.graphIdx) === graphIdx);
+  });
+
+  const graph = DATA.graphs[graphIdx];
+  if (!graph) return;
+
+  const container = document.getElementById('graph-container');
+  const nodesEl = document.getElementById('graph-nodes');
+  const edgesSvg = document.getElementById('graph-edges');
+  nodesEl.innerHTML = '';
+  // Clear edges but keep the defs
+  const defs = edgesSvg.querySelector('defs');
+  edgesSvg.innerHTML = '';
+  edgesSvg.appendChild(defs);
+
+  // Build call-site lookup: nodeId -> {file, sl, sc} (where this node was called from)
+  const callSiteOf = {};
+  for (const edge of graph.edges) {
+    callSiteOf[edge.target] = { file: edge.file, sl: edge.sl, sc: edge.sc };
+  }
+
+  // Create dagre graph
+  const g = new dagre.graphlib.Graph();
+  g.setGraph({ rankdir: 'TB', nodesep: 50, ranksep: 70, marginx: 30, marginy: 30 });
+  g.setDefaultEdgeLabel(function() { return {}; });
+
+  // Create node elements and measure them
+  const nodeElements = {};
+  for (const nodeId in graph.nodes) {
+    const node = graph.nodes[nodeId];
+    const callSite = callSiteOf[nodeId] || null;
+    const el = createGraphNode(nodeId, node, callSite);
+    el.style.visibility = 'hidden';
+    el.style.position = 'absolute';
+    nodesEl.appendChild(el);
+    nodeElements[nodeId] = el;
+  }
+
+  // Double-rAF to ensure DOM is painted before measuring node dimensions
+  requestAnimationFrame(() => { requestAnimationFrame(() => {
+    for (const nodeId in nodeElements) {
+      const el = nodeElements[nodeId];
+      const w = Math.max(el.offsetWidth, 120);
+      const h = Math.max(el.offsetHeight, 40);
+      g.setNode(nodeId, { width: w + 10, height: h + 10 });
+    }
+
+    // Sort edges by call-site position so children are ordered left-to-right
+    const sortedEdges = [...graph.edges].sort((a, b) => {
+      if (a.sl !== b.sl) return a.sl - b.sl;
+      return (a.sc || 0) - (b.sc || 0);
+    });
+    for (const edge of sortedEdges) {
+      g.setEdge(edge.source, edge.target);
+    }
+
+    dagre.layout(g);
+
+    // Position nodes
+    let maxX = 0, maxY = 0;
+    g.nodes().forEach(function(nodeId) {
+      const pos = g.node(nodeId);
+      const el = nodeElements[nodeId];
+      if (!el || !pos) return;
+      const x = pos.x - pos.width / 2;
+      const y = pos.y - pos.height / 2;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.visibility = '';
+      maxX = Math.max(maxX, pos.x + pos.width / 2);
+      maxY = Math.max(maxY, pos.y + pos.height / 2);
+    });
+
+    // Size container
+    container.style.width = (maxX + 40) + 'px';
+    container.style.height = (maxY + 40) + 'px';
+
+    // Size SVG
+    edgesSvg.setAttribute('width', maxX + 40);
+    edgesSvg.setAttribute('height', maxY + 40);
+
+    // Draw edges
+    g.edges().forEach(function(e) {
+      const edgeData = g.edge(e);
+      if (!edgeData || !edgeData.points) return;
+      const points = edgeData.points;
+      if (points.length < 2) return;
+
+      let d = 'M ' + points[0].x + ' ' + points[0].y;
+      if (points.length === 2) {
+        d += ' L ' + points[1].x + ' ' + points[1].y;
+      } else {
+        for (let i = 1; i < points.length - 1; i++) {
+          const p0 = points[i - 1];
+          const p1 = points[i];
+          const p2 = points[i + 1];
+          const cx = p1.x;
+          const cy = p1.y;
+          if (i === points.length - 2) {
+            d += ' Q ' + cx + ' ' + cy + ' ' + p2.x + ' ' + p2.y;
+          } else {
+            const mx = (p1.x + p2.x) / 2;
+            const my = (p1.y + p2.y) / 2;
+            d += ' Q ' + cx + ' ' + cy + ' ' + mx + ' ' + my;
+          }
+        }
+      }
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      path.setAttribute('d', d);
+      path.setAttribute('class', 'graph-edge');
+      path.setAttribute('marker-end', 'url(#arrowhead)');
+      edgesSvg.appendChild(path);
+    });
+
+    // Scroll to root node (node "0")
+    const rootEl = nodeElements['0'];
+    if (rootEl) {
+      const graphPanel = document.getElementById('graph-panel');
+      const rootPos = g.node('0');
+      if (rootPos) {
+        graphPanel.scrollLeft = Math.max(0, rootPos.x - graphPanel.clientWidth / 2);
+        graphPanel.scrollTop = 0;
+      }
+    }
+  }); });
+}
+
+function createGraphNode(nodeId, node, callSite) {
+  const el = document.createElement('div');
+  el.className = 'graph-node';
+
+  // Header
+  const header = document.createElement('div');
+  header.className = 'graph-node-header';
+  if (node.returnRounding) {
+    const dot = document.createElement('span');
+    dot.className = 'node-rounding-dot';
+    dot.style.background = ROUNDING_COLORS[node.returnRounding] || '#d1d5db';
+    dot.title = 'Return: ' + node.returnRounding;
+    header.appendChild(dot);
+  }
+  const labelSpan = document.createElement('span');
+  labelSpan.textContent = node.label || nodeId;
+  header.appendChild(labelSpan);
+  el.appendChild(header);
+
+  // File info + call site
+  if (node.file) {
+    const fileEl = document.createElement('div');
+    fileEl.className = 'graph-node-file';
+    let fileText = abbreviatePath(node.file) + ':' + node.sl + '-' + node.el;
+    if (callSite && callSite.file) {
+      fileText += '  \u2190 called at ' + abbreviatePath(callSite.file) + ':' + callSite.sl;
+    }
+    fileEl.textContent = fileText;
+    el.appendChild(fileEl);
+  }
+
+  // Source with annotations
+  const sourceEl = document.createElement('div');
+  sourceEl.className = 'graph-node-source';
+  sourceEl.innerHTML = renderNodeSource(node);
+  el.appendChild(sourceEl);
+
+  // Click to navigate to source view
+  el.addEventListener('click', () => {
+    if (node.file && DATA.sourceFiles[node.file]) {
+      switchView('source');
+      setTimeout(() => {
+        showFile(node.file);
+        setTimeout(() => {
+          const table = document.querySelector('table.source-code');
+          if (table && table.rows[node.sl - 1]) {
+            table.rows[node.sl - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightLine(table.rows[node.sl - 1]);
+          }
+        }, 50);
+      }, 50);
+    }
+  });
+
+  return el;
+}
+
+function renderNodeSource(node) {
+  if (!node.file || !DATA.sourceFiles[node.file]) return '<span style="color:#94a3b8">Source not available</span>';
+
+  const raw = DATA.sourceFiles[node.file].raw;
+  const lines = raw.split('\n');
+  const startLine = Math.max(1, node.sl);
+  const endLine = Math.min(lines.length, node.el);
+
+  const roundings = (node.roundings || []).filter(r => r.rounding !== 'Neither');
+
+  const gutterWidth = String(endLine).length;
+  let html = '';
+  for (let lineNum = startLine; lineNum <= endLine; lineNum++) {
+    const lineText = lines[lineNum - 1] || '';
+    const numStr = String(lineNum).padStart(gutterWidth);
+    html += '<span style="color:#adb5bd;user-select:none">' + numStr + ' </span>';
+    // Find annotations on this line
+    const lineAnns = [];
+    for (const r of roundings) {
+      if (r.sl > lineNum || r.el < lineNum) continue;
+      const sc = (r.sl === lineNum) ? r.sc : 0;
+      const ec = (r.el === lineNum) ? r.ec : lineText.length;
+      lineAnns.push({ sc: sc, ec: ec, rounding: r.rounding, size: (r.el - r.sl) * 10000 + (r.ec - r.sc) });
+    }
+
+    if (lineAnns.length === 0) {
+      html += escapeHtml(lineText) + '\n';
+    } else {
+      // Build char-to-annotation map (smallest wins)
+      const sorted = [...lineAnns].sort((a, b) => a.size - b.size);
+      const charAnn = new Array(lineText.length).fill(null);
+      const byLargest = [...sorted].reverse();
+      for (const ann of byLargest) {
+        for (let i = ann.sc; i < Math.min(ann.ec, lineText.length); i++) {
+          charAnn[i] = ann;
+        }
+      }
+
+      // Build segments
+      let pos = 0;
+      while (pos < lineText.length) {
+        const ann = charAnn[pos];
+        let end = pos + 1;
+        while (end < lineText.length && charAnn[end] === ann) end++;
+        const text = escapeHtml(lineText.substring(pos, end));
+        if (ann) {
+          html += '<span class="' + roundingClass(ann.rounding) + '">' + text + '</span>';
+        } else {
+          html += text;
+        }
+        pos = end;
+      }
+      html += '\n';
+    }
+  }
+
+  return html;
 }
 
 init();
