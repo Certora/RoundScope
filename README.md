@@ -154,4 +154,4 @@ mvn -Pwith-jni-tests -DargLine="-Djava.library.path=$(pwd)/jni" test
 
 ## Contact
 
-For questions about this repository or `RoundAbout`, please contact Julian Dolby (`julian@certora.com`) or Chandrakana Nandi (`chandra@certora.com`).
+For questions about the tool, contact Julian Dolby (`julian@certora.com`) or Chandrakana Nandi (`chandra@certora.com`).
