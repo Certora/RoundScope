@@ -52,7 +52,7 @@ We recommend following the JSON-AST workflow. Current builds depend on a WALA fo
 1. Clone this repository into some directory, hereinafter called `WS`
 2. Ensure the `WALA` artifacts above have been published to your local Maven repository
 
-`test/data` is used by the test suite and points to a private internal repository. It is not required for building or using the main JSON-AST workflow.
+`test/data` is used by the test suite.
 
 #### JSON-AST Compilation
 1. make sure that your `WALA` build was successful in the previous step.
@@ -133,8 +133,8 @@ At the top level, `pom.xml` defines the Maven build, and `roundabout.sh` is a he
 - `roundAbout/`: `RoundAbout`-specific Java sources. This contains the main entrypoint plus the rounding analysis implementation and the JSON/JNI analysis engines used by the packaged tool.
 - `src/`: shared Java source for the Solidity frontend and WALA integration, including JSON/JNI loaders, AST translation, call graph support, type models, and analysis utilities.
 - `jni/`: optional native bridge for the JNI workflow. It contains the C++ bridge code, JNI headers, and the `Makefile` used to build `libwalacastsolidity.jnilib` against local Solidity and WALA builds.
-- `test/src/`: JUnit test sources for the JSON-AST and JNI paths.
-- `test/data/`: test fixtures used by the suite. This is a submodule containing Solidity projects, Certora `.conf` files, specs, and pre-generated AST artifacts.
+- `test/src/`: JUnit test sources for the JSON-AST and JNI paths. The public repo keeps only the generic test harness and generic tests.
+- `test/data/`: test fixtures used by the suite. The broader integration fixture set lives in a private companion repository.
 - `viewer/`: Python tooling for turning RoundAbout JSON output into a self-contained HTML viewer, along with tests and golden files for that viewer.
 - `scripts/`: helper scripts for development tasks around the native bridge, such as generating JNI headers and related stubs.
 - `libs/`: in-repo Maven repository for local jar dependencies referenced by `pom.xml`.
