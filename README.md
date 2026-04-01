@@ -1,8 +1,6 @@
 # wala-solidity
 
-This repo is a WALA-based  Solidity analysis framework.
-
-Its first analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior of variables and functions in the referenced Solidity code.
+This repo is a WALA-based  Solidity analysis framework. Its first analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior of variables and functions in the referenced Solidity code.
 
 **NOTE: This project is under early beta testing and is still being actively developed. Contact us (see below) if you have feedback or questions!**
 
@@ -17,15 +15,15 @@ Its first analysis, `RoundAbout`, takes a Certora `.conf` file and generates a r
 
 ## Installation
 
-We recommend following the JSON-AST workflow. Current builds depend on a WALA fork and on Maven artifacts published locally from that build. For the JSON-AST path, you can skip the native prerequisites and only install the WALA dependency described below.
+Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
 
-1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called `WALA`.
+1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
 2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
 3. Clone this repository, `cd` into it, and run `mvn -DskipTests package`.
 
 ## Usage
 
-The commands below describe the supported user workflow. The top-level `roundabout.sh` helper is mainly used during testing and debugging.
+The commands below describe the supported user workflow. `roundabout.sh` is mainly used during testing and debugging.
 
 1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
 2. _In the same directory_, run `RoundAbout` as
