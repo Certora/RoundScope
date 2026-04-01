@@ -2,7 +2,7 @@
 
 This repo is a WALA-based  Solidity analysis framework.
 
-Its first bundled analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior (up, down, either) of variables and functions in the referenced Solidity code.
+Its first analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior of variables and functions in the referenced Solidity code.
 
 **NOTE: This project is under early beta testing and is still being actively developed. Contact us (see below) if you have feedback or questions!**
 
