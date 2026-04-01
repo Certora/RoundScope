@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# Helper script used for internal testing and debugging the JSON-AST workflow.
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 JAR="$SCRIPT_DIR/target/roundabout-0.0.1-SNAPSHOT.jar"
 
