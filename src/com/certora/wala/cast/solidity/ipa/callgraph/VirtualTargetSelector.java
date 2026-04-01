@@ -81,15 +81,10 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 	
 	@Override
 	public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
-		if (site.getDeclaredTarget().toString().contains("_onSwapGivenOut")) {
-			System.err.println("found it");
-		}
-
 		if (receiver instanceof TypedCodeBody && 
 			(((TypedCodeBody)receiver).isVirtual() || 
 			 site.getInvocationCode() == Dispatch.SPECIAL ||
 			 ((TypedCodeBody)receiver).getSelfType() instanceof InterfaceType)) {
-			//System.err.println("@@@@ " + receiver + " " + ((TypedCodeBody)receiver).getSelf());						
 			Set<IMethod> targets = HashSetFactory.make();
 			for(SSAAbstractInvokeInstruction call : caller.getIR().getCalls(site)) {
 				PointerKey self = cgBuilder.getPointerKeyFactory().getPointerKeyForLocal(caller, call.getReceiver());
@@ -128,7 +123,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 					}
 				});
 			}
-			System.err.println("@@@ " + targets);
 			if (targets.isEmpty()) {
 				return null;
 			} else if (targets.size() == 1) {
@@ -148,7 +142,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 				if (topTargets.size() == 1) {
 					return topTargets.iterator().next();
 				} else {
-					System.err.println("what is this? " + ms + " " + topTargets);
 					return null;
 				}
 			}

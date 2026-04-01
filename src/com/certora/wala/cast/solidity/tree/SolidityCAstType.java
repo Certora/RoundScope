@@ -98,9 +98,6 @@ public class SolidityCAstType implements CAstType.Primitive {
 	
 	public static void record(String name, CAstType type, TypeReference irType) {
 		// assert !types.containsKey(name);
-		if (irType.toString().contains("contract.decimals")) {
-			System.err.println(name + ":" + type);
-		}
 		types.put(name, type);
 		irTypes.put(type, irType);
 	}
@@ -115,9 +112,6 @@ public class SolidityCAstType implements CAstType.Primitive {
 		}
 		if (!types.containsKey(name)) {
 			System.err.println("cannot find type " + name);
-			if (name.contains("ReserveFlags")) {
-				System.err.println("it");
-			}
 		}
 		return types.get(name);
 	}

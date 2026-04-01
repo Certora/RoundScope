@@ -250,7 +250,6 @@ public class SolidityAstTranslator extends AstTranslator {
 				 if (p != null) {
 				 String selfSrc = new SourceBuffer(p).toString();
 				 if (selfSrc.startsWith("super.")) {
-					 System.err.println(selfSrc);
 					 superCall = true;
 				 }
 				 }
@@ -435,7 +434,6 @@ public class SolidityAstTranslator extends AstTranslator {
 	}
 
 	  public void translate(final CAstEntity N, final ModuleEntry module) {
-		  System.err.println("CAst translation for " + module);
 		  super.translate(N, module);
 	  }
 }
