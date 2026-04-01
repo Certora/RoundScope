@@ -98,14 +98,14 @@ Note that `[sl,sc-el,ec]` means a source code position as a string, written as a
 
 At the top level, `pom.xml` defines the Maven build, and `roundabout.sh` is a helper script used during testing and debugging of the JSON-AST workflow.
 
-- `roundAbout/`: `RoundAbout`-specific Java sources. This contains the main entrypoint plus the rounding analysis implementation and the JSON/JNI analysis engines used by the packaged tool.
-- `src/`: shared Java source for the Solidity frontend and WALA integration, including JSON/JNI loaders, AST translation, call graph support, type models, and analysis utilities.
-- `jni/`: optional native bridge for the JNI workflow. It contains the C++ bridge code, JNI headers, and the `Makefile` used to build `libwalacastsolidity.jnilib` against local Solidity and WALA builds.
-- `test/src/`: JUnit test sources for the JSON-AST and JNI paths. The public repo keeps only the generic test harness and generic tests.
-- `test/data/`: test fixtures used by the suite. The broader integration fixture set lives in a private companion repository.
-- `viewer/`: Python tooling for turning RoundAbout JSON output into a self-contained HTML viewer, along with tests and golden files for that viewer.
-- `scripts/`: helper scripts for development tasks around the native bridge, such as generating JNI headers and related stubs.
-- `libs/`: in-repo Maven repository for local jar dependencies referenced by `pom.xml`.
+- `roundAbout/`: This contains the main entrypoint plus the rounding analysis implementation
+- `src/`: shared Java source for the Solidity frontend and WALA integration
+- `jni/`: optional native bridge for the JNI workflow
+- `test/src/`: JUnit test sources
+- `test/data/`: test fixtures used by the suite
+- `viewer/`: Python tooling for turning RoundAbout JSON output into an HTML viewer
+- `scripts/`: helper scripts
+- `libs/`: local jar dependencies referenced by `pom.xml`
 
 ## Experimental JNI / Native Path
 A native JNI-based workflow is available, but it is more experimental.
