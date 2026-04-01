@@ -19,7 +19,7 @@ Current builds depend on a WALA fork and on Maven artifacts published locally fr
 
 1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
 2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
-3. Clone this repository, `cd` into it, and run `mvn -DskipTests package`.
+3. Clone this repository, `cd` into it, and run `mvn package`.
 
 ## Usage
 
@@ -37,6 +37,22 @@ NOTE: You must run in the same directory, since the `absolutePath` properties in
 On success, `RoundAbout` prints a line of the form `Wrote validated JSON output to <a json output filename>`.
 
 Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
+
+### Example
+
+We provide two tests: `test/data/Staker` and `test/data/Staker2` that can be run without needing `certoraRun` since the confs and jsons are included.
+
+From the repository root, run:
+
+```
+java -jar target/roundabout-0.0.1-SNAPSHOT.jar test/data/Staker/run.conf staker-output.json --combined test/data/Staker/ast/.asts.json
+```
+
+and:
+
+```
+java -jar target/roundabout-0.0.1-SNAPSHOT.jar test/data/Staker2/run.conf staker2-output.json --combined test/data/Staker2/ast/.asts.json
+```
 
 
 ## Report Format
@@ -129,6 +145,12 @@ A utility to generate Java-like stack traces in C++. Used in `RoundAbout` develo
 1. cd into `WS/jni`
 2. `java -Djava.library.path=. -jar ../target/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> filename.json` where the second argument is a json file where the results will be written.
 
+### Native / JNI Tests
+JNI tests are excluded from the default `mvn test` run. To include them, first build the native library in `WS/jni`, then run the test suite with the JNI profile enabled and `java.library.path` pointed at that directory:
+
+```
+mvn -Pwith-jni-tests -DargLine="-Djava.library.path=$(pwd)/jni" test
+```
 
 ## Contact
 
