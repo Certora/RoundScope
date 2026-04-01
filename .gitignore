@@ -2,3 +2,4 @@
 **/__pycache__
 /bin/
 /target/
+/dependency-reduced-pom.xml

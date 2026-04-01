@@ -24,9 +24,6 @@ public class FunctionEntity extends CallableEntity {
 		super(type.getName().startsWith("static ")? type.getName(): name, type, argumentNames, location, nameLocation, argLocations);
 		this.Ast = ast;
 		this.qualifiers = qualifiers;
-		if (name.contains("_upscale")) {
-			System.err.println(this);
-		}
 	}
 
 	public FunctionEntity(String name,

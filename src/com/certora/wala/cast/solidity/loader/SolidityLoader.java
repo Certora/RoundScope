@@ -234,9 +234,6 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 
 			@Override
 			public SSAPutInstruction PutInstruction(int iindex, int ref, int value, FieldReference field) {
-				if (value == 1) {
-					System.err.println("this obe");
-				}
 				return super.PutInstruction(iindex, ref, value, field);
 			}
 			

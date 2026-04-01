@@ -65,7 +65,6 @@ import com.ibm.wala.cast.tree.impl.CAstSymbolImpl;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.CopyKey;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriter.RewriteContext;
 import com.ibm.wala.cast.tree.rewrite.CAstRewriterFactory;
-import com.ibm.wala.cast.util.CAstPrinter;
 import com.ibm.wala.classLoader.IMethod.SourcePosition;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
@@ -106,9 +105,7 @@ public class JSONToCAst {
 						JSONObject elt = (JSONObject)e;
 						if ("FunctionDefinition".equals(elt.getString("nodeType"))) {
 							FunctionType et = findOrCreateType(elt, JSONToCAst.this::makeFunctionKey, context, JSONToCAst.this::newFunctionType);
-							System.err.println("looking at " + et + " for " + name + ", " + argTypes);
 							if (argTypes.equals(et.getArgumentTypes()) && et.getName().startsWith(name)) {
-								System.err.println("found it");
 								return elt;
 							}
 						}
@@ -726,7 +723,6 @@ public class JSONToCAst {
 			public CAstNode visitFunctionCall(JSONObject o, SolidityWalkContext context) {
 				CAstNode fun = visit(o.getJSONObject("expression"), context);
 				if (fun == null) {
-					System.err.println("this");
 					visit(o.getJSONObject("expression"), context);
 				}
 				CAstNode[] args = Streams.concat(Streams.stream(Optional.of(ast.makeNode(CAstNode.EMPTY))), Streams.stream(o.getJSONArray("arguments").iterator()).map(v -> (JSONObject)v).map(v -> visit(v, context))).toArray(i -> new CAstNode[i]);
@@ -952,12 +948,8 @@ public class JSONToCAst {
 			
 			@SuppressWarnings("unused")
 			public CAstNode visitMemberAccess(JSONObject o, SolidityWalkContext context) {
-				if ("toStringWithFallback".equals(o.getString("memberName"))) {
-					System.err.println("it");
-				}
 				JSONObject decl = getDeclaration(o, context);
 				if (decl != null && !o.getString("memberName").equals(decl.getString("name"))) {
-					System.err.println("here");
 					decl = getDeclaration(o.getInt("referencedDeclaration"), o.getString("memberName"), context);
 				}
 				if (decl == null && o.has("referencedDeclaration")) {
@@ -966,7 +958,6 @@ public class JSONToCAst {
 				if (decl == null) {
 					CAstNode baseObj = visit(o.getJSONObject("expression"), context);
 					if (baseObj == null) {
-						System.err.println(o);
 						baseObj = visit(o.getJSONObject("expression"), context);
 					}
 					return record(
@@ -1028,9 +1019,6 @@ public class JSONToCAst {
 					}
 					
 					private CAstNode makeRef(JSONObject obj, CAstType type) {
-						if (! obj.has("expression")) {
-							System.err.println(o);
-						}
 						return record(
 							ast.makeNode(CAstNode.OBJECT_REF, 
 								TranslationVisitor.this.visit(obj.getJSONObject("expression"), context),
@@ -1457,8 +1445,6 @@ public class JSONToCAst {
 				linePositionMap[i + 1] = total;
 				total += (lines[i].length() + 1);
 			}
-
-			System.err.println("translating " + sourceFile);
 						
 			final AbstractEntity fileEntity = new AbstractEntity() {
 				CAstSourcePositionRecorder rec = new CAstSourcePositionRecorder();
@@ -1832,9 +1818,6 @@ public class JSONToCAst {
 	}
 	
 	private CAstType.Class newContractType(JSONObject contractDefinition, SolidityWalkContext context) {
-		if (! contractDefinition.has("contractKind")) {
-			System.err.println("!!!");
-		}
 		String kind = contractDefinition.getString("contractKind");
 		Set<String> superTypes = HashSetFactory.make();
 		String name = "contract " + (contractDefinition.has("canonicalName")? contractDefinition.getString("canonicalName"): contractDefinition.getString("name"));
@@ -1898,9 +1881,6 @@ public class JSONToCAst {
 
 			@SuppressWarnings("unused")
 			public CAstType visitUserDefinedTypeName(JSONObject o, Void ignore) {
-				if (o.has("referencedDeclaration") && o.getInt("referencedDeclaration") == 12729) {
-					System.err.println("found it");
-				}
 				return getType(getDeclaration(o, context), context);
 			}
 
@@ -1921,9 +1901,6 @@ public class JSONToCAst {
 				return parseTypeIdentifier(typeDesc.getString("typeIdentifier"), context);
 			}
 		}.visit(node, null);
-		if (ret == SolidityCAstType.get("contract")) {
-			System.err.println("seems bad");
-		}
 		return ret;
 	}
 	
@@ -2083,7 +2060,6 @@ public class JSONToCAst {
 	}
 
 	public void translateFiles(String compilerOutputFile) throws Error, IOException {
-		System.err.println("parsing " + compilerOutputFile);
 		JSONTokener toks = new JSONTokener(new FileReader(compilerOutputFile));
 		while (toks.more()) {
 			Object tok;
@@ -2095,7 +2071,7 @@ public class JSONToCAst {
 			}
 
 			if (tok instanceof JSONObject && ((JSONObject) tok).has("absolutePath")) {
-				System.err.println(CAstPrinter.print(new SolidityJSONTranslator((JSONObject) tok).translateToCAst()));
+				new SolidityJSONTranslator((JSONObject) tok).translateToCAst();
 			}
 		}
 	}

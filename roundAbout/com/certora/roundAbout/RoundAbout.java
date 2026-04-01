@@ -31,11 +31,15 @@ public class RoundAbout extends AnalysisRunner {
 		
 		JSONObject graphs = E.analyze();
 					
-		String outFile = args[1];
-		try (FileWriter jo = new FileWriter(outFile)) {
-			graphs.write(jo, 4, 0);
-		}
+			String outFile = args[1];
+			try (FileWriter jo = new FileWriter(outFile)) {
+				graphs.write(jo, 4, 0);
+			}
 
-		validateJSON(outFile);
+			if (validateJSON(outFile)) {
+				System.out.println("Wrote validated JSON output to " + outFile);
+			} else {
+				System.out.println("Wrote JSON output to " + outFile + " (validation reported issues)");
+			}
+		}
 	}
-}

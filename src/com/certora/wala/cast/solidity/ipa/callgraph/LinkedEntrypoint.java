@@ -92,15 +92,9 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
 		cha.forEach(cls -> { 
-			if (cls.getName().toString().contains("BaseGeneralPool")) {
-				System.err.println("found it");
-			}
 			if (cls != contractClass && cha.isAssignableFrom(contractClass, cls) && !cls.isInterface() && !cls.isAbstract()) {
 				allSupersIncludingSelf(cls).forEach(x ->
 				x.getDeclaredInstanceFields().forEach(m -> { 
-					if (cls.getName().toString().contains("StablePoolHarness") && m.getName().toString().contains("onSwap")) {
-						System.err.print(cls);
-					}
 					IClass fieldClass = cha.lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, m.getName().toString()));
 					if (fieldClass != null && !m.getDeclaringClass().isInterface() && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
 						AstFunctionClass afc = (AstFunctionClass) fieldClass;

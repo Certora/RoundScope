@@ -3,6 +3,9 @@
   <groupId>com.certora</groupId>
   <artifactId>roundabout</artifactId>
   <version>0.0.1-SNAPSHOT</version>
+  <properties>
+    <surefire.excludedGroups>jni</surefire.excludedGroups>
+  </properties>
   <build>
     <sourceDirectory>src</sourceDirectory>
     <testSourceDirectory>test/src</testSourceDirectory> 
@@ -56,14 +59,15 @@
  	   <groupId>org.apache.maven.plugins</groupId>
    	   <artifactId>maven-surefire-plugin</artifactId>
        <version>3.5.5</version> <!-- Use a recent version -->
-       <configuration>
-        <forkCount>1</forkCount>
-        <reuseForks>false</reuseForks>
-        <systemPropertyVariables>
-             <user.home>${project.directory}</user.home>
-        </systemPropertyVariables>
-       </configuration>     
-      </plugin>  
+	       <configuration>
+	        <forkCount>1</forkCount>
+	        <reuseForks>false</reuseForks>
+	        <excludedGroups>${surefire.excludedGroups}</excludedGroups>
+	        <systemPropertyVariables>
+	             <user.home>${project.directory}</user.home>
+	        </systemPropertyVariables>
+	       </configuration>     
+	      </plugin>  
     </plugins>
   </build>
   <dependencies>
@@ -126,10 +130,18 @@
    </dependency>
   </dependencies>
   <repositories>
-   <repository>
-    <id>in-project</id>
-    <name>In Project Repo</name>
-    <url>file://${project.basedir}/libs</url>
-  </repository>
- </repositories>
+	   <repository>
+	    <id>in-project</id>
+	    <name>In Project Repo</name>
+	    <url>file://${project.basedir}/libs</url>
+	  </repository>
+	 </repositories>
+	 <profiles>
+	  <profile>
+	   <id>with-jni-tests</id>
+	   <properties>
+	    <surefire.excludedGroups></surefire.excludedGroups>
+	   </properties>
+	  </profile>
+	 </profiles>
 </project>
