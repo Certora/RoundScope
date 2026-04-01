@@ -1,7 +1,9 @@
 package com.certora.wala.cast.solidity.tree;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.tree.CAstType;
@@ -39,6 +41,8 @@ public class SolidityCAstType implements CAstType.Primitive {
 	
 	public static final Map<String,CAstType> types = HashMapFactory.make();
 	public static final Map<CAstType,TypeReference> irTypes = HashMapFactory.make();
+	private static final boolean WARN_ON_UNKNOWN_TYPES = Boolean.getBoolean("roundabout.warnUnknownTypes");
+	private static final Set<String> unknownTypes = new HashSet<>();
 	
 	static {
 		for(Object[] nm : new Object[][] {
@@ -111,7 +115,9 @@ public class SolidityCAstType implements CAstType.Primitive {
 			}
 		}
 		if (!types.containsKey(name)) {
-			System.err.println("cannot find type " + name);
+			if (WARN_ON_UNKNOWN_TYPES && unknownTypes.add(name)) {
+				System.err.println("cannot find type " + name);
+			}
 		}
 		return types.get(name);
 	}

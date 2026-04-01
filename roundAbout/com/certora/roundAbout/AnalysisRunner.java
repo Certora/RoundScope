@@ -26,12 +26,14 @@ public class AnalysisRunner {
 		}
 	}
 
-	protected static void validateJSON(String outFile) throws FileNotFoundException {
+	protected static boolean validateJSON(String outFile) throws FileNotFoundException {
 		Validator validator = Validator.forSchema(JGF_SCHEMA);
 		ValidationFailure failure = validator.validate(new JsonParser(new FileReader(outFile)).parse());
 		if (failure != null) {
 			System.err.println(failure);
+			return false;
 		}
+		return true;
 	}
 
 }
