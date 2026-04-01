@@ -57,7 +57,7 @@ public enum Direction {
 			case Inconsistent:
 				return Inconsistent;
 			default:
-				return Either;
+				return Inconsistent;
 			}
 		}
 
@@ -86,7 +86,7 @@ public enum Direction {
 			case Inconsistent:
 				return Inconsistent;
 			default:
-				return Either;
+				return Inconsistent;
 			}
 		}
 
@@ -119,7 +119,7 @@ public enum Direction {
 			case Inconsistent:
 				return Inconsistent;
 			default:
-				return Either;
+				return Inconsistent;
 			}
 		}
 
