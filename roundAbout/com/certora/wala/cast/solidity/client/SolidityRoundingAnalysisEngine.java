@@ -29,9 +29,11 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 		JSONArray graphs = new JSONArray();
 		CallGraph cg = builder.getCallGraph();
 
-		System.err.println(cg.getClassHierarchy());
-		CAstCallGraphUtil.AVOID_DUMP.set(false);
-		CAstCallGraphUtil.dumpCG((SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), cg);
+		// Keep these for local debugging, but avoid dumping the full class
+		// hierarchy and call graph in normal runs.
+		// System.err.println(cg.getClassHierarchy());
+		// CAstCallGraphUtil.AVOID_DUMP.set(false);
+		// CAstCallGraphUtil.dumpCG((SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), cg);
 
 		RoundingAnalysis ra = new RoundingAnalysis(cg);
 		for(CGNode n : cg) {
