@@ -36,6 +36,10 @@ java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output f
 
 NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
 
+On success, `RoundAbout` prints a line of the form `Wrote validated JSON output to <a json output filename>`.
+
+Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
+
 
 ## Report Format
 
