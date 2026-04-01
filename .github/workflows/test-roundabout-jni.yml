@@ -22,7 +22,7 @@ jobs:
         uses: egor-tensin/setup-gcc@v2
         with:
           version: latest
-	  
+          
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Checkout Solidity
@@ -33,8 +33,8 @@ jobs:
 
       - name: Build Solidity
         working-directory: solidity
-	run: ./scripts/build.sh
-	
+        run: ./scripts/build.sh
+        
       - name: Checkout WALA fork
         uses: actions/checkout@v4
         with:
@@ -51,10 +51,10 @@ jobs:
 
       - name: build RoundAbout native code
         working-directory: jni
-	run: make
-	env:
-	  WALA: $(HOME)/WALA
-	  SOLIDITY: $(HOME)/solidity
-	  
+        run: make
+        env:
+          WALA: $(HOME)/WALA
+          SOLIDITY: $(HOME)/solidity
+          
       - name: Test RoundAbout .java code
         run: mvn -P with-jni-tests verify
