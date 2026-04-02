@@ -18,6 +18,14 @@ BREW_INCLUDES=-I/opt/homebrew/include
 BOOST_LIB_DIRS=-L/opt/homebrew/lib
 BOOST_LIBS=-lboost_filesystem
 
+PLATFORM := $(shell uname)
+ifeq ($(PLATFORM), Darwin)
+  DYLIB=-dynamiclib
+  EXT=.jnilib
+else
+  DYLIB=-shared
+  EXT=.so
+endif
 
 CAST=$(WALA)/cast
 CAST_INCLUDES=-I$(CAST)/cast/src/main/public
@@ -30,7 +38,7 @@ RS_FLAGS=
 RS_DEVEL_LIBS=
 TARGET=
 
-default:	libwalacastsolidity.jnilib
+default:	libwalacastsolidity$(EXT)
 
 com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.h com_certora_wala_cast_solidity_jni_SolidityJNIBridge.cpp $(JNI_HEADERS)
 	$(CC) $(TARGET) -std=c++23 -fpic -c -o $@ -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) $(SOLIDITY_INCLUDES) $(BREW_INCLUDES) $(CAST_INCLUDES) com_certora_wala_cast_solidity_jni_SolidityJNIBridge.cpp
@@ -44,8 +52,8 @@ translator.o:	solidityBridge.h translator.h translator.cpp
 assembly.o:	solidityBridge.h translator.h assembly.cpp
 	$(CC) $(TARGET) -std=c++23 -fpic -c -o $@ $(SOLIDITY_INCLUDES) $(BREW_INCLUDES)  $(CAST_INCLUDES) -I$(JNI_INCLUDE) -I$(JNI_MD_INCLUDE) assembly.cpp
 
-libwalacastsolidity.jnilib:	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o solidityBridge.o translator.o assembly.o $(SOLIDITY_LIB_DEPS)
-	$(CC) $(TARGET) -dynamiclib -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) $(RS_DEVEL_LIBS) -lstdc++ 
+libwalacastsolidity$(EXT):	com_certora_wala_cast_solidity_jni_SolidityJNIBridge.o solidityBridge.o translator.o assembly.o $(SOLIDITY_LIB_DEPS)
+	$(CC) $(TARGET) $(DYLIB) -o $@ $^ $(SOLIDITY_LIB_DIRS) $(BOOST_LIB_DIRS) $(CAST_LIB_DIRS) $(SOLIDITY_LIBS) $(BOOST_LIBS) $(CAST_LIBS) $(RS_DEVEL_LIBS) -lstdc++ 
 
 clean:
-	rm -f libwalacastsolidity.jnilib *.o
+	rm -f libwalacastsolidity$(EXT) *.o
