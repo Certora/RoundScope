@@ -1,0 +1,65 @@
+---
+name: Test RoundAbout JNI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          create-symlink: true
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Install Boost
+        run: |
+          brew install boost
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Checkout Solidity
+        uses: actions/checkout@v4
+        with:
+          repository: argotorg/solidity
+          path: solidity
+
+      - name: Build Solidity
+        working-directory: solidity
+        run: ./scripts/build.sh
+
+      - name: Checkout WALA fork
+        uses: actions/checkout@v4
+        with:
+          repository: julian-certora/WALA
+          ref: fixesToNativeBridge
+          path: WALA
+
+      - name: Publish WALA fork to local Maven
+        working-directory: WALA
+        run: ./gradlew --no-daemon installDebug publishToMavenLocal -xtest
+
+      - name: Build RoundAbout .java code
+        run: mvn install
+
+      - name: build RoundAbout native code
+        working-directory: jni
+        run: make
+        env:
+          WALA: ../WALA
+          SOLIDITY: ../solidity
+
+      - name: Test RoundAbout .java code
+        run: mvn -P with-jni-tests verify
