@@ -16,7 +16,7 @@ Runs the RoundAbout rounding-analysis pipeline and generates an interactive HTML
 
 ## Command
 
-`bash .claude/skills/run_roundabout/run_roundabout.sh [--certora-run-command <cmd>] <conf-file>`
+`python3 .claude/skills/run_roundabout/run_roundabout.py [--certora-run-command <cmd>] <conf-file>`
 
 ### Arguments
 
@@ -27,10 +27,10 @@ Runs the RoundAbout rounding-analysis pipeline and generates an interactive HTML
 
 ```bash
 # Run on a conf file in the current project
-bash .claude/skills/run_roundabout/run_roundabout.sh certora/conf/MyConf.conf
+python3 .claude/skills/run_roundabout/run_roundabout.py certora/conf/MyConf.conf
 
 # Run with a custom certoraRun command
-bash .claude/skills/run_roundabout/run_roundabout.sh --certora-run-command /path/to/certoraRun certora/conf/MyConf.conf
+python3 .claude/skills/run_roundabout/run_roundabout.py --certora-run-command /path/to/certoraRun certora/conf/MyConf.conf
 ```
 
 ## What It Does

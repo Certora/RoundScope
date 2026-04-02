@@ -8,6 +8,7 @@ This repo is a WALA-based  Solidity analysis framework. Its first analysis, `Rou
 ##  Dependencies
 - Java 21
 - Maven
+- Python 3.8+
 - `certoraRun`
 - A Certora project with a `.conf` file
 - Access to Certora tooling for the supported workflow, since `certoraRun` is used to dump ASTs
@@ -18,12 +19,17 @@ This repo is a WALA-based  Solidity analysis framework. Its first analysis, `Rou
 Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
 
 1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
-2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
+2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`.
 3. Clone this repository, `cd` into it, and run `mvn package`.
+4. Install Python dependencies:
+   ```
+   pip install .
+   ```
+   This installs the required Python packages (`json5`, `pygments`) declared in `pyproject.toml`.
 
 ## Usage
 
-The commands below describe the supported user workflow. `roundabout.sh` is mainly used during testing and debugging.
+The commands below describe the supported user workflow. `roundabout.py` is mainly used during testing and debugging.
 
 1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
 2. _In the same directory_, run `RoundAbout` as
@@ -38,12 +44,12 @@ On success, `RoundAbout` prints a line of the form `Wrote validated JSON output 
 
 Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
 
-### `roundabout.sh`
+### `roundabout.py`
 
-`roundabout.sh` wraps the two-step workflow (AST dump + analysis) into a single command. It runs `certoraRun` with the required flags, then invokes `RoundAbout` on the result.
+`roundabout.py` wraps the two-step workflow (AST dump + analysis) into a single command. It runs `certoraRun` with the required flags, then invokes `RoundAbout` on the result.
 
 ```
-./roundabout.sh <project-root> <conf-file> <output-json>
+python3 roundabout.py <project-root> <conf-file> <output-json>
 ```
 
 - `project-root` — the directory containing the Certora project
@@ -140,7 +146,7 @@ Note that `[sl,sc-el,ec]` means a source code position as a string, written as a
 
 ## Repository Overview
 
-At the top level, `pom.xml` defines the Maven build, and `roundabout.sh` is a helper script used during testing and debugging of the JSON-AST workflow.
+At the top level, `pom.xml` defines the Maven build, and `roundabout.py` is a helper script used during testing and debugging of the JSON-AST workflow.
 
 - `roundAbout/`: This contains the main entrypoint plus the rounding analysis implementation
 - `src/`: shared Java source for the Solidity frontend and WALA integration

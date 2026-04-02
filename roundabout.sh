@@ -31,22 +31,51 @@ while [ $# -gt 0 ]; do
 done
 
 if [ $# -lt 3 ]; then
-    echo "Usage: $0 [--certora-run-command <cmd>] <project-root> <conf-file> <output-json>" >&2
+    echo "Usage: $0 [--certora-run-command <cmd>] <project-root> <conf-or-sol-file> <output-json>" >&2
     exit 1
 fi
 
 PROJECT_DIR="$1"
-CONF="$2"
+INPUT_FILE="$2"
 OUTPUT="$3"
 
 cd "$PROJECT_DIR"
+
+# --- If the input is a .sol file, generate a temporary conf and spec ---
+TEMP_SPEC=""
+TEMP_CONF=""
+cleanup_temp_files() {
+    [ -n "$TEMP_SPEC" ] && rm -f "$TEMP_SPEC"
+    [ -n "$TEMP_CONF" ] && rm -f "$TEMP_CONF"
+}
+trap cleanup_temp_files EXIT
+
+if [[ "$INPUT_FILE" == *.sol ]]; then
+    CONTRACT_NAME=$(basename "$INPUT_FILE" .sol)
+    TEMP_SPEC=$(mktemp "${INPUT_FILE%.sol}_XXXXXX.spec")
+    echo 'rule trivial { assert true; }' > "$TEMP_SPEC"
+    TEMP_CONF=$(mktemp "${INPUT_FILE%.sol}_XXXXXX.conf")
+    cat > "$TEMP_CONF" <<EOF
+{
+    "files": ["$INPUT_FILE"],
+    "verify": "$CONTRACT_NAME:$TEMP_SPEC"
+}
+EOF
+    CONF="$TEMP_CONF"
+    echo "Generated temporary conf and spec for $INPUT_FILE"
+elif [[ "$INPUT_FILE" == *.conf ]]; then
+    CONF="$INPUT_FILE"
+else
+    echo "Error: Input file must be a .conf or .sol file." >&2
+    exit 1
+fi
 
 # Record timestamp before running certoraRun
 TIMESTAMP_REF=$(mktemp)
 touch "$TIMESTAMP_REF"
 
 echo "Running $CERTORA_RUN_CMD to dump ASTs..."
-"$CERTORA_RUN_CMD" "$CONF" --dump_asts --build_only --disable_local_typechecking --ignore_solidity_warnings --disable_internal_function_instrumentation || true
+$CERTORA_RUN_CMD "$CONF" --dump_asts --build_only --disable_local_typechecking --ignore_solidity_warnings --disable_internal_function_instrumentation || true
 
 ASTS_FILE=".certora_internal/latest/.asts.json"
 if [ ! -f "$ASTS_FILE" ] || [ "$ASTS_FILE" -ot "$TIMESTAMP_REF" ]; then
