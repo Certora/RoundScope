@@ -26,8 +26,7 @@ jobs:
 
       - name: Install Boost
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libboost-all-dev
+          sudo brew install boost
 
       - uses: gradle/actions/setup-gradle@v4
 
