@@ -878,6 +878,7 @@ public class RoundingAnalysis {
 		if (! rawResults.containsKey(key)) {
 			RoundingInference ri = new RoundingInference(params, HashSetFactory.make(), n);
 			Result G = ri.getRoundingResult();
+			rawResults.put(key, G);
 			return G;
 		} else {
 			return rawResults.get(key);
