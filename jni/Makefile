@@ -1,7 +1,8 @@
 
 JAVA=$(JAVA_HOME)
 JNI_INCLUDE=$(JAVA)/include
-JNI_MD_INCLUDE=$(JAVA)/include/darwin
+JNI_ARCH=$(shell ./arch.sh)
+JNI_MD_INCLUDE=$(JAVA)/include/$(JNI_ARCH)
 
 JNI_HEADERS=$(JNI_INCLUDE)/jni.h $(JNI_MD_INCLUDE)/jni_md.h
 
