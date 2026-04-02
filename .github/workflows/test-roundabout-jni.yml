@@ -13,6 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          create-symlink: true
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -59,8 +64,8 @@ jobs:
         working-directory: jni
         run: make
         env:
-          WALA: $(HOME)/WALA
-          SOLIDITY: $(HOME)/solidity
+          WALA: /home/runner/work/wala-solidity/wala-solidity/WALA
+          SOLIDITY: /home/runner/work/wala-solidity/wala-solidity/solidity
 
       - name: Test RoundAbout .java code
         run: mvn -P with-jni-tests verify
