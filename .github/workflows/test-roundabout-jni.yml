@@ -55,7 +55,7 @@ jobs:
 
       - name: Publish WALA fork to local Maven
         working-directory: WALA
-        run: ./gradlew --no-daemon install publishToMavenLocal -xtest
+        run: ./gradlew --no-daemon installDebug publishToMavenLocal -xtest
 
       - name: Build RoundAbout .java code
         run: mvn install
