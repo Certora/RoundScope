@@ -2,10 +2,35 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-RUN_ROUNDABOUT="$SCRIPT_DIR/.claude/skills/run_roundabout/run_roundabout.sh"
+RUN_ROUNDABOUT="$SCRIPT_DIR/../.claude/skills/run_roundabout/run_roundabout.sh"
+
+# --- Defaults ---
+CERTORA_RUN_CMD="certoraRun"
+
+# --- Parse named options ---
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --certora-run-command)
+            [ $# -lt 2 ] && { echo "Error: --certora-run-command requires a value." >&2; exit 1; }
+            CERTORA_RUN_CMD="$2"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        --*)
+            echo "Error: Unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
 
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <root-path>" >&2
+    echo "Usage: $0 [--certora-run-command <cmd>] <root-path>" >&2
     echo "  Scans <root-path> for certora/**/*.conf files and runs RoundAbout on each." >&2
     exit 1
 fi
@@ -56,7 +81,7 @@ find "$ROOT_PATH" -path '*/.certora_internal' -prune -o -path '*/certora/*.conf'
     error=""
 
     # Run from the project dir
-    output=$(cd "$project_dir" && bash "$RUN_ROUNDABOUT" "$conf_rel" 2>&1) && rc=0 || rc=$?
+    output=$(cd "$project_dir" && bash "$RUN_ROUNDABOUT" --certora-run-command "$CERTORA_RUN_CMD" "$conf_rel" 2>&1) && rc=0 || rc=$?
 
     if [ $rc -eq 0 ]; then
         # Extract HTML path from output

@@ -1,9 +1,35 @@
 #!/bin/bash
 ROUNDABOUT_DIR="$(cd "$(dirname "$0")/../../.." && pwd)"
 
+# --- Defaults ---
+CERTORA_RUN_CMD="certoraRun"
+
+# --- Parse named options ---
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --certora-run-command)
+            [ $# -lt 2 ] && { echo "Error: --certora-run-command requires a value." >&2; exit 1; }
+            CERTORA_RUN_CMD="$2"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        --*)
+            echo "Error: Unknown option: $1" >&2
+            exit 1
+            ;;
+        *)
+            break
+            ;;
+    esac
+done
+
 if [ $# -lt 1 ]; then
-    echo "Usage: $0 <conf-file>" >&2
+    echo "Usage: $0 [--certora-run-command <cmd>] <conf-file>" >&2
     echo "  conf-file: path to a .conf file (relative to project root or absolute)" >&2
+    echo "  --certora-run-command <cmd>: command to use instead of certoraRun (default: certoraRun)" >&2
     exit 1
 fi
 
@@ -21,7 +47,7 @@ LOG_FILE=".certora_internal/roundabout.log"
 mkdir -p .certora_internal
 
 echo "Analyzing..."
-if ! bash "$ROUNDABOUT_DIR/roundabout.sh" "$PROJECT_DIR" "$CONF" "$OUTPUT_JSON" >> "$LOG_FILE" 2>&1; then
+if ! bash "$ROUNDABOUT_DIR/roundabout.sh" --certora-run-command "$CERTORA_RUN_CMD" "$PROJECT_DIR" "$CONF" "$OUTPUT_JSON" >> "$LOG_FILE" 2>&1; then
     echo "Error: Analysis failed. See $LOG_FILE for details." >&2
     exit 1
 fi
