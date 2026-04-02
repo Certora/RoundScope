@@ -29,7 +29,7 @@ endif
 
 CAST=$(WALA)/cast
 CAST_INCLUDES=-I$(CAST)/cast/src/main/public
-CAST_LIB_DIRS=-L$(CAST)/cast/build/lib/main/debug -Wl,-rpath,$(CAST)/cast/build/lib/main/debug
+CAST_LIB_DIRS=-L$(CAST)/cast/build/lib/main/debug -Wl,-rpath,$(abspath $(CAST)/cast/build/lib/main/debug)
 CAST_LIBS=-lcast
 
 #RS_FLAGS=-DRS_DEVEL
