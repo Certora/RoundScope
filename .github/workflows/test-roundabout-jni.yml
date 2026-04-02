@@ -26,7 +26,7 @@ jobs:
 
       - name: Install Boost
         run: |
-          sudo brew install boost
+          brew install boost
 
       - uses: gradle/actions/setup-gradle@v4
 
