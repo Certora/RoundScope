@@ -4,9 +4,12 @@
 import argparse
 import json5
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
+
+DOCKER_IMAGE = "ghcr.io/certora/roundabout:latest"
 
 
 def main():
@@ -86,9 +89,27 @@ def main():
         os.unlink(timestamp_ref)
 
         print("Running RoundAbout analysis...")
-        result = subprocess.run(
-            ["java", "-jar", jar, conf, output, "--combined", asts_file],
-        )
+        if shutil.which("java"):
+            result = subprocess.run(
+                ["java", "-jar", jar, conf, output, "--combined", asts_file],
+            )
+        elif shutil.which("docker"):
+            print("Java not found, running via Docker...")
+            result = subprocess.run([
+                "docker", "run", "--rm",
+                "-v", f"{project_dir}:/work",
+                DOCKER_IMAGE,
+                conf, output, "--combined", asts_file,
+            ])
+        else:
+            print(
+                "Error: Neither Java nor Docker found.\n"
+                "Please install one of:\n"
+                "  - Java 21+: https://adoptium.net/\n"
+                "  - Docker:   https://docs.docker.com/get-docker/",
+                file=sys.stderr,
+            )
+            sys.exit(1)
         if result.returncode != 0:
             print("Error: RoundAbout analysis failed.", file=sys.stderr)
             sys.exit(result.returncode)

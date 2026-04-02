@@ -6,15 +6,31 @@ This repo is a WALA-based  Solidity analysis framework. Its first analysis, `Rou
 
 
 ##  Dependencies
-- Java 21
-- Maven
+- **Java 21** _or_ **Docker** — you only need one of these. If Java is not found on your PATH, the tool automatically falls back to Docker.
+- Maven (only if building from source)
 - Python 3.8+
 - `certoraRun`
 - A Certora project with a `.conf` file
 - Access to Certora tooling for the supported workflow, since `certoraRun` is used to dump ASTs
-- A local build of our WALA fork (temporarily required), published to your local Maven repository.
 
 ## Installation
+
+### Option A: Docker (no Java required)
+
+If you don't have Java installed, the tool can run via Docker. Just pull the pre-built image:
+
+```
+docker pull ghcr.io/certora/roundabout:latest
+```
+
+Then install the Python dependencies:
+```
+pip install .
+```
+
+That's it — `roundabout.py` will detect that Java is missing and use Docker automatically.
+
+### Option B: Build from source (requires Java 21 + Maven)
 
 Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
 
@@ -34,8 +50,14 @@ The commands below describe the supported user workflow. `roundabout.py` is main
 1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
 2. _In the same directory_, run `RoundAbout` as
 
+With Java:
 ```
 java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
+```
+
+With Docker:
+```
+docker run --rm -v "$(pwd)":/work ghcr.io/certora/roundabout:latest <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
 ```
 
 NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
