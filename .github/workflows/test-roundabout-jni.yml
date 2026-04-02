@@ -58,8 +58,8 @@ jobs:
         working-directory: jni
         run: make
         env:
-          WALA: /home/runner/work/wala-solidity/wala-solidity/WALA
-          SOLIDITY: /home/runner/work/wala-solidity/wala-solidity/solidity
+          WALA: ../../wala-solidity/wala-solidity/WALA
+          SOLIDITY: ../../wala-solidity/wala-solidity/solidity
 
       - name: Test RoundAbout .java code
         run: mvn -P with-jni-tests verify
