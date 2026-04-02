@@ -38,6 +38,36 @@ On success, `RoundAbout` prints a line of the form `Wrote validated JSON output 
 
 Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
 
+### `roundabout.sh`
+
+`roundabout.sh` wraps the two-step workflow (AST dump + analysis) into a single command. It runs `certoraRun` with the required flags, then invokes `RoundAbout` on the result.
+
+```
+./roundabout.sh <project-root> <conf-file> <output-json>
+```
+
+- `project-root` — the directory containing the Certora project
+- `conf-file` — the `.conf` file to analyze
+- `output-json` — where to write the analysis results
+
+### HTML Viewer
+
+`viewer/generate_viewer.py` turns RoundAbout JSON output into a self-contained, interactive HTML report with syntax-highlighted source and call graph visualization.
+
+```
+python3 viewer/generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file]
+```
+
+### Claude Code Skill
+
+If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the `/run_roundabout` skill runs the full pipeline — AST dump, analysis, and HTML viewer generation — in one step:
+
+```
+/run_roundabout certora/conf/MyConf.conf
+```
+
+Output files (`<name>_roundabout.json` and `<name>_roundabout.html`) are placed next to the conf file.
+
 ### Example
 
 We provide two tests: `test/data/Staker` and `test/data/Staker2` that can be run without needing `certoraRun` since the confs and jsons are included.
