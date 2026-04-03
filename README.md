@@ -28,14 +28,14 @@ Then install the Python dependencies:
 pip install .
 ```
 
-That's it — `roundabout.py` will detect that Java is missing and use Docker automatically.
+`roundabout.py` will detect that Java is missing and use Docker automatically.
 
 ### Option B: Build from source (requires Java 21 + Maven)
 
 Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
 
 1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
-2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`.
+2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`. To skip tests, use `./gradlew publishToMavenLocal -xtest`.
 3. Clone this repository, `cd` into it, and run `mvn package`.
 4. Install Python dependencies:
    ```
@@ -45,56 +45,48 @@ Current builds depend on a WALA fork and on Maven artifacts published locally fr
 
 ## Usage
 
-The commands below describe the supported user workflow. `roundabout.py` is mainly used during testing and debugging.
+### HTML Viewer (recommended)
 
-1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
-2. _In the same directory_, run `RoundAbout` as
-
-With Java:
-```
-java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
-```
-
-With Docker:
-```
-docker run --rm -v "$(pwd)":"$(pwd)" -w "$(pwd)" ghcr.io/certora/roundabout:latest <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
-```
-
-NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
-
-On success, `RoundAbout` prints a line of the form `Wrote validated JSON output to <a json output filename>`.
-
-Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
-
-### `roundabout.py`
-
-`roundabout.py` wraps the two-step workflow (AST dump + analysis) into a single command. It runs `certoraRun` with the required flags, then invokes `RoundAbout` on the result.
+The easiest way to use RoundAbout is through the HTML viewer, which runs the full pipeline and produces a self-contained, interactive HTML report with syntax-highlighted source and call graph visualization.
 
 ```
-python3 roundabout.py <project-root> <conf-file> <output-json>
+python3 viewer/generate_viewer.py <project-root> <input-file> <output.html>
 ```
 
-- `project-root` — the directory containing the Certora project
-- `conf-file` — the `.conf` file to analyze
-- `output-json` — where to write the analysis results
-
-### HTML Viewer
-
-`viewer/generate_viewer.py` turns RoundAbout JSON output into a self-contained, interactive HTML report with syntax-highlighted source and call graph visualization.
-
-```
-python3 viewer/generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file]
-```
+- `project-root` — the directory containing the Certora project (used to resolve source file paths)
+- `input-file` — a `.conf` or `.sol` file to analyze
+- `output.html` — where to write the HTML report
 
 ### Claude Code Skill
 
-If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the `/run_roundabout` skill runs the full pipeline — AST dump, analysis, and HTML viewer generation — in one step:
+If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the `/run_roundabout` skill runs the full pipeline in one step:
 
 ```
 /run_roundabout certora/conf/MyConf.conf
 ```
 
 Output files (`<name>_roundabout.json` and `<name>_roundabout.html`) are placed next to the conf file.
+
+### Low-level JGF output
+
+If you need the raw [JGF](https://jsongraphformat.info/) JSON output (for example, for programmatic consumption), you can run the analysis directly:
+
+1. Run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`.
+2. _In the same directory_, run `RoundAbout`:
+
+   With Java:
+   ```
+   java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <output.json> --combined .certora_internal/latest/.asts.json
+   ```
+
+   With Docker:
+   ```
+   docker run --rm -v "$(pwd)":"$(pwd)" -w "$(pwd)" ghcr.io/certora/roundabout:latest <a .conf file> <output.json> --combined .certora_internal/latest/.asts.json
+   ```
+
+NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
+
+Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
 
 ### Example
 
