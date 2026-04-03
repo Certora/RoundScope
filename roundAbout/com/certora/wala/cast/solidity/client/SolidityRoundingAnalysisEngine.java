@@ -3,6 +3,7 @@ package com.certora.wala.cast.solidity.client;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,13 +11,13 @@ import org.json.JSONObject;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.util.JSONOutput;
-import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.loader.AstMethod;
+import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
-import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.HashSetFactory;
 
 public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEngine<JSONObject> {
 
@@ -35,11 +36,23 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 		// CAstCallGraphUtil.AVOID_DUMP.set(false);
 		// CAstCallGraphUtil.dumpCG((SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), cg);
 
+		Set<IMethod> done = HashSetFactory.make();
 		RoundingAnalysis ra = new RoundingAnalysis(cg);
-		for(CGNode n : cg) {
+		
+		for(CGNode n : cg.getEntrypointNodes()) {
 			if (n.getMethod() instanceof AstMethod) {
+				done.add(n.getMethod());
 				Result G = ra.analyzeForNode(cg, n);
-
+				
+				graphs.put(JSONOutput.outputAsJSON(builder.getPointerAnalysis(), n, G));
+			}
+		}
+		
+		for(CGNode n : cg) {
+			if (n.getMethod() instanceof AstMethod && ! done.contains(n.getMethod())) {
+				done.add(n.getMethod());
+				Result G = ra.analyzeForNode(cg, n);
+				
 				graphs.put(JSONOutput.outputAsJSON(builder.getPointerAnalysis(), n, G));
 			}
 		}
