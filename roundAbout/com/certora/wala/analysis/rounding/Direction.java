@@ -123,6 +123,7 @@ public enum Direction {
 			}
 		}
 
+		
 		@Override
 		Direction flip() {
 			return Up;
