@@ -4,7 +4,9 @@
 import json
 import os
 import re
+import subprocess
 import sys
+import tempfile
 from collections import defaultdict
 
 from pygments import highlight as pygments_highlight
@@ -14,23 +16,18 @@ from pygments.lexers.solidity import SolidityLexer
 
 
 def parse_args():
-    # Separate flags from positional args
-    positional = []
-    full_context_breakdown = False
-    for arg in sys.argv[1:]:
-        if arg == "--full_context_breakdown":
-            full_context_breakdown = True
-        else:
-            positional.append(arg)
-
-    if len(positional) < 3 or len(positional) > 4:
-        print(
-            "Usage: python3 generate_viewer.py <project-root> <roundabout-output.json> <output.html> [conf-file] [--full_context_breakdown]",
-            file=sys.stderr,
-        )
-        sys.exit(1)
-    conf_file = positional[3] if len(positional) == 4 else None
-    return positional[0], positional[1], positional[2], conf_file, full_context_breakdown
+    import argparse
+    parser = argparse.ArgumentParser(
+        description="Generate an HTML viewer from a Certora .conf or .sol file."
+    )
+    parser.add_argument("project_root", help="Project root directory")
+    parser.add_argument("input_file", help="Path to a .conf or .sol file")
+    parser.add_argument("output_html", help="Path for the output HTML file")
+    parser.add_argument("conf_file", nargs="?", default=None, help="Optional .conf file for contract extraction")
+    parser.add_argument("--full_context_breakdown", action="store_true", help="Enable full context breakdown mode")
+    parser.add_argument("--certora-run-command", default="certoraRun", help="Command to use instead of certoraRun")
+    args = parser.parse_args()
+    return args.project_root, args.input_file, args.output_html, args.conf_file, args.full_context_breakdown, args.certora_run_command
 
 
 def clean_graph_label(label):
@@ -43,6 +40,10 @@ def clean_graph_label(label):
     m = re.match(r'graph of < solidity, Lcontract (\w+\.\w+)', label)
     if m:
         return m.group(1)
+    # Static functions: 'graph of < solidity, Lstatic _require (bool,uint256), ...' -> 'static _require'
+    m = re.match(r'graph of < solidity, Lstatic (\w+)', label)
+    if m:
+        return 'static ' + m.group(1)
     # Fallback: try to find any Contract.method pattern
     m = re.search(r'Lcontract (\w+\.\w+)', label)
     if m:
@@ -558,14 +559,11 @@ def extract_graphs(data, project_root):
                     file_path, sl, sc, el, ec = parsed
                     file_path = normalize_path(file_path, project_root)
 
-            # Determine return rounding (from the node's own roundings)
-            return_rounding = ""
+            # Determine return rounding from metadata.return field
+            return_rounding = md.get("return", "")
+            if return_rounding == "Neither":
+                return_rounding = ""
             roundings = md.get("roundings", {})
-            if roundings:
-                values = [r.get("rounding", "Neither") for r in roundings.values()]
-                agg = aggregate_rounding(values)
-                if agg != "Neither":
-                    return_rounding = agg
 
             # Parse individual roundings for graph view source rendering
             parsed_roundings = []
@@ -1032,8 +1030,8 @@ td.line-content { padding-left: 12px; }
 /* Rounding underline classes */
 .r-up { text-decoration: underline; text-decoration-color: #2563eb; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-down { text-decoration: underline; text-decoration-color: #4ade80; text-underline-offset: 3px; text-decoration-thickness: 2px; }
-.r-inconsistent { text-decoration: underline; text-decoration-color: #f59e0b; text-underline-offset: 3px; text-decoration-thickness: 2px; }
-.r-either { text-decoration: underline; text-decoration-color: #dc2626; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.r-inconsistent { text-decoration: underline; text-decoration-color: #dc2626; text-underline-offset: 3px; text-decoration-thickness: 2px; }
+.r-either { text-decoration: underline; text-decoration-color: #f59e0b; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-neither { text-decoration: underline; text-decoration-color: #d1d5db; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 .r-mixed { text-decoration: underline; text-decoration-color: #000; text-underline-offset: 3px; text-decoration-thickness: 2px; }
 
@@ -1071,6 +1069,10 @@ td.line-content { padding-left: 12px; }
   width: 4px; cursor: col-resize; background: transparent; flex-shrink: 0;
 }
 #resize-handle:hover { background: #dee2e6; }
+#method-list-resize-handle {
+  display: none; width: 4px; cursor: col-resize; background: transparent; flex-shrink: 0;
+}
+#method-list-resize-handle:hover { background: #dee2e6; }
 .tree-file.has-findings { background: #fefce8; }
 .tree-file.has-findings:hover { background: #fef9c3; }
 .tree-file.has-findings.active { background: #d0e1fd; }
@@ -1158,7 +1160,8 @@ td.line-content { padding-left: 12px; }
 .method-count { flex-shrink: 0; font-size: 11px; color: #94a3b8; }
 
 /* Graph panel */
-#graph-panel { display: none; flex: 1; overflow: auto; position: relative; background: #f1f5f9; }
+#graph-panel { display: none; flex: 1; overflow: hidden; position: relative; background: #f1f5f9; flex-direction: column; }
+#graph-scroll { flex: 1; overflow: auto; }
 #graph-container { position: relative; min-width: 100%; min-height: 100%; }
 #graph-edges { position: absolute; top: 0; left: 0; pointer-events: none; overflow: visible; }
 .graph-edge { stroke: #94a3b8; stroke-width: 1.5; fill: none; }
@@ -1171,11 +1174,27 @@ td.line-content { padding-left: 12px; }
   width: 320px;
 }
 .graph-node:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+.graph-node.focused { border: 2px solid #3b82f6; box-shadow: 0 2px 12px rgba(59,130,246,0.25); width: auto; min-width: 320px; }
+.graph-node.compact { width: 220px; }
+.graph-node.compact .graph-node-source { display: none; }
 .graph-node-header {
   padding: 5px 10px; font-weight: 600; font-size: 12px;
   border-bottom: 1px solid #e2e8f0; background: #f8f9fa;
   display: flex; align-items: center; gap: 6px;
 }
+.graph-node-header .go-to-source {
+  margin-left: auto; font-weight: 400; font-size: 10px; color: #3b82f6;
+  text-decoration: none; flex-shrink: 0; padding: 1px 4px; border-radius: 3px;
+}
+.graph-node-header .go-to-source:hover { background: #eff6ff; text-decoration: underline; }
+#graph-breadcrumb {
+  display: none; padding: 6px 12px; background: #e2e8f0; font-size: 12px;
+  border-bottom: 1px solid #cbd5e1; align-items: center; gap: 4px; flex-shrink: 0;
+}
+#graph-breadcrumb .bc-item { color: #3b82f6; cursor: pointer; }
+#graph-breadcrumb .bc-item:hover { text-decoration: underline; }
+#graph-breadcrumb .bc-sep { color: #94a3b8; }
+#graph-breadcrumb .bc-current { color: #1e293b; font-weight: 600; }
 .graph-node-header .node-rounding-dot {
   width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
 }
@@ -1197,14 +1216,14 @@ HTML_TEMPLATE_SCRIPT_START = r"""
   <span style="font-weight:600;">Certora RoundAbout</span>
   <span class="project-root" id="project-root-display"></span>
   <div class="view-toggle">
-    <button class="view-btn active" onclick="switchView('source')">Source</button>
-    <button class="view-btn" onclick="switchView('graph')">Graph</button>
+    <button class="view-btn active" onclick="switchView('graph')">Graph</button>
+    <button class="view-btn" onclick="switchView('source')">Source</button>
   </div>
   <div id="legend">
     <div class="legend-item"><div class="legend-swatch" style="background:#2563eb"></div> Up</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#4ade80"></div> Down</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div> Inconsistent</div>
-    <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Either</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#f59e0b"></div> Either</div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> Inconsistent</div>
     <div class="legend-item"><div class="legend-swatch" style="background:#000"></div> Mixed returns</div>
   </div>
 </div>
@@ -1214,14 +1233,18 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 <div id="main">
   <div id="tree-panel"></div>
   <div id="method-list"></div>
+  <div id="method-list-resize-handle"></div>
   <div id="resize-handle"></div>
   <div id="source-panel">
     <div id="source-placeholder">Select a file from the tree to view source</div>
   </div>
   <div id="graph-panel">
-    <div id="graph-container">
-      <svg id="graph-edges"><defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/></marker></defs></svg>
-      <div id="graph-nodes"></div>
+    <div id="graph-breadcrumb"></div>
+    <div id="graph-scroll">
+      <div id="graph-container">
+        <svg id="graph-edges"><defs><marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#94a3b8"/></marker></defs></svg>
+        <div id="graph-nodes"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1242,8 +1265,8 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 """
 
 HTML_TEMPLATE_END = r"""
-const ROUNDING_TYPES = ['Up', 'Down', 'Inconsistent', 'Either'];
-const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Inconsistent:'#f59e0b', Either:'#dc2626', Neither:'#d1d5db', 'Mixed returns':'#000' };
+const ROUNDING_TYPES = ['Up', 'Down', 'Either', 'Inconsistent'];
+const ROUNDING_COLORS = { Up:'#2563eb', Down:'#4ade80', Either:'#f59e0b', Inconsistent:'#dc2626', Neither:'#d1d5db', 'Mixed returns':'#000' };
 const ROUNDING_SHORT = { Up:'U', Down:'D', Inconsistent:'I', Either:'E', Neither:'N', 'Mixed returns':'MR' };
 
 let currentFile = null;
@@ -1271,6 +1294,7 @@ function init() {
     document.getElementById('context-bar').style.display = 'none';
   }
   setupResize();
+  setupMethodListResize();
   setupBottomResize();
   updateTreeHighlights();
   buildNodePositionIndex();
@@ -1279,6 +1303,7 @@ function init() {
       document.querySelectorAll('.ann-selected').forEach(el => el.classList.remove('ann-selected'));
     }
   });
+  switchView('graph');
 }
 
 function buildContextBar() {
@@ -1753,6 +1778,30 @@ function setupResize() {
   }
 }
 
+function setupMethodListResize() {
+  const handle = document.getElementById('method-list-resize-handle');
+  const methodList = document.getElementById('method-list');
+  let startX, startWidth;
+
+  handle.addEventListener('mousedown', (e) => {
+    startX = e.clientX;
+    startWidth = methodList.offsetWidth;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    e.preventDefault();
+  });
+
+  function onMouseMove(e) {
+    const newWidth = startWidth + (e.clientX - startX);
+    methodList.style.width = Math.max(120, Math.min(600, newWidth)) + 'px';
+  }
+
+  function onMouseUp() {
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+  }
+}
+
 function setupBottomResize() {
   const handle = document.getElementById('bottom-resize-handle');
   const pane = document.getElementById('bottom-pane');
@@ -1936,6 +1985,9 @@ function createNodeBox(info) {
 
 let currentView = 'source';
 let currentGraphIdx = -1;
+let focusedNodeId = '0';
+let graphChildrenOf = {};  // nodeId -> [childNodeId, ...]
+let graphParentOf = {};    // nodeId -> parentNodeId
 
 function switchView(view) {
   currentView = view;
@@ -1948,6 +2000,7 @@ function switchView(view) {
   const sourcePanel = document.getElementById('source-panel');
   const graphPanel = document.getElementById('graph-panel');
   const resizeHandle = document.getElementById('resize-handle');
+  const methodListResizeHandle = document.getElementById('method-list-resize-handle');
   const contextBar = document.getElementById('context-bar');
   const bottomHandle = document.getElementById('bottom-resize-handle');
   const bottomPane = document.getElementById('bottom-pane');
@@ -1955,6 +2008,7 @@ function switchView(view) {
   if (view === 'source') {
     treePanel.style.display = 'block';
     methodList.style.display = 'none';
+    methodListResizeHandle.style.display = 'none';
     sourcePanel.style.display = 'block';
     graphPanel.style.display = 'none';
     resizeHandle.style.display = 'block';
@@ -1962,8 +2016,9 @@ function switchView(view) {
   } else {
     treePanel.style.display = 'none';
     methodList.style.display = 'block';
+    methodListResizeHandle.style.display = 'block';
     sourcePanel.style.display = 'none';
-    graphPanel.style.display = 'block';
+    graphPanel.style.display = 'flex';
     resizeHandle.style.display = 'none';
     contextBar.style.display = 'none';
     bottomHandle.classList.remove('visible');
@@ -2026,7 +2081,7 @@ function buildMethodList() {
   }
 }
 
-function showGraph(graphIdx) {
+function showGraph(graphIdx, focusNode) {
   currentGraphIdx = graphIdx;
 
   // Update active state
@@ -2037,131 +2092,243 @@ function showGraph(graphIdx) {
   const graph = DATA.graphs[graphIdx];
   if (!graph) return;
 
+  // Build adjacency maps
+  graphChildrenOf = {};
+  graphParentOf = {};
+  for (const nodeId in graph.nodes) {
+    graphChildrenOf[nodeId] = [];
+  }
+  for (const edge of graph.edges) {
+    if (!graphChildrenOf[edge.source]) graphChildrenOf[edge.source] = [];
+    graphChildrenOf[edge.source].push(edge.target);
+    graphParentOf[edge.target] = edge.source;
+  }
+
+  // Set focus node (default to root '0')
+  focusedNodeId = focusNode || '0';
+  if (!graph.nodes[focusedNodeId]) focusedNodeId = '0';
+
+  renderFocusedGraph(graphIdx);
+}
+
+function renderFocusedGraph(graphIdx) {
+  const graph = DATA.graphs[graphIdx];
+  if (!graph) return;
+
+  // Compute visible nodes: parent of focused + focused + children of focused
+  const visibleNodes = new Set();
+  visibleNodes.add(focusedNodeId);
+  const childIds = (graphChildrenOf[focusedNodeId] || []);
+  for (const childId of childIds) {
+    visibleNodes.add(childId);
+  }
+  const parentId = graphParentOf[focusedNodeId];
+  if (parentId !== undefined) {
+    visibleNodes.add(parentId);
+  }
+
+  // Sort children by call-site position
+  const edgeSl = {};
+  for (const edge of graph.edges) {
+    if (edge.source === focusedNodeId) {
+      edgeSl[edge.target] = { sl: edge.sl || 0, sc: edge.sc || 0 };
+    }
+  }
+  const sortedChildren = [...childIds].sort((a, b) => {
+    const ea = edgeSl[a] || { sl: 0, sc: 0 };
+    const eb = edgeSl[b] || { sl: 0, sc: 0 };
+    return ea.sl !== eb.sl ? ea.sl - eb.sl : ea.sc - eb.sc;
+  });
+
+  // Update breadcrumb
+  updateBreadcrumb(graph, graphIdx);
+
   const container = document.getElementById('graph-container');
   const nodesEl = document.getElementById('graph-nodes');
   const edgesSvg = document.getElementById('graph-edges');
   nodesEl.innerHTML = '';
-  // Clear edges but keep the defs
   const defs = edgesSvg.querySelector('defs');
   edgesSvg.innerHTML = '';
   edgesSvg.appendChild(defs);
 
-  // Build call-site lookup: nodeId -> {file, sl, sc} (where this node was called from)
+  // Build call-site lookup
   const callSiteOf = {};
   for (const edge of graph.edges) {
     callSiteOf[edge.target] = { file: edge.file, sl: edge.sl, sc: edge.sc };
   }
 
-  // Create dagre graph
-  const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: 'TB', nodesep: 50, ranksep: 70, marginx: 30, marginy: 30 });
-  g.setDefaultEdgeLabel(function() { return {}; });
-
-  // Create node elements and measure them
+  // Create node elements for visible nodes
   const nodeElements = {};
-  for (const nodeId in graph.nodes) {
+  for (const nodeId of visibleNodes) {
     const node = graph.nodes[nodeId];
+    if (!node) continue;
     const callSite = callSiteOf[nodeId] || null;
-    const el = createGraphNode(nodeId, node, callSite);
+    const hasChildren = (graphChildrenOf[nodeId] || []).length > 0;
+    const el = createGraphNode(nodeId, node, callSite, nodeId === focusedNodeId, hasChildren);
     el.style.visibility = 'hidden';
     el.style.position = 'absolute';
     nodesEl.appendChild(el);
     nodeElements[nodeId] = el;
   }
 
-  // Double-rAF to ensure DOM is painted before measuring node dimensions
+  // Double-rAF to measure then position
   requestAnimationFrame(() => { requestAnimationFrame(() => {
+    // Measure all nodes
+    const sizes = {};
     for (const nodeId in nodeElements) {
       const el = nodeElements[nodeId];
-      const w = Math.max(el.offsetWidth, 120);
-      const h = Math.max(el.offsetHeight, 40);
-      g.setNode(nodeId, { width: w + 10, height: h + 10 });
+      sizes[nodeId] = {
+        w: Math.max(el.offsetWidth, 120),
+        h: Math.max(el.offsetHeight, 40)
+      };
     }
 
-    // Sort edges by call-site position so children are ordered left-to-right
-    const sortedEdges = [...graph.edges].sort((a, b) => {
-      if (a.sl !== b.sl) return a.sl - b.sl;
-      return (a.sc || 0) - (b.sc || 0);
-    });
-    for (const edge of sortedEdges) {
-      g.setEdge(edge.source, edge.target);
+    // Custom diagonal layout
+    const pad = 30;
+    const gapX = 40;   // horizontal step per child
+    const gapY = 16;   // vertical gap between children
+    const positions = {};  // nodeId -> {x, y, w, h} (x,y = top-left corner)
+
+    // Place parent (if any) at top-left
+    let curY = pad;
+    if (parentId !== undefined && sizes[parentId]) {
+      positions[parentId] = { x: pad, y: curY, w: sizes[parentId].w, h: sizes[parentId].h };
+      curY += sizes[parentId].h + 40;
     }
 
-    dagre.layout(g);
+    // Place focused node
+    if (sizes[focusedNodeId]) {
+      positions[focusedNodeId] = { x: pad, y: curY, w: sizes[focusedNodeId].w, h: sizes[focusedNodeId].h };
+      curY += sizes[focusedNodeId].h + 40;
+    }
 
-    // Position nodes
-    let maxX = 0, maxY = 0;
-    g.nodes().forEach(function(nodeId) {
-      const pos = g.node(nodeId);
-      const el = nodeElements[nodeId];
-      if (!el || !pos) return;
-      const x = pos.x - pos.width / 2;
-      const y = pos.y - pos.height / 2;
-      el.style.left = x + 'px';
-      el.style.top = y + 'px';
-      el.style.visibility = '';
-      maxX = Math.max(maxX, pos.x + pos.width / 2);
-      maxY = Math.max(maxY, pos.y + pos.height / 2);
-    });
-
-    // Size container
-    container.style.width = (maxX + 40) + 'px';
-    container.style.height = (maxY + 40) + 'px';
-
-    // Size SVG
-    edgesSvg.setAttribute('width', maxX + 40);
-    edgesSvg.setAttribute('height', maxY + 40);
-
-    // Draw edges
-    g.edges().forEach(function(e) {
-      const edgeData = g.edge(e);
-      if (!edgeData || !edgeData.points) return;
-      const points = edgeData.points;
-      if (points.length < 2) return;
-
-      let d = 'M ' + points[0].x + ' ' + points[0].y;
-      if (points.length === 2) {
-        d += ' L ' + points[1].x + ' ' + points[1].y;
-      } else {
-        for (let i = 1; i < points.length - 1; i++) {
-          const p0 = points[i - 1];
-          const p1 = points[i];
-          const p2 = points[i + 1];
-          const cx = p1.x;
-          const cy = p1.y;
-          if (i === points.length - 2) {
-            d += ' Q ' + cx + ' ' + cy + ' ' + p2.x + ' ' + p2.y;
-          } else {
-            const mx = (p1.x + p2.x) / 2;
-            const my = (p1.y + p2.y) / 2;
-            d += ' Q ' + cx + ' ' + cy + ' ' + mx + ' ' + my;
-          }
-        }
+    // Place children in rows, wrapping left-to-right
+    const maxRowWidth = Math.max(800, document.getElementById('graph-scroll').clientWidth - pad * 2);
+    let childX = pad;
+    let childY = curY;
+    let rowMaxH = 0;
+    for (const childId of sortedChildren) {
+      if (!sizes[childId]) continue;
+      // Wrap to next row if this child would exceed max width
+      if (childX > pad && childX + sizes[childId].w > maxRowWidth + pad) {
+        childX = pad;
+        childY += rowMaxH + gapY;
+        rowMaxH = 0;
       }
+      positions[childId] = { x: childX, y: childY, w: sizes[childId].w, h: sizes[childId].h };
+      childX += sizes[childId].w + gapX;
+      rowMaxH = Math.max(rowMaxH, sizes[childId].h);
+    }
+
+    // Position all nodes and compute bounds
+    let maxX = 0, maxY = 0;
+    for (const nodeId in positions) {
+      const pos = positions[nodeId];
+      const el = nodeElements[nodeId];
+      if (!el) continue;
+      el.style.left = pos.x + 'px';
+      el.style.top = pos.y + 'px';
+      el.style.visibility = '';
+      maxX = Math.max(maxX, pos.x + pos.w);
+      maxY = Math.max(maxY, pos.y + pos.h);
+    }
+
+    container.style.width = (maxX + pad) + 'px';
+    container.style.height = (maxY + pad) + 'px';
+    edgesSvg.setAttribute('width', maxX + pad);
+    edgesSvg.setAttribute('height', maxY + pad);
+
+    // Draw edges as smooth curves
+    function drawEdge(srcId, tgtId) {
+      const src = positions[srcId];
+      const tgt = positions[tgtId];
+      if (!src || !tgt) return;
+      // Start from bottom-center of source, end at top-center of target
+      const x1 = src.x + src.w / 2;
+      const y1 = src.y + src.h;
+      const x2 = tgt.x + tgt.w / 2;
+      const y2 = tgt.y;
+      // Control point for a smooth curve
+      const cy1 = y1 + (y2 - y1) * 0.4;
+      const cy2 = y1 + (y2 - y1) * 0.6;
+      const d = 'M ' + x1 + ' ' + y1 + ' C ' + x1 + ' ' + cy1 + ' ' + x2 + ' ' + cy2 + ' ' + x2 + ' ' + y2;
 
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       path.setAttribute('d', d);
       path.setAttribute('class', 'graph-edge');
       path.setAttribute('marker-end', 'url(#arrowhead)');
       edgesSvg.appendChild(path);
-    });
-
-    // Scroll to root node (node "0")
-    const rootEl = nodeElements['0'];
-    if (rootEl) {
-      const graphPanel = document.getElementById('graph-panel');
-      const rootPos = g.node('0');
-      if (rootPos) {
-        graphPanel.scrollLeft = Math.max(0, rootPos.x - graphPanel.clientWidth / 2);
-        graphPanel.scrollTop = 0;
-      }
     }
+
+    // Edge from parent to focused
+    if (parentId !== undefined) {
+      drawEdge(parentId, focusedNodeId);
+    }
+    // Edges from focused to each child
+    for (const childId of sortedChildren) {
+      drawEdge(focusedNodeId, childId);
+    }
+
+    // Scroll to top
+    const graphScroll = document.getElementById('graph-scroll');
+    graphScroll.scrollLeft = 0;
+    graphScroll.scrollTop = 0;
   }); });
 }
 
-function createGraphNode(nodeId, node, callSite) {
+function updateBreadcrumb(graph, graphIdx) {
+  const bc = document.getElementById('graph-breadcrumb');
+  bc.innerHTML = '';
+
+  // Build path from root to focused node
+  const path = [];
+  let cur = focusedNodeId;
+  while (cur !== undefined) {
+    path.unshift(cur);
+    cur = graphParentOf[cur];
+  }
+
+  if (path.length <= 1) {
+    // At root, hide breadcrumb
+    bc.style.display = 'none';
+    return;
+  }
+
+  bc.style.display = 'flex';
+  for (let i = 0; i < path.length; i++) {
+    const nodeId = path[i];
+    const node = graph.nodes[nodeId];
+    const label = node ? (node.label || nodeId) : nodeId;
+
+    if (i > 0) {
+      const sep = document.createElement('span');
+      sep.className = 'bc-sep';
+      sep.textContent = ' \u203a ';
+      bc.appendChild(sep);
+    }
+
+    if (i === path.length - 1) {
+      // Current node (not clickable)
+      const span = document.createElement('span');
+      span.className = 'bc-current';
+      span.textContent = label;
+      bc.appendChild(span);
+    } else {
+      const link = document.createElement('span');
+      link.className = 'bc-item';
+      link.textContent = label;
+      link.addEventListener('click', ((nid) => () => {
+        focusedNodeId = nid;
+        renderFocusedGraph(graphIdx);
+      })(nodeId));
+      bc.appendChild(link);
+    }
+  }
+}
+
+function createGraphNode(nodeId, node, callSite, isFocused, hasChildren) {
   const el = document.createElement('div');
-  el.className = 'graph-node';
+  el.className = 'graph-node' + (isFocused ? ' focused' : ' compact');
 
   // Header
   const header = document.createElement('div');
@@ -2176,6 +2343,29 @@ function createGraphNode(nodeId, node, callSite) {
   const labelSpan = document.createElement('span');
   labelSpan.textContent = node.label || nodeId;
   header.appendChild(labelSpan);
+
+  // "Go to source" link in header
+  if (node.file && DATA.sourceFiles[node.file]) {
+    const srcLink = document.createElement('span');
+    srcLink.className = 'go-to-source';
+    srcLink.textContent = 'source \u2192';
+    srcLink.title = 'Go to source view';
+    srcLink.addEventListener('click', (e) => {
+      e.stopPropagation();
+      switchView('source');
+      setTimeout(() => {
+        showFile(node.file);
+        setTimeout(() => {
+          const table = document.querySelector('table.source-code');
+          if (table && table.rows[node.sl - 1]) {
+            table.rows[node.sl - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            highlightLine(table.rows[node.sl - 1]);
+          }
+        }, 50);
+      }, 50);
+    });
+    header.appendChild(srcLink);
+  }
   el.appendChild(header);
 
   // File info + call site
@@ -2196,20 +2386,11 @@ function createGraphNode(nodeId, node, callSite) {
   sourceEl.innerHTML = renderNodeSource(node);
   el.appendChild(sourceEl);
 
-  // Click to navigate to source view
+  // Click to refocus graph on this node
   el.addEventListener('click', () => {
-    if (node.file && DATA.sourceFiles[node.file]) {
-      switchView('source');
-      setTimeout(() => {
-        showFile(node.file);
-        setTimeout(() => {
-          const table = document.querySelector('table.source-code');
-          if (table && table.rows[node.sl - 1]) {
-            table.rows[node.sl - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
-            highlightLine(table.rows[node.sl - 1]);
-          }
-        }, 50);
-      }, 50);
+    if (nodeId !== focusedNodeId) {
+      focusedNodeId = nodeId;
+      renderFocusedGraph(currentGraphIdx);
     }
   });
 
@@ -2282,118 +2463,150 @@ init();
 """
 
 
+def run_roundabout_pipeline(project_root, input_file, output_json, certora_run_command="certoraRun"):
+    """Run roundabout.py on a .conf or .sol file, writing results to output_json."""
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    roundabout_py = os.path.join(script_dir, "..", "roundabout.py")
+
+    log_dir = os.path.join(project_root, ".certora_internal")
+    os.makedirs(log_dir, exist_ok=True)
+    log_file = os.path.join(log_dir, "roundabout.log")
+
+    cmd = [sys.executable, roundabout_py]
+    if certora_run_command != "certoraRun":
+        cmd.extend(["--certora-run-command", certora_run_command])
+    cmd.extend([project_root, input_file, output_json])
+    print(f"Running RoundAbout pipeline on {input_file}...")
+    with open(log_file, "a") as log:
+        result = subprocess.run(cmd, stdout=log, stderr=log)
+    if result.returncode != 0:
+        print(f"Error: RoundAbout pipeline failed. See {log_file} for details.", file=sys.stderr)
+        sys.exit(result.returncode)
+
+
 def main():
-    project_root, json_input, html_output, conf_file, full_context_breakdown = parse_args()
+    project_root, input_file, html_output, conf_file, full_context_breakdown, certora_run_command = parse_args()
     project_root = os.path.abspath(project_root)
 
-    # Load JSON
-    with open(json_input, "r") as f:
-        data = json.load(f)
+    if not (input_file.endswith(".conf") or input_file.endswith(".sol")):
+        print("Error: Input file must be a .conf or .sol file.", file=sys.stderr)
+        sys.exit(1)
 
-    # Extract graphs (needed for both modes — caller-callee navigation)
-    graphs = extract_graphs(data, project_root)
+    if conf_file is None and input_file.endswith(".conf"):
+        conf_file = input_file
 
-    if full_context_breakdown:
-        # Full context breakdown: aggregate across all nodes, build per-graph contexts
-        aggregated = extract_roundings(data, project_root)
+    with tempfile.TemporaryDirectory(prefix="roundabout_") as tmpdir:
+        temp_json = os.path.join(tmpdir, "output.json")
+        run_roundabout_pipeline(project_root, input_file, temp_json, certora_run_command)
 
-        all_files = set(aggregated.keys())
-        for g in graphs:
-            for node in g["nodes"].values():
-                if node["file"]:
-                    all_files.add(node["file"])
+        # Load JSON
+        with open(temp_json, "r") as f:
+            data = json.load(f)
 
-        source_files = collect_referenced_files_from_paths(all_files, project_root)
+        # Extract graphs (needed for both modes — caller-callee navigation)
+        graphs = extract_graphs(data, project_root)
 
-        return_annotations = extract_return_annotations(data, project_root, source_files)
-        per_graph_roundings = extract_per_graph_roundings(data, project_root)
-        per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
+        if full_context_breakdown:
+            # Full context breakdown: aggregate across all nodes, build per-graph contexts
+            aggregated = extract_roundings(data, project_root)
 
-        # Build multi-context dict
-        contexts = {"allContexts": {}}
-        for filename, annotations in aggregated.items():
-            contexts["allContexts"][filename] = annotations
+            all_files = set(aggregated.keys())
+            for g in graphs:
+                for node in g["nodes"].values():
+                    if node["file"]:
+                        all_files.add(node["file"])
 
-        for filename, ret_anns in return_annotations.items():
-            if filename not in contexts["allContexts"]:
-                contexts["allContexts"][filename] = []
-            contexts["allContexts"][filename].extend(ret_anns)
+            source_files = collect_referenced_files_from_paths(all_files, project_root)
 
-        for ctx_name, file_anns in per_graph_roundings.items():
-            if ctx_name not in contexts:
-                contexts[ctx_name] = {}
-            for filename, anns in file_anns.items():
-                if filename not in contexts[ctx_name]:
-                    contexts[ctx_name][filename] = []
-                contexts[ctx_name][filename].extend(anns)
+            return_annotations = extract_return_annotations(data, project_root, source_files)
+            per_graph_roundings = extract_per_graph_roundings(data, project_root)
+            per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
 
-        for ctx_name, file_anns in per_graph_returns.items():
-            if ctx_name not in contexts:
-                contexts[ctx_name] = {}
-            for filename, anns in file_anns.items():
-                if filename not in contexts[ctx_name]:
-                    contexts[ctx_name][filename] = []
-                contexts[ctx_name][filename].extend(anns)
+            # Build multi-context dict
+            contexts = {"allContexts": {}}
+            for filename, annotations in aggregated.items():
+                contexts["allContexts"][filename] = annotations
 
-        # Filter out per-graph contexts where all findings are Neither
-        for ctx_name in list(contexts.keys()):
-            if ctx_name == "allContexts":
-                continue
-            all_neither = all(
-                a["rounding"] == "Neither"
-                for anns in contexts[ctx_name].values()
-                for a in anns
-            )
-            if all_neither:
-                del contexts[ctx_name]
+            for filename, ret_anns in return_annotations.items():
+                if filename not in contexts["allContexts"]:
+                    contexts["allContexts"][filename] = []
+                contexts["allContexts"][filename].extend(ret_anns)
 
-        total_annotations = sum(len(v) for v in aggregated.values())
-        total_return = sum(len(v) for v in return_annotations.values())
-    else:
-        # Default mode: only use node "0" (root function) from each graph
-        aggregated = extract_roundings_root_only(data, project_root)
+            for ctx_name, file_anns in per_graph_roundings.items():
+                if ctx_name not in contexts:
+                    contexts[ctx_name] = {}
+                for filename, anns in file_anns.items():
+                    if filename not in contexts[ctx_name]:
+                        contexts[ctx_name][filename] = []
+                    contexts[ctx_name][filename].extend(anns)
 
-        all_files = set(aggregated.keys())
-        for g in graphs:
-            for node in g["nodes"].values():
-                if node["file"]:
-                    all_files.add(node["file"])
+            for ctx_name, file_anns in per_graph_returns.items():
+                if ctx_name not in contexts:
+                    contexts[ctx_name] = {}
+                for filename, anns in file_anns.items():
+                    if filename not in contexts[ctx_name]:
+                        contexts[ctx_name][filename] = []
+                    contexts[ctx_name][filename].extend(anns)
 
-        source_files = collect_referenced_files_from_paths(all_files, project_root)
+            # Filter out per-graph contexts where all findings are Neither
+            for ctx_name in list(contexts.keys()):
+                if ctx_name == "allContexts":
+                    continue
+                all_neither = all(
+                    a["rounding"] == "Neither"
+                    for anns in contexts[ctx_name].values()
+                    for a in anns
+                )
+                if all_neither:
+                    del contexts[ctx_name]
 
-        return_annotations = extract_return_annotations_root_only(data, project_root, source_files)
+            total_annotations = sum(len(v) for v in aggregated.values())
+            total_return = sum(len(v) for v in return_annotations.values())
+        else:
+            # Default mode: only use node "0" (root function) from each graph
+            aggregated = extract_roundings_root_only(data, project_root)
 
-        # Single context — no per-graph breakdown
-        contexts = {"contextFree": {}}
-        for filename, anns in aggregated.items():
-            contexts["contextFree"][filename] = list(anns)
-        for filename, ret_anns in return_annotations.items():
-            contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
+            all_files = set(aggregated.keys())
+            for g in graphs:
+                for node in g["nodes"].values():
+                    if node["file"]:
+                        all_files.add(node["file"])
 
-        total_annotations = sum(len(v) for v in aggregated.values())
-        total_return = sum(len(v) for v in return_annotations.values())
+            source_files = collect_referenced_files_from_paths(all_files, project_root)
 
-    # Build directory tree
-    dir_tree = build_directory_tree(sorted(source_files.keys()))
+            return_annotations = extract_return_annotations_root_only(data, project_root, source_files)
 
-    # Generate HTML
-    if conf_file:
-        conf_path = conf_file if os.path.isabs(conf_file) else os.path.join(project_root, conf_file)
-        contracts = extract_contracts_from_conf(conf_path)
-    else:
-        contracts = None
-    html = generate_html(project_root, source_files, dir_tree, contexts, graphs, contracts)
+            # Single context — no per-graph breakdown
+            contexts = {"contextFree": {}}
+            for filename, anns in aggregated.items():
+                contexts["contextFree"][filename] = list(anns)
+            for filename, ret_anns in return_annotations.items():
+                contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
 
-    # Write output
-    os.makedirs(os.path.dirname(os.path.abspath(html_output)), exist_ok=True)
-    with open(html_output, "w") as f:
-        f.write(html)
+            total_annotations = sum(len(v) for v in aggregated.values())
+            total_return = sum(len(v) for v in return_annotations.values())
 
-    mode = "full context breakdown" if full_context_breakdown else "default (root-only)"
-    print(f"Generated ({mode}): {html_output}")
-    print(f"  {len(source_files)} source files")
-    print(f"  {total_annotations} rounding annotations")
-    print(f"  {total_return} return annotations")
+        # Build directory tree
+        dir_tree = build_directory_tree(sorted(source_files.keys()))
+
+        # Generate HTML
+        if conf_file:
+            conf_path = conf_file if os.path.isabs(conf_file) else os.path.join(project_root, conf_file)
+            contracts = extract_contracts_from_conf(conf_path)
+        else:
+            contracts = None
+        html = generate_html(project_root, source_files, dir_tree, contexts, graphs, contracts)
+
+        # Write output
+        os.makedirs(os.path.dirname(os.path.abspath(html_output)), exist_ok=True)
+        with open(html_output, "w") as f:
+            f.write(html)
+
+        mode = "full context breakdown" if full_context_breakdown else "default (root-only)"
+        print(f"Generated ({mode}): {html_output}")
+        print(f"  {len(source_files)} source files")
+        print(f"  {total_annotations} rounding annotations")
+        print(f"  {total_return} return annotations")
 
 
 if __name__ == "__main__":
