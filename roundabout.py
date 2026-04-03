@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 
-DOCKER_IMAGE = "ghcr.io/certora/roundabout:0.0.1-test2"  # TODO: revert to :latest
+DOCKER_IMAGE = "ghcr.io/certora/roundabout:latest"
 
 
 def main():
