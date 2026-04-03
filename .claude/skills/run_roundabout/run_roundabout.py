@@ -17,6 +17,11 @@ def main():
         help="Command to use instead of certoraRun (default: certoraRun)",
     )
     parser.add_argument(
+        "--docker",
+        action="store_true",
+        help=argparse.SUPPRESS,
+    )
+    parser.add_argument(
         "conf_file",
         help="Path to a .conf file (relative to project root or absolute)",
     )
@@ -38,13 +43,16 @@ def main():
 
     print("Analyzing...")
     with open(log_file, "a") as log:
-        result = subprocess.run(
-            [
+        cmd = [
                 sys.executable,
                 os.path.join(roundabout_dir, "roundabout.py"),
                 "--certora-run-command", args.certora_run_command,
-                project_dir, conf, output_json,
-            ],
+            ]
+        if args.docker:
+            cmd.append("--docker")
+        cmd.extend([project_dir, conf, output_json])
+        result = subprocess.run(
+            cmd,
             stdout=log,
             stderr=log,
         )

@@ -57,7 +57,7 @@ java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output f
 
 With Docker:
 ```
-docker run --rm -v "$(pwd)":/work ghcr.io/certora/roundabout:latest <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
+docker run --rm -v "$(pwd)":"$(pwd)" -w "$(pwd)" ghcr.io/certora/roundabout:latest <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
 ```
 
 NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`

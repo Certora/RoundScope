@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 
-DOCKER_IMAGE = "ghcr.io/certora/roundabout:latest"
+DOCKER_IMAGE = "ghcr.io/certora/roundabout:0.0.1-test2"  # TODO: revert to :latest
 
 
 def main():
@@ -20,6 +20,11 @@ def main():
         "--certora-run-command",
         default="certoraRun",
         help="Command to use instead of certoraRun (default: certoraRun)",
+    )
+    parser.add_argument(
+        "--docker",
+        action="store_true",
+        help=argparse.SUPPRESS,
     )
     parser.add_argument("project_root", help="Project root directory")
     parser.add_argument("input_file", help="Path to a .conf or .sol file")
@@ -89,15 +94,20 @@ def main():
         os.unlink(timestamp_ref)
 
         print("Running RoundAbout analysis...")
-        if shutil.which("java"):
+        use_docker = args.docker or not shutil.which("java")
+        if not use_docker:
             result = subprocess.run(
                 ["java", "-jar", jar, conf, output, "--combined", asts_file],
             )
         elif shutil.which("docker"):
-            print("Java not found, running via Docker...")
+            if not shutil.which("java"):
+                print("Java not found, running via Docker...")
+            else:
+                print("Running via Docker...")
             result = subprocess.run([
                 "docker", "run", "--rm",
-                "-v", f"{project_dir}:/work",
+                "-v", f"{project_dir}:{project_dir}",
+                "-w", project_dir,
                 DOCKER_IMAGE,
                 conf, output, "--combined", asts_file,
             ])
