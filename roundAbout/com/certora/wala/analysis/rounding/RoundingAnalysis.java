@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import com.certora.wala.analysis.defuse.DefUseGraph;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.util.JSONOutput;
+import com.google.common.collect.Sets;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
@@ -491,10 +492,17 @@ public class RoundingAnalysis {
 
 					} else if (op == IBinaryOpInstruction.Operator.DIV) {
 						Set<SSAInstruction> divisor = getDivisorRelated(instruction);
+						
 						Set<SSAInstruction> dividend = getDividendRelated(instruction);
-
+						Set<SSAInstruction> dividendAddends = dividend.stream()
+							.filter(inst -> inst instanceof SSABinaryOpInstruction && ((SSABinaryOpInstruction)inst).getOperator() == IBinaryOpInstruction.Operator.ADD)
+							.map(inst -> getDeriving(inst))
+							.reduce((l, r) -> Sets.union(l,  r))
+							.orElse(Collections.emptySet());
+						
 						MutableIntSet bothValues = getRelatedValues(instruction.getUse(1), divisor, false);
-						bothValues.intersectWith(getRelatedValues(instruction.getUse(0), dividend, false));
+						bothValues.intersectWith(getRelatedValues(instruction.getUse(0), dividendAddends, false));
+						
 						Direction d = bothValues.isEmpty() ? Direction.Down : Direction.Up;
 
 						result = new BinaryOperator(true, d, instruction);
