@@ -43,7 +43,7 @@ Current builds depend on a WALA fork and on Maven artifacts published locally fr
    ```
    This installs the required Python packages (`json5`, `pygments`) declared in `pyproject.toml`.
 
-## Usage
+## <img src="viewer/roundabout-icon.svg" width="28" height="28" alt="RoundAbout icon" style="vertical-align:middle"> RoundAbout Usage
 
 ### HTML Viewer (recommended)
 
