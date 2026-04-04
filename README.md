@@ -57,6 +57,10 @@ python3 viewer/generate_viewer.py <project-root> <input-file> <output.html>
 - `input-file` — a `.conf` or `.sol` file to analyze
 - `output.html` — where to write the HTML report
 
+You can run directly on a single `.sol` file without a `.conf`. Use a `.conf` file when you want to reason about multiple contracts together by specifying [`link`](https://docs.certora.com/en/latest/docs/prover/cli/options.html#link)s.
+
+![alt text](image.png)
+
 ### Claude Code Skill
 
 If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the `/run_roundabout` skill runs the full pipeline in one step:
@@ -65,7 +69,7 @@ If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the `/
 /run_roundabout certora/conf/MyConf.conf
 ```
 
-Output files (`<name>_roundabout.json` and `<name>_roundabout.html`) are placed next to the conf file.
+Output files (`<name>_roundabout.json` and `<name>_roundabout.html`) are placed in the current working directory.
 
 ### Low-level JGF output
 

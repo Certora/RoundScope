@@ -28,7 +28,7 @@ def main():
     conf = args.input_file
     conf_dir = os.path.dirname(conf)
     conf_base = os.path.splitext(os.path.basename(conf))[0]
-    output_html = os.path.join(conf_dir, f"{conf_base}_roundabout.html")
+    output_html = f"{conf_base}_roundabout.html"
 
     print("Running RoundAbout pipeline and generating HTML viewer...")
     cmd = [
