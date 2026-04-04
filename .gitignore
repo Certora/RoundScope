@@ -3,4 +3,6 @@
 /bin/
 /target/
 /dependency-reduced-pom.xml
+**/*.html
 .settings/*
+**/.certora_internal
