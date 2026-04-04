@@ -940,6 +940,7 @@ HTML_TEMPLATE_START = r"""<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Certora RoundAbout</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='44' fill='none' stroke='%231e293b' stroke-width='5.5'/%3E%3Ccircle cx='50' cy='50' r='13' fill='none' stroke='%231e293b' stroke-width='5.5'/%3E%3Cpath d='M 35,23 A 30,30 0 0,1 65,23' fill='none' stroke='%231e293b' stroke-width='5' stroke-linecap='round'/%3E%3Cpolygon points='60,14 72,23 60,32' fill='%231e293b'/%3E%3Cpath d='M 77,65 A 30,30 0 0,0 77,35' fill='none' stroke='%231e293b' stroke-width='5' stroke-linecap='round'/%3E%3Cpolygon points='69,38 77,26 85,38' fill='%231e293b'/%3E%3Cpath d='M 65,77 A 30,30 0 0,1 35,77' fill='none' stroke='%231e293b' stroke-width='5' stroke-linecap='round'/%3E%3Cpolygon points='40,68 28,77 40,86' fill='%231e293b'/%3E%3Cpath d='M 23,65 A 30,30 0 0,1 23,35' fill='none' stroke='%231e293b' stroke-width='5' stroke-linecap='round'/%3E%3Cpolygon points='15,38 23,26 31,38' fill='%231e293b'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -1213,7 +1214,7 @@ HTML_TEMPLATE_SCRIPT_START = r"""
 <body>
 
 <div id="top-bar">
-  <span style="font-weight:600;">Certora RoundAbout</span>
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="22" height="22" style="vertical-align:middle;margin-right:6px;"><circle cx="50" cy="50" r="44" fill="none" stroke="#fff" stroke-width="5.5"/><circle cx="50" cy="50" r="13" fill="none" stroke="#fff" stroke-width="5.5"/><path d="M 35,23 A 30,30 0 0,1 65,23" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><polygon points="60,14 72,23 60,32" fill="#fff"/><path d="M 77,65 A 30,30 0 0,0 77,35" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><polygon points="69,38 77,26 85,38" fill="#fff"/><path d="M 65,77 A 30,30 0 0,1 35,77" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><polygon points="40,68 28,77 40,86" fill="#fff"/><path d="M 23,65 A 30,30 0 0,1 23,35" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round"/><polygon points="15,38 23,26 31,38" fill="#fff"/></svg><span style="font-weight:600;">Certora RoundAbout</span>
   <span class="project-root" id="project-root-display"></span>
   <div class="view-toggle">
     <button class="view-btn active" onclick="switchView('graph')">Graph</button>

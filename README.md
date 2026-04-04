@@ -59,7 +59,7 @@ python3 viewer/generate_viewer.py <project-root> <input-file> <output.html>
 
 You can run directly on a single `.sol` file without a `.conf`. Use a `.conf` file when you want to reason about multiple contracts together by specifying [`link`](https://docs.certora.com/en/latest/docs/prover/cli/options.html#link)s.
 
-![alt text](image.png)
+![alt text](screenshot.png)
 
 ### Claude Code Skill
 
