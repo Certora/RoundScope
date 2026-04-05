@@ -11,7 +11,7 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -31,7 +31,7 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Checkout Solidity
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: argotorg/solidity
           path: solidity
@@ -41,7 +41,7 @@ jobs:
         run: ./scripts/build.sh
 
       - name: Checkout WALA fork
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: julian-certora/WALA
           ref: fixesToNativeBridge
