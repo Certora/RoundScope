@@ -89,7 +89,7 @@ public class RoundingAnalysis {
 
 			@Override
 			public String toString() {
-				return "<" + state + "(" + wrt + ")>";
+				return "<" + vn + ":" + state + "(" + wrt + ")>";
 			}
 		}
 
@@ -299,6 +299,15 @@ public class RoundingAnalysis {
 				super(false, Direction.Neither, inst);
 			}
 
+			boolean inCycle(int v1, int v2) {
+				SSAInstruction d1 = du.getDef(v1);
+				SSAInstruction d2 = du.getDef(v2);
+				return d1 != null && 
+					d2 != null &&
+					getDeriving(d1).contains(d2) &&
+					getDeriving(d2).contains(d1);
+			}
+			
 			boolean isDivDown(RoundingVariable v) {
 				return v != null && v.state == Direction.Down && v.wrt != null && v.wrt.getDef() == v.vn
 						&& du.getDef(v.vn) instanceof SSABinaryOpInstruction
@@ -308,13 +317,13 @@ public class RoundingAnalysis {
 
 			@Override
 			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
-				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither) {
+				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither && !inCycle(lhs.vn, rhs[1].vn)) {
 					if (lhs.state != Direction.Up) {
 						lhs.state = Direction.Up;
 						lhs.wrt = rhs[0].wrt;
 						return CHANGED;
 					}
-				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither) {
+				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither && !inCycle(lhs.vn, rhs[0].vn)) { 
 					if (lhs.state != Direction.Up) {
 						lhs.state = Direction.Up;
 						lhs.wrt = rhs[1].wrt;
