@@ -922,7 +922,6 @@ public class JSONToCAst {
 				return expr;
 			}
 
-			@SuppressWarnings("unused")
 			public CAstNode visitBlock(JSONObject o, SolidityWalkContext context) {
 				return ast.makeNode(CAstNode.BLOCK_STMT, Streams.stream(o.getJSONArray("statements").iterator())
 						.map(n -> visit((JSONObject) n, context)).toList());
