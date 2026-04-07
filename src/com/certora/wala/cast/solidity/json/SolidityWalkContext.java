@@ -1,6 +1,7 @@
 package com.certora.wala.cast.solidity.json;
 
 import java.util.Collection;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -44,5 +45,9 @@ public interface SolidityWalkContext extends TranslatorToCAst.WalkContext<Solidi
 
 	default JSONObject sourceUnit(int nodeId) {
 		return parent().sourceUnit();
+	}
+	
+	default Map<String,JSONObject> renamings() {
+		return parent().renamings();
 	}
 }
