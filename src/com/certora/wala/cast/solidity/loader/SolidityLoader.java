@@ -393,7 +393,7 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 					s = types.get(TypeName.findOrCreate("Linterface " + t.toString().substring(10)));
 				}
 				return s;
-			}).collect(Collectors.toList());
+			}).filter(x -> x != null).collect(Collectors.toList());
 		}
 
 		@Override
