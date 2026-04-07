@@ -1,6 +1,7 @@
 package com.certora.wala.cast.solidity.test;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.json.JSONObject;
@@ -38,7 +39,13 @@ public abstract class AbstractTest implements CheckResult {
 
 	@Test
 	public void test() throws IllegalArgumentException, IOException, CancelException {
-		testAnalysis(runAnalysis());
+		JSONObject result = runAnalysis();
+		File outFile = File.createTempFile("roundAbout", ".json");
+		System.err.println(outFile);
+		try (FileWriter w = new FileWriter(outFile)) {
+			result.write(w, 3, 0);
+		}
+		testAnalysis(result);
 	}
 
 }
