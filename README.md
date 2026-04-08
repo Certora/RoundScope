@@ -1,6 +1,6 @@
 # wala-solidity
 
-[![Test RoundAbout](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout.yml/badge.svg)](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout.yml)
+[![Test RoundAbout](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout.yml/badge.svg)](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout.yml) [![Test RoundAbout JNI](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout-jni.yml/badge.svg)](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout-jni.yml)
 
 This repo is a WALA-based  Solidity analysis framework. Its first analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior of variables and functions in the referenced Solidity code.
 
