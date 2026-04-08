@@ -1,9 +1,11 @@
 package com.certora.wala.cast.solidity.json;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -1807,9 +1809,10 @@ public class JSONToCAst {
 		private final JSONObject tree;
 		private File sourceFile;
 		private int[] linePositionMap;
-
+		private byte[] rawLines;
+		
 		private Reader getReader() throws FileNotFoundException {
-			return new FileReader(sourceFile);
+			return new InputStreamReader(new ByteArrayInputStream(rawLines));
 		}
 
 		@Override
@@ -1821,7 +1824,34 @@ public class JSONToCAst {
 		@Override
 		public CAstEntity translateToCAst() throws Error, IOException {
 			sourceFile = new File(tree.getString("absolutePath"));
-			String[] lines = Files.readAllLines(Paths.get(sourceFile.toURI())).toArray(i -> new String[i]);
+			rawLines = Files.readAllBytes(Paths.get(sourceFile.toURI()));
+			for(int i = 0; i < rawLines.length; ) {
+				int b = rawLines[i] & 0xFF;
+				if (b >= 0xF0) {
+					for(int j = 0; j < 4; j++) {
+						rawLines[i+j] = '?';
+					}
+					i += 4;
+				} else if (b >= 0xE0) {
+					for(int j = 0; j < 3; j++) {
+						rawLines[i+j] = '?';
+					}
+					i += 3;
+				}  else if (b >= 0xC0) {
+					for(int j = 0; j < 2; j++) {
+						rawLines[i+j] = '?';
+					}
+					i += 2;
+				} else {
+					assert b <= 0x7F;
+					i++;
+				}
+			}
+			String[] lines = new String(rawLines).split("\n");
+			//String[] lines = Files.readAllLines (Paths.get(sourceFile.toURI())).toArray(i -> new String[i]);
+			for(int i = 0; i < lines.length; i++) {
+				lines[i] = new String(lines[i].getBytes("ASCII"));
+			}
 			linePositionMap = new int[lines.length + 1];
 			int total = 0;
 			for (int i = 0; i < lines.length; i++) {
@@ -2012,6 +2042,10 @@ public class JSONToCAst {
 		}
 
 		public Void visitEnumDefinition(JSONObject o, Void context) {
+			return check(o);
+		}
+
+		public Void visitErrorDefinition(JSONObject o, Void context) {
 			return check(o);
 		}
 
