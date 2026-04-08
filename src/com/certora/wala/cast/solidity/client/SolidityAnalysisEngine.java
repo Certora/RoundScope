@@ -35,6 +35,7 @@ import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ssa.SSAOptions.DefaultValues;
 import com.ibm.wala.ssa.SymbolTable;
+import com.ibm.wala.util.WalaRuntimeException;
 
 public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<InstanceKey, CallGraphBuilder<InstanceKey>, A> {
 
@@ -98,7 +99,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 			return cha;
 		} catch (ClassHierarchyException e) {
 			assert false : e;
-			return null;
+			throw new WalaRuntimeException("failed to create class hierarchy", e);
 		}
 	}
 
