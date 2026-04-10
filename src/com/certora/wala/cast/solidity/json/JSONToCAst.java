@@ -413,6 +413,8 @@ public class JSONToCAst {
 						String remaining = typeId.substring(endIndex);
 						if (remaining.startsWith("_memory_ptr")) {
 							remaining = remaining.substring(11);
+						} else if (remaining.startsWith("_payable")) {
+							remaining = remaining.substring(8);
 						}
 						return Pair.make(SolidityCAstType.get(type), remaining);
 					} else {
