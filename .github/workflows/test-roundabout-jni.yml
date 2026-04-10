@@ -43,8 +43,7 @@ jobs:
       - name: Checkout WALA fork
         uses: actions/checkout@v6
         with:
-          repository: julian-certora/WALA
-          ref: fixesToNativeBridge
+          repository: wala/WALA
           path: WALA
 
       - name: Publish WALA fork to local Maven
