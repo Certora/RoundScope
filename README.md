@@ -36,10 +36,8 @@ pip install .
 
 Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
 
-1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
-2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`. To skip tests, use `./gradlew publishToMavenLocal -xtest`.
-3. Clone this repository, `cd` into it, and run `mvn package`.
-4. Install Python dependencies:
+1. Clone this repository, `cd` into it, and run `mvn package`.
+2. Install Python dependencies:
    ```
    pip install .
    ```
