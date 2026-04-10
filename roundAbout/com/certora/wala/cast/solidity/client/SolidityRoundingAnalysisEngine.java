@@ -11,11 +11,13 @@ import org.json.JSONObject;
 import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.util.JSONOutput;
+import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
+import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.collections.HashSetFactory;
 
@@ -30,12 +32,12 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 		JSONArray graphs = new JSONArray();
 		CallGraph cg = builder.getCallGraph();
 
-		// Keep these for local debugging, but avoid dumping the full class
-		// hierarchy and call graph in normal runs.
-		// System.err.println(cg.getClassHierarchy());
-		// CAstCallGraphUtil.AVOID_DUMP.set(false);
-		// CAstCallGraphUtil.dumpCG((SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), cg);
-
+		if (Boolean.getBoolean("verbose")) {
+			System.err.println(cg.getClassHierarchy());
+			CAstCallGraphUtil.AVOID_DUMP.set(false);
+			CAstCallGraphUtil.dumpCG((SSAContextInterpreter) builder.getContextInterpreter(), builder.getPointerAnalysis(), cg);
+		}
+		
 		Set<IMethod> done = HashSetFactory.make();
 		RoundingAnalysis ra = new RoundingAnalysis(cg);
 		

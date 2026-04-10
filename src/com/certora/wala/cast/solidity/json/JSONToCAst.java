@@ -413,6 +413,8 @@ public class JSONToCAst {
 						String remaining = typeId.substring(endIndex);
 						if (remaining.startsWith("_memory_ptr")) {
 							remaining = remaining.substring(11);
+						} else if (remaining.startsWith("_payable")) {
+							remaining = remaining.substring(8);
 						}
 						return Pair.make(SolidityCAstType.get(type), remaining);
 					} else {
@@ -428,7 +430,7 @@ public class JSONToCAst {
 			}
 
 			private <T extends CAstType> T findOrCreateType(JSONObject typeDefinition, SolidityWalkContext context, BiFunction<JSONObject, SolidityWalkContext, T> factory) {
-				BiFunction<JSONObject, SolidityWalkContext, Position> key = (k, c) -> getLocation(k.getString("src"));
+				BiFunction<JSONObject, SolidityWalkContext, String> key = (k, c) -> k.getString("src") + (k.has("canonicalName")? k.getString("canonicalName"): k.getString("name"));
 				return findOrCreateType(typeDefinition, key, context, factory);
 			}
 			
@@ -1717,6 +1719,8 @@ public class JSONToCAst {
 			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_MOD, as[0], as[1]), getLocation(o.getString("src")), context);
 							case "or":
 			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_BIT_OR, as[0], as[1]), getLocation(o.getString("src")), context);
+							case "and":
+			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_BIT_AND, as[0], as[1]), getLocation(o.getString("src")), context);
 							case "shr":
 			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_RSH, as[0], as[1]), getLocation(o.getString("src")), context);
 							case "sub":
@@ -1793,6 +1797,10 @@ public class JSONToCAst {
 					}
 					
 					public CAstNode visitYulForLoop(JSONObject o, Void ignore) {
+						return ast.makeNode(CAstNode.EMPTY);					
+					}
+
+					public CAstNode visitYulFunctionDefinition(JSONObject o, Void ignore) {
 						return ast.makeNode(CAstNode.EMPTY);					
 					}
 

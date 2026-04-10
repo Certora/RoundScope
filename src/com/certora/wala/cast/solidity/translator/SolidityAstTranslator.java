@@ -69,6 +69,8 @@ public class SolidityAstTranslator extends AstTranslator {
 
 	@Override
 	protected void doPrologue(WalkContext context) {
+		context.currentScope().getConstantValue(0);
+		
 		int v = context.currentScope().allocateTempValue();
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.msg)));
 		context.currentScope().declare(new CAstSymbolImpl("msg", CAstType.DYNAMIC), v);
