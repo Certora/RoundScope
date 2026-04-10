@@ -1,40 +1,96 @@
 # wala-solidity
 
+[![Test RoundAbout](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout.yml/badge.svg)](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout.yml) [![Test RoundAbout JNI](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout-jni.yml/badge.svg)](https://github.com/Certora/wala-solidity/actions/workflows/test-roundabout-jni.yml)
+
 This repo is a WALA-based  Solidity analysis framework. Its first analysis, `RoundAbout`, takes a Certora `.conf` file and generates a report of the rounding behavior of variables and functions in the referenced Solidity code.
 
 **NOTE: This project is under early beta testing and is still being actively developed. Contact us (see below) if you have feedback or questions!**
 
 
 ##  Dependencies
-- Java 21
-- Maven
+- **Java 21** _or_ **Docker** — you only need one of these. If Java is not found on your PATH, the tool automatically falls back to Docker.
+- Maven (only if building from source)
+- Python 3.8+
 - `certoraRun`
 - A Certora project with a `.conf` file
 - Access to Certora tooling for the supported workflow, since `certoraRun` is used to dump ASTs
-- A local build of our WALA fork (temporarily required), published to your local Maven repository.
 
 ## Installation
+
+### Option A: Docker (no Java required)
+
+If you don't have Java installed, the tool can run via Docker. Just pull the pre-built image:
+
+```
+docker pull ghcr.io/certora/roundabout:latest
+```
+
+Then install the Python dependencies:
+```
+pip install .
+```
+
+`roundabout.py` will detect that Java is missing and use Docker automatically.
+
+### Option B: Build from source (requires Java 21 + Maven)
 
 Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
 
 1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
-2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
+2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`. To skip tests, use `./gradlew publishToMavenLocal -xtest`.
 3. Clone this repository, `cd` into it, and run `mvn package`.
+4. Install Python dependencies:
+   ```
+   pip install .
+   ```
+   This installs the required Python packages (`json5`, `pygments`) declared in `pyproject.toml`.
 
-## Usage
+## <img src="viewer/roundabout-icon.svg" width="28" height="28" alt="RoundAbout icon" style="vertical-align:middle"> RoundAbout Usage
 
-The commands below describe the supported user workflow. `roundabout.sh` is mainly used during testing and debugging.
+### HTML Viewer (recommended)
 
-1. run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`
-2. _In the same directory_, run `RoundAbout` as
+The easiest way to use RoundAbout is through the HTML viewer, which runs the full pipeline and produces a self-contained, interactive HTML report with syntax-highlighted source and call graph visualization.
 
 ```
-java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <a json output filename> --combined .certora_internal/latest/.asts.json
+python3 viewer/generate_viewer.py <project-root> <input-file> <output.html>
 ```
+
+- `project-root` — the directory containing the Certora project (used to resolve source file paths)
+- `input-file` — a `.conf` or `.sol` file to analyze
+- `output.html` — where to write the HTML report
+
+You can run directly on a single `.sol` file without a `.conf`. Use a `.conf` file when you want to reason about multiple contracts together by specifying [`link`](https://docs.certora.com/en/latest/docs/prover/cli/options.html#link)s.
+
+![alt text](screenshot.png)
+
+### Claude Code Skill
+
+If you use [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the `/run_roundabout` skill runs the full pipeline in one step:
+
+```
+/run_roundabout certora/conf/MyConf.conf
+```
+
+Output files (`<name>_roundabout.json` and `<name>_roundabout.html`) are placed in the current working directory.
+
+### Low-level JGF output
+
+If you need the raw [JGF](https://jsongraphformat.info/) JSON output (for example, for programmatic consumption), you can run the analysis directly:
+
+1. Run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`.
+2. _In the same directory_, run `RoundAbout`:
+
+   With Java:
+   ```
+   java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <output.json> --combined .certora_internal/latest/.asts.json
+   ```
+
+   With Docker:
+   ```
+   docker run --rm -v "$(pwd)":"$(pwd)" -w "$(pwd)" ghcr.io/certora/roundabout:latest <a .conf file> <output.json> --combined .certora_internal/latest/.asts.json
+   ```
 
 NOTE: You must run in the same directory, since the `absolutePath` properties in the JSON AST dump are often, in fact, relative paths starting with `.`
-
-On success, `RoundAbout` prints a line of the form `Wrote validated JSON output to <a json output filename>`.
 
 Unknown-type warnings are suppressed by default during normal runs. If you want to see them while debugging frontend/type translation issues, add the JVM flag `-Droundabout.warnUnknownTypes=true` before `-jar`.
 
@@ -110,7 +166,7 @@ Note that `[sl,sc-el,ec]` means a source code position as a string, written as a
 
 ## Repository Overview
 
-At the top level, `pom.xml` defines the Maven build, and `roundabout.sh` is a helper script used during testing and debugging of the JSON-AST workflow.
+At the top level, `pom.xml` defines the Maven build, and `roundabout.py` is a helper script used during testing and debugging of the JSON-AST workflow.
 
 - `roundAbout/`: This contains the main entrypoint plus the rounding analysis implementation
 - `src/`: shared Java source for the Solidity frontend and WALA integration
