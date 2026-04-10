@@ -34,12 +34,8 @@ pip install .
 
 ### Option B: Build from source (requires Java 21 + Maven)
 
-Current builds depend on a WALA fork and on Maven artifacts published locally from that build.
-
-1. Clone [our fork of WALA](https://github.com/julian-certora/WALA) into a dir and checkout the `fixesToNativeBridge` branch. Export as `WALA`.
-2. In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`. To skip tests, use `./gradlew publishToMavenLocal -xtest`.
-3. Clone this repository, `cd` into it, and run `mvn package`.
-4. Install Python dependencies:
+1. Clone this repository, `cd` into it, and run `mvn package`.
+2. Install Python dependencies:
    ```
    pip install .
    ```
@@ -189,7 +185,7 @@ A utility to generate Java-like stack traces in C++. Used in `RoundAbout` develo
 4. Solidity:
 [build the latest Solidity from source](https://docs.soliditylang.org/en/latest/installing-solidity.html#building-from-source) in some dir, hereinafter called SOLIDITY.  We need the libraries and the include files.
 5. WALA:
-  Clone [our fork of WALA](https://github.com/julian-certora/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
+  Clone [WALA](https://github.com/wala/WALA) into some dir and checkout the `fixesToNativeBridge` branch, hereinafter called WALA.  In that directory, build using `./gradlew assemble` followed by `./gradlew publishToMavenLocal`.  If the build is too slow or dies, try `./gradlew publishToMavenLocal -xtest`. 
 
 ### Native Compilation
 1. cd `WS/jni`
