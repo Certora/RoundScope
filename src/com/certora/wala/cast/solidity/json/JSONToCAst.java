@@ -1796,6 +1796,9 @@ public class JSONToCAst {
 						return ast.makeNode(CAstNode.EMPTY);					
 					}
 
+				        public CAstNode visitYulFunctionDefinition(JSONObject o, Void ignore) {
+						return ast.makeNode(CAstNode.EMPTY);					
+					}
 				}
 
 				return new YulStatementVisitor().visit(yulAst, null);
