@@ -31,6 +31,25 @@ def find_conf_files(root_path):
     return sorted(confs)
 
 
+def _git_info(project_dir):
+    """Return (repo_url, branch) for project_dir, or ("", "") on failure."""
+    try:
+        url = subprocess.run(
+            ["git", "-C", project_dir, "config", "--get", "remote.origin.url"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    except Exception:
+        url = ""
+    try:
+        branch = subprocess.run(
+            ["git", "-C", project_dir, "rev-parse", "--abbrev-ref", "HEAD"],
+            capture_output=True, text=True, check=True,
+        ).stdout.strip()
+    except Exception:
+        branch = ""
+    return url, branch
+
+
 def _extract_file_paths(conf_data):
     """Extract Solidity file paths from conf data, stripping :ContractName suffixes."""
     paths = []
@@ -113,11 +132,12 @@ def main():
 
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["project_dir", "path_to_conf", "success_html", "error"])
+        writer.writerow(["repo_url", "branch", "project_dir", "path_to_conf", "success_html", "error"])
 
         for conf_abs in conf_files:
             project_dir = derive_project_dir(conf_abs, root_path)
             conf_rel = os.path.relpath(conf_abs, project_dir)
+            repo_url, branch = _git_info(project_dir)
 
             print(f"=== Running: {conf_rel} (project: {project_dir}) ===")
 
@@ -162,7 +182,7 @@ def main():
                     error = result.stdout + result.stderr
                 print("  FAILED")
 
-            writer.writerow([project_dir, conf_rel, success_html, error])
+            writer.writerow([repo_url, branch, project_dir, conf_rel, success_html, error])
             f.flush()
 
     print()
