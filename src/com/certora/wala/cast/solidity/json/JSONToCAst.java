@@ -1054,7 +1054,7 @@ public class JSONToCAst {
 			
 			@SuppressWarnings("unused")
 			public CAstNode visitForStatement(JSONObject o, SolidityWalkContext context) {
-				CAstNode init = visit(o.getJSONObject("initializationExpression"), context);
+				CAstNode init = o.has("initializationExpression")? visit(o.getJSONObject("initializationExpression"), context): ast.makeNode(CAstNode.EMPTY);
 				CAstNode test = visit(o.getJSONObject("condition"), context);
 				CAstNode update = o.has("loopExpression")? visit(o.getJSONObject("loopExpression"), context): ast.makeNode(CAstNode.EMPTY);
 				

@@ -123,6 +123,10 @@ public class SolidityAstTranslator extends AstTranslator {
 		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
 		context.currentScope().declare(new CAstSymbolImpl("sha256", CAstType.DYNAMIC), v);
 
+		v = context.currentScope().allocateTempValue();
+		context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), v, NewSiteReference.make(context.cfg().getCurrentInstruction(), SolidityTypes.function)));
+		context.currentScope().declare(new CAstSymbolImpl("gasleft", CAstType.DYNAMIC), v);
+
 	}
 
 	@Override
