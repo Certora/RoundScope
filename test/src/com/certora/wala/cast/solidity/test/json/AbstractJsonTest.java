@@ -14,9 +14,13 @@ public abstract class AbstractJsonTest extends AbstractTest {
 	private final File astsFile;
 	
 	{
-		File astDir = new File(testDir(), "ast");
+		File astDir = astDir();
 		File bz2 = new File(astDir, ".asts.json.bz2");
 		astsFile = bz2.exists()? bz2: new File(astDir, ".asts.json");
+	}
+	
+	protected File astDir() {
+		return new File(testDir(), "ast");
 	}
 
 	protected JSONObject runAnalysis() throws IllegalArgumentException, IOException, CancelException {
