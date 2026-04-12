@@ -430,7 +430,7 @@ public class JSONToCAst {
 			}
 
 			private <T extends CAstType> T findOrCreateType(JSONObject typeDefinition, SolidityWalkContext context, BiFunction<JSONObject, SolidityWalkContext, T> factory) {
-				BiFunction<JSONObject, SolidityWalkContext, Position> key = (k, c) -> getLocation(k.getString("src"));
+				BiFunction<JSONObject, SolidityWalkContext, String> key = (k, c) -> k.getString("src") + (k.has("canonicalName")? k.getString("canonicalName"): k.getString("name"));
 				return findOrCreateType(typeDefinition, key, context, factory);
 			}
 			
@@ -1054,7 +1054,7 @@ public class JSONToCAst {
 			
 			@SuppressWarnings("unused")
 			public CAstNode visitForStatement(JSONObject o, SolidityWalkContext context) {
-				CAstNode init = visit(o.getJSONObject("initializationExpression"), context);
+				CAstNode init = o.has("initializationExpression")? visit(o.getJSONObject("initializationExpression"), context): ast.makeNode(CAstNode.EMPTY);
 				CAstNode test = visit(o.getJSONObject("condition"), context);
 				CAstNode update = o.has("loopExpression")? visit(o.getJSONObject("loopExpression"), context): ast.makeNode(CAstNode.EMPTY);
 				
@@ -1719,6 +1719,8 @@ public class JSONToCAst {
 			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_MOD, as[0], as[1]), getLocation(o.getString("src")), context);
 							case "or":
 			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_BIT_OR, as[0], as[1]), getLocation(o.getString("src")), context);
+							case "and":
+			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_BIT_AND, as[0], as[1]), getLocation(o.getString("src")), context);
 							case "shr":
 			                      return record(ast.makeNode(CAstNode.BINARY_EXPR, CAstOperator.OP_RSH, as[0], as[1]), getLocation(o.getString("src")), context);
 							case "sub":
@@ -1798,9 +1800,10 @@ public class JSONToCAst {
 						return ast.makeNode(CAstNode.EMPTY);					
 					}
 
-				        public CAstNode visitYulFunctionDefinition(JSONObject o, Void ignore) {
+					public CAstNode visitYulFunctionDefinition(JSONObject o, Void ignore) {
 						return ast.makeNode(CAstNode.EMPTY);					
 					}
+
 				}
 
 				return new YulStatementVisitor().visit(yulAst, null);

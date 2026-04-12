@@ -17,29 +17,29 @@ public class RoundAbout extends AnalysisRunner {
 
 	public static void main(String... args) throws IllegalArgumentException, IOException, CancelException {
 		String conf = args[0];
-				
+
 		SolidityRoundingAnalysisEngine E;
 		if ("--combined".equalsIgnoreCase(args[2])) {
 			E = new SolidityRoundingAnalysisEngineJSON(new File(conf), args[3]);
-			
+
 		} else {
 			List<String> jsonFiles = new ArrayList<>(Arrays.asList(args));
 			jsonFiles.removeFirst();
 			jsonFiles.removeFirst();
 			E = new SolidityRoundingAnalysisEngineJSON(new File(conf), jsonFiles.toArray(i -> new String[i]));
 		}
-		
-		JSONObject graphs = E.analyze();
-					
-			String outFile = args[1];
-			try (FileWriter jo = new FileWriter(outFile)) {
-				graphs.write(jo, 4, 0);
-			}
 
-			if (validateJSON(outFile)) {
-				System.out.println("Wrote validated JSON output to " + outFile);
-			} else {
-				System.out.println("Wrote JSON output to " + outFile + " (validation reported issues)");
-			}
+		JSONObject graphs = E.analyze();
+
+		String outFile = args[1];
+		try (FileWriter jo = new FileWriter(outFile)) {
+			graphs.write(jo, 4, 0);
+		}
+
+		if (validateJSON(outFile)) {
+			System.out.println("Wrote validated JSON output to " + outFile);
+		} else {
+			System.out.println("Wrote JSON output to " + outFile + " (validation reported issues)");
 		}
 	}
+}
