@@ -20,15 +20,15 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate an HTML viewer from a Certora .conf or .sol file."
     )
-    parser.add_argument("project_root", help="Project root directory")
-    parser.add_argument("input_file", nargs="?", default=None, help="Path to a .conf or .sol file")
-    parser.add_argument("output_html", help="Path for the output HTML file")
-    parser.add_argument("conf_file", nargs="?", default=None, help="Optional .conf file for contract extraction")
+    parser.add_argument("--project-root", required=True, help="Project root directory")
+    parser.add_argument("--input-file", default=None, help="Path to a .conf or .sol file (required unless --json-input is used)")
+    parser.add_argument("--output", required=True, help="Path for the output HTML file")
+    parser.add_argument("--conf-file", default=None, help="Optional .conf file for contract extraction")
     parser.add_argument("--json-input", default=None, help="Path to pre-generated roundabout JSON (skips roundabout.py)")
-    parser.add_argument("--full_context_breakdown", action="store_true", help="Enable full context breakdown mode")
+    parser.add_argument("--full-context-breakdown", action="store_true", help="Enable full context breakdown mode")
     parser.add_argument("--certora-run-command", default="certoraRun", help="Command to use instead of certoraRun")
     args = parser.parse_args()
-    return (args.project_root, args.input_file, args.output_html, args.conf_file,
+    return (args.project_root, args.input_file, args.output, args.conf_file,
             args.full_context_breakdown, args.certora_run_command, args.json_input)
 
 
@@ -2620,7 +2620,7 @@ def main():
     else:
         # Standard mode: run roundabout pipeline then generate HTML
         if input_file is None:
-            print("Error: input_file is required unless --json-input is provided.", file=sys.stderr)
+            print("Error: --input-file is required unless --json-input is provided.", file=sys.stderr)
             sys.exit(1)
         if not (input_file.endswith(".conf") or input_file.endswith(".sol")):
             print("Error: Input file must be a .conf or .sol file.", file=sys.stderr)
