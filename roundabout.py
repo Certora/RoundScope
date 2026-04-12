@@ -2,6 +2,7 @@
 """Core RoundAbout pipeline: dump ASTs via certoraRun, then run the Java analysis."""
 
 import argparse
+import json
 import json5
 import os
 import shutil
@@ -54,7 +55,6 @@ def main():
 
             fd_conf, temp_conf = tempfile.mkstemp(suffix=".conf", prefix=f"{contract_name}_", dir=os.path.dirname(base) or ".")
             with os.fdopen(fd_conf, "w") as f:
-                import json
                 json.dump({"files": [input_file], "verify": f"{contract_name}:{temp_spec}"}, f, indent=4)
             temp_files.append(temp_conf)
 
@@ -74,16 +74,42 @@ def main():
             print(f"Error: Failed to parse conf file {conf}: {e}", file=sys.stderr)
             sys.exit(1)
 
+        # Resolve override_base_config inheritance
+        if "override_base_config" in conf_data:
+            try:
+                with open(conf_data["override_base_config"]) as f:
+                    base_data = json5.load(f)
+                base_data.update(conf_data)
+                conf_data = base_data
+            except Exception:
+                pass  # If base can't be loaded, proceed with what we have
+
         extra_flags = ["--disable_local_typechecking", "--ignore_solidity_warnings"]
         if "assert_autofinder_success" not in conf_data:
             extra_flags.append("--disable_internal_function_instrumentation")
+
+        # Create dummy spec and temp conf for certoraRun AST dump
+        verify = conf_data.get("verify", "")
+        contract_name = verify.split(":")[0] if ":" in verify else "Unknown"
+
+        fd_spec, temp_spec = tempfile.mkstemp(suffix=".spec", prefix="roundabout_")
+        with os.fdopen(fd_spec, "w") as f:
+            f.write("rule trivial { assert true; }\n")
+        temp_files.append(temp_spec)
+
+        dump_conf_data = dict(conf_data)
+        dump_conf_data["verify"] = f"{contract_name}:{temp_spec}"
+        fd_conf, dump_conf = tempfile.mkstemp(suffix=".conf", prefix="roundabout_")
+        with os.fdopen(fd_conf, "w") as f:
+            json.dump(dump_conf_data, f, indent=4)
+        temp_files.append(dump_conf)
 
         # Record timestamp before running certoraRun
         fd_ts, timestamp_ref = tempfile.mkstemp()
         os.close(fd_ts)
 
         print(f"Running {args.certora_run_command} to dump ASTs...")
-        cmd = [args.certora_run_command, conf, "--dump_asts", "--build_only"] + extra_flags
+        cmd = [args.certora_run_command, dump_conf, "--dump_asts", "--build_only"] + extra_flags
         subprocess.run(cmd)
 
         asts_file = ".certora_internal/latest/.asts.json"
