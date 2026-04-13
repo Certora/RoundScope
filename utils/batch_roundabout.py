@@ -8,6 +8,10 @@ import os
 import re
 import subprocess
 import sys
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from tqdm import tqdm
 
 SKIP_DIRS = {".certora_internal", ".certora_sources"}
 
@@ -104,6 +108,56 @@ def derive_project_dir(conf_abs, root_path):
     return best
 
 
+def _process_conf(conf_abs, root_path, run_roundabout_script, certora_run_command):
+    """Process a single conf file. Returns a CSV row tuple."""
+    project_dir = derive_project_dir(conf_abs, root_path)
+    conf_rel = os.path.relpath(conf_abs, project_dir)
+    repo_url, branch = _git_info(project_dir)
+
+    log_file = os.path.join(project_dir, ".certora_internal", "roundabout.log")
+
+    # Record current log line count
+    log_start = 0
+    if os.path.isfile(log_file):
+        with open(log_file) as lf:
+            log_start = sum(1 for _ in lf)
+
+    success_html = ""
+    error = ""
+
+    start = time.monotonic()
+    result = subprocess.run(
+        [
+            sys.executable, run_roundabout_script,
+            "--certora-run-command", certora_run_command,
+            conf_rel,
+        ],
+        cwd=project_dir,
+        capture_output=True,
+        text=True,
+    )
+    duration = time.monotonic() - start
+
+    if result.returncode == 0:
+        # Extract HTML path from output
+        match = re.search(r"Viewer generated at: (.+)", result.stdout)
+        if match:
+            html_path = match.group(1).strip()
+            if not os.path.isabs(html_path):
+                html_path = os.path.join(project_dir, html_path)
+            success_html = html_path
+    else:
+        # Extract log lines from this run
+        if os.path.isfile(log_file):
+            with open(log_file) as lf:
+                lines = lf.readlines()
+            error = "".join(lines[log_start:][-20:])
+        if not error:
+            error = result.stdout + result.stderr
+
+    return (repo_url, branch, project_dir, conf_rel, success_html, error, f"{duration:.1f}")
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Scan a directory for certora/**/*.conf files and run RoundAbout on each."
@@ -112,6 +166,12 @@ def main():
         "--certora-run-command",
         default="certoraRun",
         help="Command to use instead of certoraRun (default: certoraRun)",
+    )
+    parser.add_argument(
+        "--parallel",
+        type=int,
+        default=1,
+        help="Number of conf files to process in parallel (default: 1)",
     )
     parser.add_argument(
         "root_path",
@@ -132,58 +192,35 @@ def main():
 
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["repo_url", "branch", "project_dir", "path_to_conf", "success_html", "error"])
+        writer.writerow(["repo_url", "branch", "project_dir", "path_to_conf", "success_html", "error", "runtime_seconds"])
+        output_lock = threading.Lock()
 
-        for conf_abs in conf_files:
-            project_dir = derive_project_dir(conf_abs, root_path)
-            conf_rel = os.path.relpath(conf_abs, project_dir)
-            repo_url, branch = _git_info(project_dir)
-
-            print(f"=== Running: {conf_rel} (project: {project_dir}) ===")
-
-            log_file = os.path.join(project_dir, ".certora_internal", "roundabout.log")
-
-            # Record current log line count
-            log_start = 0
-            if os.path.isfile(log_file):
-                with open(log_file) as lf:
-                    log_start = sum(1 for _ in lf)
-
-            success_html = ""
-            error = ""
-
-            result = subprocess.run(
-                [
-                    sys.executable, run_roundabout,
-                    "--certora-run-command", args.certora_run_command,
-                    conf_rel,
-                ],
-                cwd=project_dir,
-                capture_output=True,
-                text=True,
-            )
-
-            if result.returncode == 0:
-                # Extract HTML path from output
-                match = re.search(r"Viewer generated at: (.+)", result.stdout)
-                if match:
-                    html_path = match.group(1).strip()
-                    if not os.path.isabs(html_path):
-                        html_path = os.path.join(project_dir, html_path)
-                    success_html = html_path
-                print(f"  SUCCESS: {success_html}")
-            else:
-                # Extract log lines from this run
-                if os.path.isfile(log_file):
-                    with open(log_file) as lf:
-                        lines = lf.readlines()
-                    error = "".join(lines[log_start:][-20:])
-                if not error:
-                    error = result.stdout + result.stderr
-                print("  FAILED")
-
-            writer.writerow([repo_url, branch, project_dir, conf_rel, success_html, error])
-            f.flush()
+        with ThreadPoolExecutor(max_workers=args.parallel) as executor:
+            futures = {
+                executor.submit(
+                    _process_conf, conf_abs, root_path,
+                    run_roundabout, args.certora_run_command,
+                ): conf_abs
+                for conf_abs in conf_files
+            }
+            with tqdm(total=len(conf_files), desc="Processing confs", unit="conf") as pbar:
+                for future in as_completed(futures):
+                    conf_abs = futures[future]
+                    try:
+                        repo_url, branch, project_dir, conf_rel, success_html, error, runtime = future.result()
+                    except Exception as exc:
+                        project_dir = derive_project_dir(conf_abs, root_path)
+                        conf_rel = os.path.relpath(conf_abs, project_dir)
+                        repo_url, branch = "", ""
+                        success_html = ""
+                        error = str(exc)
+                        runtime = ""
+                    status = f"SUCCESS: {success_html}" if success_html else "FAILED"
+                    with output_lock:
+                        pbar.write(f"=== {conf_rel} (project: {project_dir}) === {status}")
+                        writer.writerow([repo_url, branch, project_dir, conf_rel, success_html, error, runtime])
+                        f.flush()
+                    pbar.update(1)
 
     print()
     print(f"Results written to: {csv_file}")
