@@ -1,0 +1,2752 @@
+{
+    "test/data/ForcedRounding/ForcedRounding.sol": {
+        "/Users/shelly/Certora/wala-solidity/test/data/ForcedRounding/ForcedRounding.sol": {
+            "1": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 1,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "179:7:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "2": {
+                "certora_contract_name": "ForcedRounding",
+                "constant": false,
+                "id": 2,
+                "mutability": "mutable",
+                "name": "x",
+                "nameLocation": "187:1:0",
+                "nodeType": "VariableDeclaration",
+                "scope": 12,
+                "src": "179:9:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "typeName": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 1,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "179:7:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "visibility": "internal"
+            },
+            "3": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 3,
+                "nodeType": "ParameterList",
+                "parameters": [
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "constant": false,
+                        "id": 2,
+                        "mutability": "mutable",
+                        "name": "x",
+                        "nameLocation": "187:1:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 12,
+                        "src": "179:9:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        },
+                        "typeName": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 1,
+                            "name": "uint256",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "179:7:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "visibility": "internal"
+                    }
+                ],
+                "src": "178:11:0"
+            },
+            "4": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 4,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "211:7:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "5": {
+                "certora_contract_name": "ForcedRounding",
+                "constant": false,
+                "id": 5,
+                "mutability": "mutable",
+                "name": "",
+                "nameLocation": "-1:-1:-1",
+                "nodeType": "VariableDeclaration",
+                "scope": 12,
+                "src": "211:7:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "typeName": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 4,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "211:7:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "visibility": "internal"
+            },
+            "6": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 6,
+                "nodeType": "ParameterList",
+                "parameters": [
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "constant": false,
+                        "id": 5,
+                        "mutability": "mutable",
+                        "name": "",
+                        "nameLocation": "-1:-1:-1",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 12,
+                        "src": "211:7:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        },
+                        "typeName": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 4,
+                            "name": "uint256",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "211:7:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "visibility": "internal"
+                    }
+                ],
+                "src": "210:9:0"
+            },
+            "7": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 7,
+                "name": "x",
+                "nodeType": "Identifier",
+                "overloadedDeclarations": [],
+                "referencedDeclaration": 2,
+                "src": "237:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "8": {
+                "certora_contract_name": "ForcedRounding",
+                "hexValue": "31",
+                "id": 8,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "241:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_rational_1_by_1",
+                    "typeString": "int_const 1"
+                },
+                "value": "1"
+            },
+            "9": {
+                "certora_contract_name": "ForcedRounding",
+                "commonType": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "id": 9,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": false,
+                "lValueRequested": false,
+                "leftExpression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 7,
+                    "name": "x",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 2,
+                    "src": "237:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "nodeType": "BinaryOperation",
+                "operator": "/",
+                "rightExpression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "hexValue": "31",
+                    "id": 8,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "number",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "241:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_rational_1_by_1",
+                        "typeString": "int_const 1"
+                    },
+                    "value": "1"
+                },
+                "src": "237:5:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "10": {
+                "certora_contract_name": "ForcedRounding",
+                "expression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "commonType": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    },
+                    "id": 9,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                        "certora_contract_name": "ForcedRounding",
+                        "id": 7,
+                        "name": "x",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 2,
+                        "src": "237:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "/",
+                    "rightExpression": {
+                        "certora_contract_name": "ForcedRounding",
+                        "hexValue": "31",
+                        "id": 8,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "241:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                        },
+                        "value": "1"
+                    },
+                    "src": "237:5:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "functionReturnParameters": 6,
+                "id": 10,
+                "nodeType": "Return",
+                "src": "230:12:0"
+            },
+            "11": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 11,
+                "nodeType": "Block",
+                "src": "220:29:0",
+                "statements": [
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "expression": {
+                            "certora_contract_name": "ForcedRounding",
+                            "commonType": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            },
+                            "id": 9,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "leftExpression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 7,
+                                "name": "x",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 2,
+                                "src": "237:1:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "nodeType": "BinaryOperation",
+                            "operator": "/",
+                            "rightExpression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "hexValue": "31",
+                                "id": 8,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "241:1:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_rational_1_by_1",
+                                    "typeString": "int_const 1"
+                                },
+                                "value": "1"
+                            },
+                            "src": "237:5:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "functionReturnParameters": 6,
+                        "id": 10,
+                        "nodeType": "Return",
+                        "src": "230:12:0"
+                    }
+                ]
+            },
+            "12": {
+                "body": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 11,
+                    "nodeType": "Block",
+                    "src": "220:29:0",
+                    "statements": [
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "expression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "commonType": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                },
+                                "id": 9,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "leftExpression": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 7,
+                                    "name": "x",
+                                    "nodeType": "Identifier",
+                                    "overloadedDeclarations": [],
+                                    "referencedDeclaration": 2,
+                                    "src": "237:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    }
+                                },
+                                "nodeType": "BinaryOperation",
+                                "operator": "/",
+                                "rightExpression": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "hexValue": "31",
+                                    "id": 8,
+                                    "isConstant": false,
+                                    "isLValue": false,
+                                    "isPure": true,
+                                    "kind": "number",
+                                    "lValueRequested": false,
+                                    "nodeType": "Literal",
+                                    "src": "241:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_rational_1_by_1",
+                                        "typeString": "int_const 1"
+                                    },
+                                    "value": "1"
+                                },
+                                "src": "237:5:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "functionReturnParameters": 6,
+                            "id": 10,
+                            "nodeType": "Return",
+                            "src": "230:12:0"
+                        }
+                    ]
+                },
+                "certora_contract_name": "ForcedRounding",
+                "functionSelector": "59e7a499",
+                "id": 12,
+                "implemented": true,
+                "kind": "function",
+                "modifiers": [],
+                "name": "forcedDown",
+                "nameLocation": "168:10:0",
+                "nodeType": "FunctionDefinition",
+                "parameters": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 3,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "constant": false,
+                            "id": 2,
+                            "mutability": "mutable",
+                            "name": "x",
+                            "nameLocation": "187:1:0",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 12,
+                            "src": "179:9:0",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            },
+                            "typeName": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 1,
+                                "name": "uint256",
+                                "nodeType": "ElementaryTypeName",
+                                "src": "179:7:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "visibility": "internal"
+                        }
+                    ],
+                    "src": "178:11:0"
+                },
+                "returnParameters": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 6,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "constant": false,
+                            "id": 5,
+                            "mutability": "mutable",
+                            "name": "",
+                            "nameLocation": "-1:-1:-1",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 12,
+                            "src": "211:7:0",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            },
+                            "typeName": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 4,
+                                "name": "uint256",
+                                "nodeType": "ElementaryTypeName",
+                                "src": "211:7:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "visibility": "internal"
+                        }
+                    ],
+                    "src": "210:9:0"
+                },
+                "scope": 35,
+                "src": "159:90:0",
+                "stateMutability": "pure",
+                "virtual": false,
+                "visibility": "public"
+            },
+            "13": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 13,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "353:7:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "14": {
+                "certora_contract_name": "ForcedRounding",
+                "constant": false,
+                "id": 14,
+                "mutability": "mutable",
+                "name": "x",
+                "nameLocation": "361:1:0",
+                "nodeType": "VariableDeclaration",
+                "scope": 34,
+                "src": "353:9:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "typeName": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 13,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "353:7:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "visibility": "internal"
+            },
+            "15": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 15,
+                "nodeType": "ParameterList",
+                "parameters": [
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "constant": false,
+                        "id": 14,
+                        "mutability": "mutable",
+                        "name": "x",
+                        "nameLocation": "361:1:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 34,
+                        "src": "353:9:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        },
+                        "typeName": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 13,
+                            "name": "uint256",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "353:7:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "visibility": "internal"
+                    }
+                ],
+                "src": "352:11:0"
+            },
+            "16": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 16,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "385:7:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "17": {
+                "certora_contract_name": "ForcedRounding",
+                "constant": false,
+                "id": 17,
+                "mutability": "mutable",
+                "name": "",
+                "nameLocation": "-1:-1:-1",
+                "nodeType": "VariableDeclaration",
+                "scope": 34,
+                "src": "385:7:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "typeName": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 16,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "385:7:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "visibility": "internal"
+            },
+            "18": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 18,
+                "nodeType": "ParameterList",
+                "parameters": [
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "constant": false,
+                        "id": 17,
+                        "mutability": "mutable",
+                        "name": "",
+                        "nameLocation": "-1:-1:-1",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 34,
+                        "src": "385:7:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        },
+                        "typeName": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 16,
+                            "name": "uint256",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "385:7:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "visibility": "internal"
+                    }
+                ],
+                "src": "384:9:0"
+            },
+            "19": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 19,
+                "name": "uint256",
+                "nodeType": "ElementaryTypeName",
+                "src": "404:7:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "20": {
+                "certora_contract_name": "ForcedRounding",
+                "constant": false,
+                "id": 20,
+                "mutability": "mutable",
+                "name": "y",
+                "nameLocation": "412:1:0",
+                "nodeType": "VariableDeclaration",
+                "scope": 33,
+                "src": "404:9:0",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "typeName": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 19,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "404:7:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "visibility": "internal"
+            },
+            "21": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 21,
+                "name": "x",
+                "nodeType": "Identifier",
+                "overloadedDeclarations": [],
+                "referencedDeclaration": 14,
+                "src": "416:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "22": {
+                "certora_contract_name": "ForcedRounding",
+                "hexValue": "31",
+                "id": 22,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "420:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_rational_1_by_1",
+                    "typeString": "int_const 1"
+                },
+                "value": "1"
+            },
+            "23": {
+                "certora_contract_name": "ForcedRounding",
+                "commonType": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "id": 23,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": false,
+                "lValueRequested": false,
+                "leftExpression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 21,
+                    "name": "x",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 14,
+                    "src": "416:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "nodeType": "BinaryOperation",
+                "operator": "/",
+                "rightExpression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "hexValue": "31",
+                    "id": 22,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "number",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "420:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_rational_1_by_1",
+                        "typeString": "int_const 1"
+                    },
+                    "value": "1"
+                },
+                "src": "416:5:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "24": {
+                "assignments": [
+                    20
+                ],
+                "certora_contract_name": "ForcedRounding",
+                "declarations": [
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "constant": false,
+                        "id": 20,
+                        "mutability": "mutable",
+                        "name": "y",
+                        "nameLocation": "412:1:0",
+                        "nodeType": "VariableDeclaration",
+                        "scope": 33,
+                        "src": "404:9:0",
+                        "stateVariable": false,
+                        "storageLocation": "default",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        },
+                        "typeName": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 19,
+                            "name": "uint256",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "404:7:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "visibility": "internal"
+                    }
+                ],
+                "id": 24,
+                "initialValue": {
+                    "certora_contract_name": "ForcedRounding",
+                    "commonType": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    },
+                    "id": 23,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                        "certora_contract_name": "ForcedRounding",
+                        "id": 21,
+                        "name": "x",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 14,
+                        "src": "416:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "/",
+                    "rightExpression": {
+                        "certora_contract_name": "ForcedRounding",
+                        "hexValue": "31",
+                        "id": 22,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "420:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_rational_1_by_1",
+                            "typeString": "int_const 1"
+                        },
+                        "value": "1"
+                    },
+                    "src": "416:5:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "nodeType": "VariableDeclarationStatement",
+                "src": "404:17:0"
+            },
+            "25": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 25,
+                "name": "y",
+                "nodeType": "Identifier",
+                "overloadedDeclarations": [],
+                "referencedDeclaration": 20,
+                "src": "431:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "26": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 26,
+                "name": "y",
+                "nodeType": "Identifier",
+                "overloadedDeclarations": [],
+                "referencedDeclaration": 20,
+                "src": "435:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "27": {
+                "certora_contract_name": "ForcedRounding",
+                "hexValue": "30",
+                "id": 27,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": true,
+                "kind": "number",
+                "lValueRequested": false,
+                "nodeType": "Literal",
+                "src": "439:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_rational_0_by_1",
+                    "typeString": "int_const 0"
+                },
+                "value": "0"
+            },
+            "28": {
+                "certora_contract_name": "ForcedRounding",
+                "commonType": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                },
+                "id": 28,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": false,
+                "lValueRequested": false,
+                "leftExpression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 26,
+                    "name": "y",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 20,
+                    "src": "435:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "nodeType": "BinaryOperation",
+                "operator": "+",
+                "rightExpression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "hexValue": "30",
+                    "id": 27,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": true,
+                    "kind": "number",
+                    "lValueRequested": false,
+                    "nodeType": "Literal",
+                    "src": "439:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_rational_0_by_1",
+                        "typeString": "int_const 0"
+                    },
+                    "value": "0"
+                },
+                "src": "435:5:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "29": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 29,
+                "isConstant": false,
+                "isLValue": false,
+                "isPure": false,
+                "lValueRequested": false,
+                "leftHandSide": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 25,
+                    "name": "y",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 20,
+                    "src": "431:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "nodeType": "Assignment",
+                "operator": "=",
+                "rightHandSide": {
+                    "certora_contract_name": "ForcedRounding",
+                    "commonType": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    },
+                    "id": 28,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftExpression": {
+                        "certora_contract_name": "ForcedRounding",
+                        "id": 26,
+                        "name": "y",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 20,
+                        "src": "435:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        }
+                    },
+                    "nodeType": "BinaryOperation",
+                    "operator": "+",
+                    "rightExpression": {
+                        "certora_contract_name": "ForcedRounding",
+                        "hexValue": "30",
+                        "id": 27,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "number",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "439:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                        },
+                        "value": "0"
+                    },
+                    "src": "435:5:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "src": "431:9:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "30": {
+                "certora_contract_name": "ForcedRounding",
+                "expression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 29,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                        "certora_contract_name": "ForcedRounding",
+                        "id": 25,
+                        "name": "y",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 20,
+                        "src": "431:1:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                        "certora_contract_name": "ForcedRounding",
+                        "commonType": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        },
+                        "id": 28,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 26,
+                            "name": "y",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 20,
+                            "src": "435:1:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "+",
+                        "rightExpression": {
+                            "certora_contract_name": "ForcedRounding",
+                            "hexValue": "30",
+                            "id": 27,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "439:1:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_rational_0_by_1",
+                                "typeString": "int_const 0"
+                            },
+                            "value": "0"
+                        },
+                        "src": "435:5:0",
+                        "typeDescriptions": {
+                            "certora_contract_name": "ForcedRounding",
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                        }
+                    },
+                    "src": "431:9:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "id": 30,
+                "nodeType": "ExpressionStatement",
+                "src": "431:9:0"
+            },
+            "31": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 31,
+                "name": "y",
+                "nodeType": "Identifier",
+                "overloadedDeclarations": [],
+                "referencedDeclaration": 20,
+                "src": "457:1:0",
+                "typeDescriptions": {
+                    "certora_contract_name": "ForcedRounding",
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                }
+            },
+            "32": {
+                "certora_contract_name": "ForcedRounding",
+                "expression": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 31,
+                    "name": "y",
+                    "nodeType": "Identifier",
+                    "overloadedDeclarations": [],
+                    "referencedDeclaration": 20,
+                    "src": "457:1:0",
+                    "typeDescriptions": {
+                        "certora_contract_name": "ForcedRounding",
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                    }
+                },
+                "functionReturnParameters": 18,
+                "id": 32,
+                "nodeType": "Return",
+                "src": "450:8:0"
+            },
+            "33": {
+                "certora_contract_name": "ForcedRounding",
+                "id": 33,
+                "nodeType": "Block",
+                "src": "394:71:0",
+                "statements": [
+                    {
+                        "assignments": [
+                            20
+                        ],
+                        "certora_contract_name": "ForcedRounding",
+                        "declarations": [
+                            {
+                                "certora_contract_name": "ForcedRounding",
+                                "constant": false,
+                                "id": 20,
+                                "mutability": "mutable",
+                                "name": "y",
+                                "nameLocation": "412:1:0",
+                                "nodeType": "VariableDeclaration",
+                                "scope": 33,
+                                "src": "404:9:0",
+                                "stateVariable": false,
+                                "storageLocation": "default",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                },
+                                "typeName": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 19,
+                                    "name": "uint256",
+                                    "nodeType": "ElementaryTypeName",
+                                    "src": "404:7:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    }
+                                },
+                                "visibility": "internal"
+                            }
+                        ],
+                        "id": 24,
+                        "initialValue": {
+                            "certora_contract_name": "ForcedRounding",
+                            "commonType": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            },
+                            "id": 23,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "leftExpression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 21,
+                                "name": "x",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 14,
+                                "src": "416:1:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "nodeType": "BinaryOperation",
+                            "operator": "/",
+                            "rightExpression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "hexValue": "31",
+                                "id": 22,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": true,
+                                "kind": "number",
+                                "lValueRequested": false,
+                                "nodeType": "Literal",
+                                "src": "420:1:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_rational_1_by_1",
+                                    "typeString": "int_const 1"
+                                },
+                                "value": "1"
+                            },
+                            "src": "416:5:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "nodeType": "VariableDeclarationStatement",
+                        "src": "404:17:0"
+                    },
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "expression": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 29,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": false,
+                            "lValueRequested": false,
+                            "leftHandSide": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 25,
+                                "name": "y",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 20,
+                                "src": "431:1:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "nodeType": "Assignment",
+                            "operator": "=",
+                            "rightHandSide": {
+                                "certora_contract_name": "ForcedRounding",
+                                "commonType": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                },
+                                "id": 28,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "leftExpression": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 26,
+                                    "name": "y",
+                                    "nodeType": "Identifier",
+                                    "overloadedDeclarations": [],
+                                    "referencedDeclaration": 20,
+                                    "src": "435:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    }
+                                },
+                                "nodeType": "BinaryOperation",
+                                "operator": "+",
+                                "rightExpression": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "hexValue": "30",
+                                    "id": 27,
+                                    "isConstant": false,
+                                    "isLValue": false,
+                                    "isPure": true,
+                                    "kind": "number",
+                                    "lValueRequested": false,
+                                    "nodeType": "Literal",
+                                    "src": "439:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_rational_0_by_1",
+                                        "typeString": "int_const 0"
+                                    },
+                                    "value": "0"
+                                },
+                                "src": "435:5:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "src": "431:9:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "id": 30,
+                        "nodeType": "ExpressionStatement",
+                        "src": "431:9:0"
+                    },
+                    {
+                        "certora_contract_name": "ForcedRounding",
+                        "expression": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 31,
+                            "name": "y",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 20,
+                            "src": "457:1:0",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            }
+                        },
+                        "functionReturnParameters": 18,
+                        "id": 32,
+                        "nodeType": "Return",
+                        "src": "450:8:0"
+                    }
+                ]
+            },
+            "34": {
+                "body": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 33,
+                    "nodeType": "Block",
+                    "src": "394:71:0",
+                    "statements": [
+                        {
+                            "assignments": [
+                                20
+                            ],
+                            "certora_contract_name": "ForcedRounding",
+                            "declarations": [
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "constant": false,
+                                    "id": 20,
+                                    "mutability": "mutable",
+                                    "name": "y",
+                                    "nameLocation": "412:1:0",
+                                    "nodeType": "VariableDeclaration",
+                                    "scope": 33,
+                                    "src": "404:9:0",
+                                    "stateVariable": false,
+                                    "storageLocation": "default",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    },
+                                    "typeName": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 19,
+                                        "name": "uint256",
+                                        "nodeType": "ElementaryTypeName",
+                                        "src": "404:7:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "visibility": "internal"
+                                }
+                            ],
+                            "id": 24,
+                            "initialValue": {
+                                "certora_contract_name": "ForcedRounding",
+                                "commonType": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                },
+                                "id": 23,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "leftExpression": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 21,
+                                    "name": "x",
+                                    "nodeType": "Identifier",
+                                    "overloadedDeclarations": [],
+                                    "referencedDeclaration": 14,
+                                    "src": "416:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    }
+                                },
+                                "nodeType": "BinaryOperation",
+                                "operator": "/",
+                                "rightExpression": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "hexValue": "31",
+                                    "id": 22,
+                                    "isConstant": false,
+                                    "isLValue": false,
+                                    "isPure": true,
+                                    "kind": "number",
+                                    "lValueRequested": false,
+                                    "nodeType": "Literal",
+                                    "src": "420:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_rational_1_by_1",
+                                        "typeString": "int_const 1"
+                                    },
+                                    "value": "1"
+                                },
+                                "src": "416:5:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "nodeType": "VariableDeclarationStatement",
+                            "src": "404:17:0"
+                        },
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "expression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 29,
+                                "isConstant": false,
+                                "isLValue": false,
+                                "isPure": false,
+                                "lValueRequested": false,
+                                "leftHandSide": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 25,
+                                    "name": "y",
+                                    "nodeType": "Identifier",
+                                    "overloadedDeclarations": [],
+                                    "referencedDeclaration": 20,
+                                    "src": "431:1:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    }
+                                },
+                                "nodeType": "Assignment",
+                                "operator": "=",
+                                "rightHandSide": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "commonType": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    },
+                                    "id": 28,
+                                    "isConstant": false,
+                                    "isLValue": false,
+                                    "isPure": false,
+                                    "lValueRequested": false,
+                                    "leftExpression": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 26,
+                                        "name": "y",
+                                        "nodeType": "Identifier",
+                                        "overloadedDeclarations": [],
+                                        "referencedDeclaration": 20,
+                                        "src": "435:1:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "nodeType": "BinaryOperation",
+                                    "operator": "+",
+                                    "rightExpression": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "hexValue": "30",
+                                        "id": 27,
+                                        "isConstant": false,
+                                        "isLValue": false,
+                                        "isPure": true,
+                                        "kind": "number",
+                                        "lValueRequested": false,
+                                        "nodeType": "Literal",
+                                        "src": "439:1:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_rational_0_by_1",
+                                            "typeString": "int_const 0"
+                                        },
+                                        "value": "0"
+                                    },
+                                    "src": "435:5:0",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    }
+                                },
+                                "src": "431:9:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "id": 30,
+                            "nodeType": "ExpressionStatement",
+                            "src": "431:9:0"
+                        },
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "expression": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 31,
+                                "name": "y",
+                                "nodeType": "Identifier",
+                                "overloadedDeclarations": [],
+                                "referencedDeclaration": 20,
+                                "src": "457:1:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "functionReturnParameters": 18,
+                            "id": 32,
+                            "nodeType": "Return",
+                            "src": "450:8:0"
+                        }
+                    ]
+                },
+                "certora_contract_name": "ForcedRounding",
+                "functionSelector": "b399b497",
+                "id": 34,
+                "implemented": true,
+                "kind": "function",
+                "modifiers": [],
+                "name": "forcedUp",
+                "nameLocation": "344:8:0",
+                "nodeType": "FunctionDefinition",
+                "parameters": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 15,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "constant": false,
+                            "id": 14,
+                            "mutability": "mutable",
+                            "name": "x",
+                            "nameLocation": "361:1:0",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 34,
+                            "src": "353:9:0",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            },
+                            "typeName": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 13,
+                                "name": "uint256",
+                                "nodeType": "ElementaryTypeName",
+                                "src": "353:7:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "visibility": "internal"
+                        }
+                    ],
+                    "src": "352:11:0"
+                },
+                "returnParameters": {
+                    "certora_contract_name": "ForcedRounding",
+                    "id": 18,
+                    "nodeType": "ParameterList",
+                    "parameters": [
+                        {
+                            "certora_contract_name": "ForcedRounding",
+                            "constant": false,
+                            "id": 17,
+                            "mutability": "mutable",
+                            "name": "",
+                            "nameLocation": "-1:-1:-1",
+                            "nodeType": "VariableDeclaration",
+                            "scope": 34,
+                            "src": "385:7:0",
+                            "stateVariable": false,
+                            "storageLocation": "default",
+                            "typeDescriptions": {
+                                "certora_contract_name": "ForcedRounding",
+                                "typeIdentifier": "t_uint256",
+                                "typeString": "uint256"
+                            },
+                            "typeName": {
+                                "certora_contract_name": "ForcedRounding",
+                                "id": 16,
+                                "name": "uint256",
+                                "nodeType": "ElementaryTypeName",
+                                "src": "385:7:0",
+                                "typeDescriptions": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "typeIdentifier": "t_uint256",
+                                    "typeString": "uint256"
+                                }
+                            },
+                            "visibility": "internal"
+                        }
+                    ],
+                    "src": "384:9:0"
+                },
+                "scope": 35,
+                "src": "335:130:0",
+                "stateMutability": "pure",
+                "virtual": false,
+                "visibility": "public"
+            },
+            "35": {
+                "abstract": false,
+                "baseContracts": [],
+                "canonicalName": "ForcedRounding",
+                "contractDependencies": [],
+                "contractKind": "contract",
+                "fullyImplemented": true,
+                "id": 35,
+                "linearizedBaseContracts": [
+                    35
+                ],
+                "name": "ForcedRounding",
+                "nameLocation": "67:14:0",
+                "nodeType": "ContractDefinition",
+                "nodes": [
+                    {
+                        "body": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 11,
+                            "nodeType": "Block",
+                            "src": "220:29:0",
+                            "statements": [
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "expression": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "commonType": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        },
+                                        "id": 9,
+                                        "isConstant": false,
+                                        "isLValue": false,
+                                        "isPure": false,
+                                        "lValueRequested": false,
+                                        "leftExpression": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "id": 7,
+                                            "name": "x",
+                                            "nodeType": "Identifier",
+                                            "overloadedDeclarations": [],
+                                            "referencedDeclaration": 2,
+                                            "src": "237:1:0",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            }
+                                        },
+                                        "nodeType": "BinaryOperation",
+                                        "operator": "/",
+                                        "rightExpression": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "hexValue": "31",
+                                            "id": 8,
+                                            "isConstant": false,
+                                            "isLValue": false,
+                                            "isPure": true,
+                                            "kind": "number",
+                                            "lValueRequested": false,
+                                            "nodeType": "Literal",
+                                            "src": "241:1:0",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_rational_1_by_1",
+                                                "typeString": "int_const 1"
+                                            },
+                                            "value": "1"
+                                        },
+                                        "src": "237:5:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "functionReturnParameters": 6,
+                                    "id": 10,
+                                    "nodeType": "Return",
+                                    "src": "230:12:0"
+                                }
+                            ]
+                        },
+                        "certora_contract_name": "ForcedRounding",
+                        "functionSelector": "59e7a499",
+                        "id": 12,
+                        "implemented": true,
+                        "kind": "function",
+                        "modifiers": [],
+                        "name": "forcedDown",
+                        "nameLocation": "168:10:0",
+                        "nodeType": "FunctionDefinition",
+                        "parameters": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 3,
+                            "nodeType": "ParameterList",
+                            "parameters": [
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "constant": false,
+                                    "id": 2,
+                                    "mutability": "mutable",
+                                    "name": "x",
+                                    "nameLocation": "187:1:0",
+                                    "nodeType": "VariableDeclaration",
+                                    "scope": 12,
+                                    "src": "179:9:0",
+                                    "stateVariable": false,
+                                    "storageLocation": "default",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    },
+                                    "typeName": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 1,
+                                        "name": "uint256",
+                                        "nodeType": "ElementaryTypeName",
+                                        "src": "179:7:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "visibility": "internal"
+                                }
+                            ],
+                            "src": "178:11:0"
+                        },
+                        "returnParameters": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 6,
+                            "nodeType": "ParameterList",
+                            "parameters": [
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "constant": false,
+                                    "id": 5,
+                                    "mutability": "mutable",
+                                    "name": "",
+                                    "nameLocation": "-1:-1:-1",
+                                    "nodeType": "VariableDeclaration",
+                                    "scope": 12,
+                                    "src": "211:7:0",
+                                    "stateVariable": false,
+                                    "storageLocation": "default",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    },
+                                    "typeName": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 4,
+                                        "name": "uint256",
+                                        "nodeType": "ElementaryTypeName",
+                                        "src": "211:7:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "visibility": "internal"
+                                }
+                            ],
+                            "src": "210:9:0"
+                        },
+                        "scope": 35,
+                        "src": "159:90:0",
+                        "stateMutability": "pure",
+                        "virtual": false,
+                        "visibility": "public"
+                    },
+                    {
+                        "body": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 33,
+                            "nodeType": "Block",
+                            "src": "394:71:0",
+                            "statements": [
+                                {
+                                    "assignments": [
+                                        20
+                                    ],
+                                    "certora_contract_name": "ForcedRounding",
+                                    "declarations": [
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "constant": false,
+                                            "id": 20,
+                                            "mutability": "mutable",
+                                            "name": "y",
+                                            "nameLocation": "412:1:0",
+                                            "nodeType": "VariableDeclaration",
+                                            "scope": 33,
+                                            "src": "404:9:0",
+                                            "stateVariable": false,
+                                            "storageLocation": "default",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            },
+                                            "typeName": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 19,
+                                                "name": "uint256",
+                                                "nodeType": "ElementaryTypeName",
+                                                "src": "404:7:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "visibility": "internal"
+                                        }
+                                    ],
+                                    "id": 24,
+                                    "initialValue": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "commonType": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        },
+                                        "id": 23,
+                                        "isConstant": false,
+                                        "isLValue": false,
+                                        "isPure": false,
+                                        "lValueRequested": false,
+                                        "leftExpression": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "id": 21,
+                                            "name": "x",
+                                            "nodeType": "Identifier",
+                                            "overloadedDeclarations": [],
+                                            "referencedDeclaration": 14,
+                                            "src": "416:1:0",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            }
+                                        },
+                                        "nodeType": "BinaryOperation",
+                                        "operator": "/",
+                                        "rightExpression": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "hexValue": "31",
+                                            "id": 22,
+                                            "isConstant": false,
+                                            "isLValue": false,
+                                            "isPure": true,
+                                            "kind": "number",
+                                            "lValueRequested": false,
+                                            "nodeType": "Literal",
+                                            "src": "420:1:0",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_rational_1_by_1",
+                                                "typeString": "int_const 1"
+                                            },
+                                            "value": "1"
+                                        },
+                                        "src": "416:5:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "nodeType": "VariableDeclarationStatement",
+                                    "src": "404:17:0"
+                                },
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "expression": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 29,
+                                        "isConstant": false,
+                                        "isLValue": false,
+                                        "isPure": false,
+                                        "lValueRequested": false,
+                                        "leftHandSide": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "id": 25,
+                                            "name": "y",
+                                            "nodeType": "Identifier",
+                                            "overloadedDeclarations": [],
+                                            "referencedDeclaration": 20,
+                                            "src": "431:1:0",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            }
+                                        },
+                                        "nodeType": "Assignment",
+                                        "operator": "=",
+                                        "rightHandSide": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "commonType": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            },
+                                            "id": 28,
+                                            "isConstant": false,
+                                            "isLValue": false,
+                                            "isPure": false,
+                                            "lValueRequested": false,
+                                            "leftExpression": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 26,
+                                                "name": "y",
+                                                "nodeType": "Identifier",
+                                                "overloadedDeclarations": [],
+                                                "referencedDeclaration": 20,
+                                                "src": "435:1:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "nodeType": "BinaryOperation",
+                                            "operator": "+",
+                                            "rightExpression": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "hexValue": "30",
+                                                "id": 27,
+                                                "isConstant": false,
+                                                "isLValue": false,
+                                                "isPure": true,
+                                                "kind": "number",
+                                                "lValueRequested": false,
+                                                "nodeType": "Literal",
+                                                "src": "439:1:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_rational_0_by_1",
+                                                    "typeString": "int_const 0"
+                                                },
+                                                "value": "0"
+                                            },
+                                            "src": "435:5:0",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            }
+                                        },
+                                        "src": "431:9:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "id": 30,
+                                    "nodeType": "ExpressionStatement",
+                                    "src": "431:9:0"
+                                },
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "expression": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 31,
+                                        "name": "y",
+                                        "nodeType": "Identifier",
+                                        "overloadedDeclarations": [],
+                                        "referencedDeclaration": 20,
+                                        "src": "457:1:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "functionReturnParameters": 18,
+                                    "id": 32,
+                                    "nodeType": "Return",
+                                    "src": "450:8:0"
+                                }
+                            ]
+                        },
+                        "certora_contract_name": "ForcedRounding",
+                        "functionSelector": "b399b497",
+                        "id": 34,
+                        "implemented": true,
+                        "kind": "function",
+                        "modifiers": [],
+                        "name": "forcedUp",
+                        "nameLocation": "344:8:0",
+                        "nodeType": "FunctionDefinition",
+                        "parameters": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 15,
+                            "nodeType": "ParameterList",
+                            "parameters": [
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "constant": false,
+                                    "id": 14,
+                                    "mutability": "mutable",
+                                    "name": "x",
+                                    "nameLocation": "361:1:0",
+                                    "nodeType": "VariableDeclaration",
+                                    "scope": 34,
+                                    "src": "353:9:0",
+                                    "stateVariable": false,
+                                    "storageLocation": "default",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    },
+                                    "typeName": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 13,
+                                        "name": "uint256",
+                                        "nodeType": "ElementaryTypeName",
+                                        "src": "353:7:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "visibility": "internal"
+                                }
+                            ],
+                            "src": "352:11:0"
+                        },
+                        "returnParameters": {
+                            "certora_contract_name": "ForcedRounding",
+                            "id": 18,
+                            "nodeType": "ParameterList",
+                            "parameters": [
+                                {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "constant": false,
+                                    "id": 17,
+                                    "mutability": "mutable",
+                                    "name": "",
+                                    "nameLocation": "-1:-1:-1",
+                                    "nodeType": "VariableDeclaration",
+                                    "scope": 34,
+                                    "src": "385:7:0",
+                                    "stateVariable": false,
+                                    "storageLocation": "default",
+                                    "typeDescriptions": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "typeIdentifier": "t_uint256",
+                                        "typeString": "uint256"
+                                    },
+                                    "typeName": {
+                                        "certora_contract_name": "ForcedRounding",
+                                        "id": 16,
+                                        "name": "uint256",
+                                        "nodeType": "ElementaryTypeName",
+                                        "src": "385:7:0",
+                                        "typeDescriptions": {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "typeIdentifier": "t_uint256",
+                                            "typeString": "uint256"
+                                        }
+                                    },
+                                    "visibility": "internal"
+                                }
+                            ],
+                            "src": "384:9:0"
+                        },
+                        "scope": 35,
+                        "src": "335:130:0",
+                        "stateMutability": "pure",
+                        "virtual": false,
+                        "visibility": "public"
+                    }
+                ],
+                "scope": 36,
+                "src": "58:409:0",
+                "usedErrors": [],
+                "usedEvents": []
+            },
+            "36": {
+                "absolutePath": "/Users/shelly/Certora/wala-solidity/test/data/ForcedRounding/ForcedRounding.sol",
+                "exportedSymbols": {
+                    "ForcedRounding": [
+                        35
+                    ]
+                },
+                "id": 36,
+                "license": "MIT",
+                "nodeType": "SourceUnit",
+                "nodes": [
+                    {
+                        "abstract": false,
+                        "baseContracts": [],
+                        "canonicalName": "ForcedRounding",
+                        "contractDependencies": [],
+                        "contractKind": "contract",
+                        "fullyImplemented": true,
+                        "id": 35,
+                        "linearizedBaseContracts": [
+                            35
+                        ],
+                        "name": "ForcedRounding",
+                        "nameLocation": "67:14:0",
+                        "nodeType": "ContractDefinition",
+                        "nodes": [
+                            {
+                                "body": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 11,
+                                    "nodeType": "Block",
+                                    "src": "220:29:0",
+                                    "statements": [
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "expression": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "commonType": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                },
+                                                "id": 9,
+                                                "isConstant": false,
+                                                "isLValue": false,
+                                                "isPure": false,
+                                                "lValueRequested": false,
+                                                "leftExpression": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "id": 7,
+                                                    "name": "x",
+                                                    "nodeType": "Identifier",
+                                                    "overloadedDeclarations": [],
+                                                    "referencedDeclaration": 2,
+                                                    "src": "237:1:0",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_uint256",
+                                                        "typeString": "uint256"
+                                                    }
+                                                },
+                                                "nodeType": "BinaryOperation",
+                                                "operator": "/",
+                                                "rightExpression": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "hexValue": "31",
+                                                    "id": 8,
+                                                    "isConstant": false,
+                                                    "isLValue": false,
+                                                    "isPure": true,
+                                                    "kind": "number",
+                                                    "lValueRequested": false,
+                                                    "nodeType": "Literal",
+                                                    "src": "241:1:0",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_rational_1_by_1",
+                                                        "typeString": "int_const 1"
+                                                    },
+                                                    "value": "1"
+                                                },
+                                                "src": "237:5:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "functionReturnParameters": 6,
+                                            "id": 10,
+                                            "nodeType": "Return",
+                                            "src": "230:12:0"
+                                        }
+                                    ]
+                                },
+                                "certora_contract_name": "ForcedRounding",
+                                "functionSelector": "59e7a499",
+                                "id": 12,
+                                "implemented": true,
+                                "kind": "function",
+                                "modifiers": [],
+                                "name": "forcedDown",
+                                "nameLocation": "168:10:0",
+                                "nodeType": "FunctionDefinition",
+                                "parameters": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 3,
+                                    "nodeType": "ParameterList",
+                                    "parameters": [
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "constant": false,
+                                            "id": 2,
+                                            "mutability": "mutable",
+                                            "name": "x",
+                                            "nameLocation": "187:1:0",
+                                            "nodeType": "VariableDeclaration",
+                                            "scope": 12,
+                                            "src": "179:9:0",
+                                            "stateVariable": false,
+                                            "storageLocation": "default",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            },
+                                            "typeName": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 1,
+                                                "name": "uint256",
+                                                "nodeType": "ElementaryTypeName",
+                                                "src": "179:7:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "visibility": "internal"
+                                        }
+                                    ],
+                                    "src": "178:11:0"
+                                },
+                                "returnParameters": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 6,
+                                    "nodeType": "ParameterList",
+                                    "parameters": [
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "constant": false,
+                                            "id": 5,
+                                            "mutability": "mutable",
+                                            "name": "",
+                                            "nameLocation": "-1:-1:-1",
+                                            "nodeType": "VariableDeclaration",
+                                            "scope": 12,
+                                            "src": "211:7:0",
+                                            "stateVariable": false,
+                                            "storageLocation": "default",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            },
+                                            "typeName": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 4,
+                                                "name": "uint256",
+                                                "nodeType": "ElementaryTypeName",
+                                                "src": "211:7:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "visibility": "internal"
+                                        }
+                                    ],
+                                    "src": "210:9:0"
+                                },
+                                "scope": 35,
+                                "src": "159:90:0",
+                                "stateMutability": "pure",
+                                "virtual": false,
+                                "visibility": "public"
+                            },
+                            {
+                                "body": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 33,
+                                    "nodeType": "Block",
+                                    "src": "394:71:0",
+                                    "statements": [
+                                        {
+                                            "assignments": [
+                                                20
+                                            ],
+                                            "certora_contract_name": "ForcedRounding",
+                                            "declarations": [
+                                                {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "constant": false,
+                                                    "id": 20,
+                                                    "mutability": "mutable",
+                                                    "name": "y",
+                                                    "nameLocation": "412:1:0",
+                                                    "nodeType": "VariableDeclaration",
+                                                    "scope": 33,
+                                                    "src": "404:9:0",
+                                                    "stateVariable": false,
+                                                    "storageLocation": "default",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_uint256",
+                                                        "typeString": "uint256"
+                                                    },
+                                                    "typeName": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "id": 19,
+                                                        "name": "uint256",
+                                                        "nodeType": "ElementaryTypeName",
+                                                        "src": "404:7:0",
+                                                        "typeDescriptions": {
+                                                            "certora_contract_name": "ForcedRounding",
+                                                            "typeIdentifier": "t_uint256",
+                                                            "typeString": "uint256"
+                                                        }
+                                                    },
+                                                    "visibility": "internal"
+                                                }
+                                            ],
+                                            "id": 24,
+                                            "initialValue": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "commonType": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                },
+                                                "id": 23,
+                                                "isConstant": false,
+                                                "isLValue": false,
+                                                "isPure": false,
+                                                "lValueRequested": false,
+                                                "leftExpression": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "id": 21,
+                                                    "name": "x",
+                                                    "nodeType": "Identifier",
+                                                    "overloadedDeclarations": [],
+                                                    "referencedDeclaration": 14,
+                                                    "src": "416:1:0",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_uint256",
+                                                        "typeString": "uint256"
+                                                    }
+                                                },
+                                                "nodeType": "BinaryOperation",
+                                                "operator": "/",
+                                                "rightExpression": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "hexValue": "31",
+                                                    "id": 22,
+                                                    "isConstant": false,
+                                                    "isLValue": false,
+                                                    "isPure": true,
+                                                    "kind": "number",
+                                                    "lValueRequested": false,
+                                                    "nodeType": "Literal",
+                                                    "src": "420:1:0",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_rational_1_by_1",
+                                                        "typeString": "int_const 1"
+                                                    },
+                                                    "value": "1"
+                                                },
+                                                "src": "416:5:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "nodeType": "VariableDeclarationStatement",
+                                            "src": "404:17:0"
+                                        },
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "expression": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 29,
+                                                "isConstant": false,
+                                                "isLValue": false,
+                                                "isPure": false,
+                                                "lValueRequested": false,
+                                                "leftHandSide": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "id": 25,
+                                                    "name": "y",
+                                                    "nodeType": "Identifier",
+                                                    "overloadedDeclarations": [],
+                                                    "referencedDeclaration": 20,
+                                                    "src": "431:1:0",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_uint256",
+                                                        "typeString": "uint256"
+                                                    }
+                                                },
+                                                "nodeType": "Assignment",
+                                                "operator": "=",
+                                                "rightHandSide": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "commonType": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_uint256",
+                                                        "typeString": "uint256"
+                                                    },
+                                                    "id": 28,
+                                                    "isConstant": false,
+                                                    "isLValue": false,
+                                                    "isPure": false,
+                                                    "lValueRequested": false,
+                                                    "leftExpression": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "id": 26,
+                                                        "name": "y",
+                                                        "nodeType": "Identifier",
+                                                        "overloadedDeclarations": [],
+                                                        "referencedDeclaration": 20,
+                                                        "src": "435:1:0",
+                                                        "typeDescriptions": {
+                                                            "certora_contract_name": "ForcedRounding",
+                                                            "typeIdentifier": "t_uint256",
+                                                            "typeString": "uint256"
+                                                        }
+                                                    },
+                                                    "nodeType": "BinaryOperation",
+                                                    "operator": "+",
+                                                    "rightExpression": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "hexValue": "30",
+                                                        "id": 27,
+                                                        "isConstant": false,
+                                                        "isLValue": false,
+                                                        "isPure": true,
+                                                        "kind": "number",
+                                                        "lValueRequested": false,
+                                                        "nodeType": "Literal",
+                                                        "src": "439:1:0",
+                                                        "typeDescriptions": {
+                                                            "certora_contract_name": "ForcedRounding",
+                                                            "typeIdentifier": "t_rational_0_by_1",
+                                                            "typeString": "int_const 0"
+                                                        },
+                                                        "value": "0"
+                                                    },
+                                                    "src": "435:5:0",
+                                                    "typeDescriptions": {
+                                                        "certora_contract_name": "ForcedRounding",
+                                                        "typeIdentifier": "t_uint256",
+                                                        "typeString": "uint256"
+                                                    }
+                                                },
+                                                "src": "431:9:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "id": 30,
+                                            "nodeType": "ExpressionStatement",
+                                            "src": "431:9:0"
+                                        },
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "expression": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 31,
+                                                "name": "y",
+                                                "nodeType": "Identifier",
+                                                "overloadedDeclarations": [],
+                                                "referencedDeclaration": 20,
+                                                "src": "457:1:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "functionReturnParameters": 18,
+                                            "id": 32,
+                                            "nodeType": "Return",
+                                            "src": "450:8:0"
+                                        }
+                                    ]
+                                },
+                                "certora_contract_name": "ForcedRounding",
+                                "functionSelector": "b399b497",
+                                "id": 34,
+                                "implemented": true,
+                                "kind": "function",
+                                "modifiers": [],
+                                "name": "forcedUp",
+                                "nameLocation": "344:8:0",
+                                "nodeType": "FunctionDefinition",
+                                "parameters": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 15,
+                                    "nodeType": "ParameterList",
+                                    "parameters": [
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "constant": false,
+                                            "id": 14,
+                                            "mutability": "mutable",
+                                            "name": "x",
+                                            "nameLocation": "361:1:0",
+                                            "nodeType": "VariableDeclaration",
+                                            "scope": 34,
+                                            "src": "353:9:0",
+                                            "stateVariable": false,
+                                            "storageLocation": "default",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            },
+                                            "typeName": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 13,
+                                                "name": "uint256",
+                                                "nodeType": "ElementaryTypeName",
+                                                "src": "353:7:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "visibility": "internal"
+                                        }
+                                    ],
+                                    "src": "352:11:0"
+                                },
+                                "returnParameters": {
+                                    "certora_contract_name": "ForcedRounding",
+                                    "id": 18,
+                                    "nodeType": "ParameterList",
+                                    "parameters": [
+                                        {
+                                            "certora_contract_name": "ForcedRounding",
+                                            "constant": false,
+                                            "id": 17,
+                                            "mutability": "mutable",
+                                            "name": "",
+                                            "nameLocation": "-1:-1:-1",
+                                            "nodeType": "VariableDeclaration",
+                                            "scope": 34,
+                                            "src": "385:7:0",
+                                            "stateVariable": false,
+                                            "storageLocation": "default",
+                                            "typeDescriptions": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "typeIdentifier": "t_uint256",
+                                                "typeString": "uint256"
+                                            },
+                                            "typeName": {
+                                                "certora_contract_name": "ForcedRounding",
+                                                "id": 16,
+                                                "name": "uint256",
+                                                "nodeType": "ElementaryTypeName",
+                                                "src": "385:7:0",
+                                                "typeDescriptions": {
+                                                    "certora_contract_name": "ForcedRounding",
+                                                    "typeIdentifier": "t_uint256",
+                                                    "typeString": "uint256"
+                                                }
+                                            },
+                                            "visibility": "internal"
+                                        }
+                                    ],
+                                    "src": "384:9:0"
+                                },
+                                "scope": 35,
+                                "src": "335:130:0",
+                                "stateMutability": "pure",
+                                "virtual": false,
+                                "visibility": "public"
+                            }
+                        ],
+                        "scope": 36,
+                        "src": "58:409:0",
+                        "usedErrors": [],
+                        "usedEvents": []
+                    }
+                ],
+                "src": "58:410:0"
+            }
+        }
+    }
+}
