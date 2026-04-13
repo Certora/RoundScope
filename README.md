@@ -48,12 +48,17 @@ pip install .
 The easiest way to use RoundAbout is through the HTML viewer, which runs the full pipeline and produces a self-contained, interactive HTML report with syntax-highlighted source and call graph visualization.
 
 ```
-python3 viewer/generate_viewer.py <project-root> <input-file> <output.html>
+python3 viewer/generate_viewer.py --project-root <dir> --input-file <file.conf> --output <output.html>
 ```
 
-- `project-root` — the directory containing the Certora project (used to resolve source file paths)
-- `input-file` — a `.conf` or `.sol` file to analyze
-- `output.html` — where to write the HTML report
+- `--project-root` — the directory containing the Certora project (used to resolve source file paths)
+- `--input-file` — a `.conf` or `.sol` file to analyze
+- `--output` — where to write the HTML report
+
+To generate from pre-computed JSON (skipping the analysis step):
+```
+python3 viewer/generate_viewer.py --project-root <dir> --json-input <roundabout.json> --output <output.html>
+```
 
 You can run directly on a single `.sol` file without a `.conf`. Use a `.conf` file when you want to reason about multiple contracts together by specifying [`link`](https://docs.certora.com/en/latest/docs/prover/cli/options.html#link)s.
 

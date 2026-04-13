@@ -34,10 +34,12 @@ def main():
     cmd = [
         sys.executable,
         os.path.join(roundabout_dir, "viewer", "generate_viewer.py"),
+        "--project-root", project_dir,
+        "--input-file", conf,
+        "--output", output_html,
     ]
     if args.certora_run_command != "certoraRun":
         cmd.extend(["--certora-run-command", args.certora_run_command])
-    cmd.extend([project_dir, conf, output_html])
     result = subprocess.run(cmd)
     if result.returncode != 0:
         print("Error: HTML viewer generation failed.", file=sys.stderr)
