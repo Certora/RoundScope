@@ -20,14 +20,16 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Generate an HTML viewer from a Certora .conf or .sol file."
     )
-    parser.add_argument("project_root", help="Project root directory")
-    parser.add_argument("input_file", help="Path to a .conf or .sol file")
-    parser.add_argument("output_html", help="Path for the output HTML file")
-    parser.add_argument("conf_file", nargs="?", default=None, help="Optional .conf file for contract extraction")
-    parser.add_argument("--full_context_breakdown", action="store_true", help="Enable full context breakdown mode")
+    parser.add_argument("--project-root", required=True, help="Project root directory")
+    parser.add_argument("--input-file", default=None, help="Path to a .conf or .sol file (required unless --json-input is used)")
+    parser.add_argument("--output", required=True, help="Path for the output HTML file")
+    parser.add_argument("--conf-file", default=None, help="Optional .conf file for contract extraction")
+    parser.add_argument("--json-input", default=None, help="Path to pre-generated roundabout JSON (skips roundabout.py)")
+    parser.add_argument("--full-context-breakdown", action="store_true", help="Enable full context breakdown mode")
     parser.add_argument("--certora-run-command", default="certoraRun", help="Command to use instead of certoraRun")
     args = parser.parse_args()
-    return args.project_root, args.input_file, args.output_html, args.conf_file, args.full_context_breakdown, args.certora_run_command
+    return (args.project_root, args.input_file, args.output, args.conf_file,
+            args.full_context_breakdown, args.certora_run_command, args.json_input)
 
 
 def clean_graph_label(label):
@@ -2485,129 +2487,156 @@ def run_roundabout_pipeline(project_root, input_file, output_json, certora_run_c
         sys.exit(result.returncode)
 
 
+def generate_html_from_json_data(data, project_root, html_output, conf_file=None, full_context_breakdown=False):
+    """Generate HTML viewer from pre-loaded roundabout JSON data.
+
+    This is the core generation logic, usable both from main() and as a library function.
+
+    Args:
+        data: Parsed roundabout JSON (dict with "graphs" key).
+        project_root: Absolute path to the project root directory.
+        html_output: Path for the output HTML file.
+        conf_file: Optional .conf file path for contract name extraction.
+        full_context_breakdown: If True, show per-graph contexts; otherwise root-only mode.
+    """
+    # Extract graphs (needed for both modes — caller-callee navigation)
+    graphs = extract_graphs(data, project_root)
+
+    if full_context_breakdown:
+        # Full context breakdown: aggregate across all nodes, build per-graph contexts
+        aggregated = extract_roundings(data, project_root)
+
+        all_files = set(aggregated.keys())
+        for g in graphs:
+            for node in g["nodes"].values():
+                if node["file"]:
+                    all_files.add(node["file"])
+
+        source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+        return_annotations = extract_return_annotations(data, project_root, source_files)
+        per_graph_roundings = extract_per_graph_roundings(data, project_root)
+        per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
+
+        # Build multi-context dict
+        contexts = {"allContexts": {}}
+        for filename, annotations in aggregated.items():
+            contexts["allContexts"][filename] = annotations
+
+        for filename, ret_anns in return_annotations.items():
+            if filename not in contexts["allContexts"]:
+                contexts["allContexts"][filename] = []
+            contexts["allContexts"][filename].extend(ret_anns)
+
+        for ctx_name, file_anns in per_graph_roundings.items():
+            if ctx_name not in contexts:
+                contexts[ctx_name] = {}
+            for filename, anns in file_anns.items():
+                if filename not in contexts[ctx_name]:
+                    contexts[ctx_name][filename] = []
+                contexts[ctx_name][filename].extend(anns)
+
+        for ctx_name, file_anns in per_graph_returns.items():
+            if ctx_name not in contexts:
+                contexts[ctx_name] = {}
+            for filename, anns in file_anns.items():
+                if filename not in contexts[ctx_name]:
+                    contexts[ctx_name][filename] = []
+                contexts[ctx_name][filename].extend(anns)
+
+        # Filter out per-graph contexts where all findings are Neither
+        for ctx_name in list(contexts.keys()):
+            if ctx_name == "allContexts":
+                continue
+            all_neither = all(
+                a["rounding"] == "Neither"
+                for anns in contexts[ctx_name].values()
+                for a in anns
+            )
+            if all_neither:
+                del contexts[ctx_name]
+
+        total_annotations = sum(len(v) for v in aggregated.values())
+        total_return = sum(len(v) for v in return_annotations.values())
+    else:
+        # Default mode: only use node "0" (root function) from each graph
+        aggregated = extract_roundings_root_only(data, project_root)
+
+        all_files = set(aggregated.keys())
+        for g in graphs:
+            for node in g["nodes"].values():
+                if node["file"]:
+                    all_files.add(node["file"])
+
+        source_files = collect_referenced_files_from_paths(all_files, project_root)
+
+        return_annotations = extract_return_annotations_root_only(data, project_root, source_files)
+
+        # Single context — no per-graph breakdown
+        contexts = {"contextFree": {}}
+        for filename, anns in aggregated.items():
+            contexts["contextFree"][filename] = list(anns)
+        for filename, ret_anns in return_annotations.items():
+            contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
+
+        total_annotations = sum(len(v) for v in aggregated.values())
+        total_return = sum(len(v) for v in return_annotations.values())
+
+    # Build directory tree
+    dir_tree = build_directory_tree(sorted(source_files.keys()))
+
+    # Generate HTML
+    if conf_file:
+        conf_path = conf_file if os.path.isabs(conf_file) else os.path.join(project_root, conf_file)
+        contracts = extract_contracts_from_conf(conf_path)
+    else:
+        contracts = None
+    html_content = generate_html(project_root, source_files, dir_tree, contexts, graphs, contracts)
+
+    # Write output
+    os.makedirs(os.path.dirname(os.path.abspath(html_output)), exist_ok=True)
+    with open(html_output, "w") as f:
+        f.write(html_content)
+
+    mode = "full context breakdown" if full_context_breakdown else "default (root-only)"
+    print(f"Generated ({mode}): {html_output}")
+    print(f"  {len(source_files)} source files")
+    print(f"  {total_annotations} rounding annotations")
+    print(f"  {total_return} return annotations")
+
+
 def main():
-    project_root, input_file, html_output, conf_file, full_context_breakdown, certora_run_command = parse_args()
+    (project_root, input_file, html_output, conf_file,
+     full_context_breakdown, certora_run_command, json_input) = parse_args()
     project_root = os.path.abspath(project_root)
 
-    if not (input_file.endswith(".conf") or input_file.endswith(".sol")):
-        print("Error: Input file must be a .conf or .sol file.", file=sys.stderr)
-        sys.exit(1)
-
-    if conf_file is None and input_file.endswith(".conf"):
-        conf_file = input_file
-
-    with tempfile.TemporaryDirectory(prefix="roundabout_") as tmpdir:
-        temp_json = os.path.join(tmpdir, "output.json")
-        run_roundabout_pipeline(project_root, input_file, temp_json, certora_run_command)
-
-        # Load JSON
-        with open(temp_json, "r") as f:
+    if json_input:
+        # JSON-input mode: load pre-generated roundabout JSON directly
+        with open(json_input, "r") as f:
             data = json.load(f)
+        if conf_file is None and input_file and input_file.endswith(".conf"):
+            conf_file = input_file
+        generate_html_from_json_data(data, project_root, html_output, conf_file, full_context_breakdown)
+    else:
+        # Standard mode: run roundabout pipeline then generate HTML
+        if input_file is None:
+            print("Error: --input-file is required unless --json-input is provided.", file=sys.stderr)
+            sys.exit(1)
+        if not (input_file.endswith(".conf") or input_file.endswith(".sol")):
+            print("Error: Input file must be a .conf or .sol file.", file=sys.stderr)
+            sys.exit(1)
 
-        # Extract graphs (needed for both modes — caller-callee navigation)
-        graphs = extract_graphs(data, project_root)
+        if conf_file is None and input_file.endswith(".conf"):
+            conf_file = input_file
 
-        if full_context_breakdown:
-            # Full context breakdown: aggregate across all nodes, build per-graph contexts
-            aggregated = extract_roundings(data, project_root)
+        with tempfile.TemporaryDirectory(prefix="roundabout_") as tmpdir:
+            temp_json = os.path.join(tmpdir, "output.json")
+            run_roundabout_pipeline(project_root, input_file, temp_json, certora_run_command)
 
-            all_files = set(aggregated.keys())
-            for g in graphs:
-                for node in g["nodes"].values():
-                    if node["file"]:
-                        all_files.add(node["file"])
+            with open(temp_json, "r") as f:
+                data = json.load(f)
 
-            source_files = collect_referenced_files_from_paths(all_files, project_root)
-
-            return_annotations = extract_return_annotations(data, project_root, source_files)
-            per_graph_roundings = extract_per_graph_roundings(data, project_root)
-            per_graph_returns = extract_per_graph_return_annotations(data, project_root, source_files)
-
-            # Build multi-context dict
-            contexts = {"allContexts": {}}
-            for filename, annotations in aggregated.items():
-                contexts["allContexts"][filename] = annotations
-
-            for filename, ret_anns in return_annotations.items():
-                if filename not in contexts["allContexts"]:
-                    contexts["allContexts"][filename] = []
-                contexts["allContexts"][filename].extend(ret_anns)
-
-            for ctx_name, file_anns in per_graph_roundings.items():
-                if ctx_name not in contexts:
-                    contexts[ctx_name] = {}
-                for filename, anns in file_anns.items():
-                    if filename not in contexts[ctx_name]:
-                        contexts[ctx_name][filename] = []
-                    contexts[ctx_name][filename].extend(anns)
-
-            for ctx_name, file_anns in per_graph_returns.items():
-                if ctx_name not in contexts:
-                    contexts[ctx_name] = {}
-                for filename, anns in file_anns.items():
-                    if filename not in contexts[ctx_name]:
-                        contexts[ctx_name][filename] = []
-                    contexts[ctx_name][filename].extend(anns)
-
-            # Filter out per-graph contexts where all findings are Neither
-            for ctx_name in list(contexts.keys()):
-                if ctx_name == "allContexts":
-                    continue
-                all_neither = all(
-                    a["rounding"] == "Neither"
-                    for anns in contexts[ctx_name].values()
-                    for a in anns
-                )
-                if all_neither:
-                    del contexts[ctx_name]
-
-            total_annotations = sum(len(v) for v in aggregated.values())
-            total_return = sum(len(v) for v in return_annotations.values())
-        else:
-            # Default mode: only use node "0" (root function) from each graph
-            aggregated = extract_roundings_root_only(data, project_root)
-
-            all_files = set(aggregated.keys())
-            for g in graphs:
-                for node in g["nodes"].values():
-                    if node["file"]:
-                        all_files.add(node["file"])
-
-            source_files = collect_referenced_files_from_paths(all_files, project_root)
-
-            return_annotations = extract_return_annotations_root_only(data, project_root, source_files)
-
-            # Single context — no per-graph breakdown
-            contexts = {"contextFree": {}}
-            for filename, anns in aggregated.items():
-                contexts["contextFree"][filename] = list(anns)
-            for filename, ret_anns in return_annotations.items():
-                contexts["contextFree"].setdefault(filename, []).extend(ret_anns)
-
-            total_annotations = sum(len(v) for v in aggregated.values())
-            total_return = sum(len(v) for v in return_annotations.values())
-
-        # Build directory tree
-        dir_tree = build_directory_tree(sorted(source_files.keys()))
-
-        # Generate HTML
-        if conf_file:
-            conf_path = conf_file if os.path.isabs(conf_file) else os.path.join(project_root, conf_file)
-            contracts = extract_contracts_from_conf(conf_path)
-        else:
-            contracts = None
-        html = generate_html(project_root, source_files, dir_tree, contexts, graphs, contracts)
-
-        # Write output
-        os.makedirs(os.path.dirname(os.path.abspath(html_output)), exist_ok=True)
-        with open(html_output, "w") as f:
-            f.write(html)
-
-        mode = "full context breakdown" if full_context_breakdown else "default (root-only)"
-        print(f"Generated ({mode}): {html_output}")
-        print(f"  {len(source_files)} source files")
-        print(f"  {total_annotations} rounding annotations")
-        print(f"  {total_return} return annotations")
+            generate_html_from_json_data(data, project_root, html_output, conf_file, full_context_breakdown)
 
 
 if __name__ == "__main__":
