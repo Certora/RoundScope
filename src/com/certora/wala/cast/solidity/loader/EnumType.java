@@ -5,11 +5,11 @@ import java.util.Collections;
 
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
+import com.ibm.wala.cast.tree.CAstQualifier;
 import com.ibm.wala.cast.tree.CAstType;
-import com.ibm.wala.cast.tree.CAstType.Primitive;
 import com.ibm.wala.types.TypeReference;
 
-public class EnumType implements Primitive {
+public class EnumType implements CAstType.Class {
 
 	private final String name;
 	private final Collection<String> members;
@@ -18,7 +18,7 @@ public class EnumType implements Primitive {
 		this.name = name;
 		this.members = members;
 		
-		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'P' + name));;
+		SolidityCAstType.record(name, this, TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + name));;
 	}
 
 	@Override
@@ -33,6 +33,16 @@ public class EnumType implements Primitive {
 	@Override
 	public Collection<CAstType> getSupertypes() {
 		return Collections.singleton(SolidityCAstType.get("enum"));
+	}
+
+	@Override
+	public boolean isInterface() {
+		return false;
+	}
+
+	@Override
+	public Collection<CAstQualifier> getQualifiers() {
+		return Collections.emptySet();
 	}
 
 }

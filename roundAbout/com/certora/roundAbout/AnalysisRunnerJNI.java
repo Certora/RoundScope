@@ -180,7 +180,7 @@ public class AnalysisRunnerJNI extends AnalysisRunner {
 				
 			} else {
 				JSONArray graphs = new JSONArray();
-				RoundingAnalysis ra = new RoundingAnalysis(cg);
+				RoundingAnalysis ra = new RoundingAnalysis(cg, cgBuilder.getPointerAnalysis());
 				for(CGNode n : cg.getEntrypointNodes()) {
 					
 					Result G = ra.analyzeForNode(cg, n);

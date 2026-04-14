@@ -182,7 +182,7 @@ public class SolidityTypes {
 
 	public static TypeReference bytes = TypeReference.findOrCreate(solidity, "Pbytes");
 
-	public static TypeReference enm = TypeReference.findOrCreate(solidity, "Penum");
+	public static TypeReference enm = TypeReference.findOrCreate(solidity, "Lenum");
 
 	public static TypeReference abi = TypeReference.findOrCreate(solidity, "Labi");
 

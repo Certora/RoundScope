@@ -17,24 +17,38 @@ import com.certora.wala.analysis.defuse.DefUseGraph;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.util.JSONOutput;
 import com.google.common.collect.Sets;
+import com.google.common.collect.Streams;
+import com.ibm.wala.cast.ir.ssa.CAstBinaryOp;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.DebuggingInformation;
 import com.ibm.wala.cast.tree.CAstSourcePositionMap.Position;
 import com.ibm.wala.cast.util.SourceBuffer;
+import com.ibm.wala.cfg.Util;
+import com.ibm.wala.cfg.cdg.ControlDependenceGraph;
 import com.ibm.wala.dataflow.ssa.SSAInference;
 import com.ibm.wala.fixpoint.AbstractOperator;
 import com.ibm.wala.fixpoint.AbstractVariable;
 import com.ibm.wala.fixpoint.IVariable;
 import com.ibm.wala.ipa.callgraph.CGNode;
 import com.ibm.wala.ipa.callgraph.CallGraph;
+import com.ibm.wala.ipa.callgraph.ContextItem;
+import com.ibm.wala.ipa.callgraph.ContextKey;
+import com.ibm.wala.ipa.callgraph.propagation.ConstantKey;
+import com.ibm.wala.ipa.callgraph.propagation.FilteredPointerKey.SingleInstanceFilter;
+import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerAnalysis;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.shrike.shrikeBT.IBinaryOpInstruction;
 import com.ibm.wala.shrike.shrikeBT.IShiftInstruction;
 import com.ibm.wala.shrike.shrikeBT.IUnaryOpInstruction;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
+import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
+import com.ibm.wala.ssa.SSACFG;
 import com.ibm.wala.ssa.SSACheckCastInstruction;
+import com.ibm.wala.ssa.SSAConditionalBranchInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
@@ -48,23 +62,28 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.NumberedGraph;
+import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
 import com.ibm.wala.util.graph.labeled.SlowSparseNumberedLabeledGraph;
 import com.ibm.wala.util.graph.traverse.DFS;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
+import com.ibm.wala.util.intset.OrdinalSet;
 
 public class RoundingAnalysis {
 	private final boolean IMPLICIT_NEITHER = true;
 	
 	private final CallGraph CG;
+	private final PointerAnalysis<InstanceKey> PA;
 	private final Map<Pair<CGNode, List<Direction>>, RoundingInference.Result> rawResults = HashMapFactory.make();
 	private final Map<Pair<CGNode, List<Direction>>, Map<FieldReference, Direction>> directionalCalls = HashMapFactory
 			.make();
 
-	public RoundingAnalysis(CallGraph CG) {
+
+	public RoundingAnalysis(CallGraph CG, PointerAnalysis<InstanceKey> PA) {
 		this.CG = CG;
+		this.PA = PA;
 	}
 
 	public class RoundingInference extends SSAInference<RoundingInference.RoundingVariable> {
@@ -414,6 +433,30 @@ public class RoundingAnalysis {
 					IntStream.of(startValue)).distinct().toArray());
 		}
 
+		private ControlDependenceGraph<ISSABasicBlock> cdg = null;
+		
+		private Set<ISSABasicBlock> deadBlocks = HashSetFactory.make();
+		
+		private void gatherControlDeps(int vn, boolean trueBranch) {
+			du.getUses(vn).forEachRemaining(inst -> { 
+				if (inst instanceof SSAConditionalBranchInstruction) {
+					SSACFG cfg = ir.getControlFlowGraph();
+					if (cdg == null) {
+						cdg = new ControlDependenceGraph<>(cfg, true);
+					}
+					
+					SSACFG.BasicBlock pb = cfg.getBlockForInstruction(inst.iIndex());					
+					ISSABasicBlock db = trueBranch? Util.getNotTakenSuccessor(cfg, pb): Util.getTakenSuccessor(cfg, pb);
+					cfg.getSuccNodes(pb).forEachRemaining(sb -> {
+						if (cdg.getEdgeLabels(pb, sb).contains(db)) {
+							System.err.println("dead block " + sb);
+							deadBlocks.addAll(DFS.getReachableNodes(cdg, Collections.singleton(sb)));
+						}
+					});
+				}
+			});
+		}
+		
 		public RoundingInference(List<Direction> parameters, Set<Pair<CGNode, List<Direction>>> ongoing, CGNode n)
 				throws CancelException {
 			ir = n.getIR();
@@ -422,6 +465,34 @@ public class RoundingAnalysis {
 			this.n = n;
 			this.dug = new DefUseGraph(ir);
 
+			for(int i = 0; i < n.getMethod().getNumberOfParameters(); i++) {
+				final int stupidi = i;
+				ContextItem k = n.getContext().get(ContextKey.PARAMETERS[i]);
+				if (k instanceof SingleInstanceFilter && ((SingleInstanceFilter)k).getInstance() instanceof ConstantKey) {
+					InstanceKey ik = ((SingleInstanceFilter)k).getInstance();
+					du.getUses(i+1).forEachRemaining(use -> { 
+						if (use instanceof SSABinaryOpInstruction && ((SSABinaryOpInstruction)use).getOperator() == CAstBinaryOp.EQ) {
+							int otherV = use.getUse(0) == stupidi+1? use.getUse(1): use.getUse(0);
+							PointerKey otherKey = PA.getHeapModel().getPointerKeyForLocal(n, otherV);
+							OrdinalSet<InstanceKey> otherObjs = PA.getPointsToSet(otherKey);
+							if (otherObjs.contains(ik) && otherObjs.size()==1) {
+								gatherControlDeps(use.getDef(), false);
+							} else {
+								if (Streams.stream(otherObjs)
+										.filter(ok -> ok.getConcreteType().equals(ik.getConcreteType()) &&
+												      (!(ok instanceof ConstantKey<?>) ||
+												       ((ConstantKey<?>)ik).getValue().equals(((ConstantKey<?>)ok).getValue())))
+										.findAny()
+										.isEmpty()) {
+									}
+								gatherControlDeps(use.getDef(), true);
+							}
+						}
+					});
+					System.err.println(deadBlocks);
+				}
+			}
+			
 			class CallOperator extends AbstractOperator<RoundingVariable> {
 				private final SSAInvokeInstruction callInst;
 

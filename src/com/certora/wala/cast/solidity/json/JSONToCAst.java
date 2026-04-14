@@ -39,6 +39,7 @@ import com.certora.wala.cast.solidity.loader.SolidityJSONLoader;
 import com.certora.wala.cast.solidity.loader.StructType;
 import com.certora.wala.cast.solidity.tree.CallableEntity;
 import com.certora.wala.cast.solidity.tree.ContractEntity;
+import com.certora.wala.cast.solidity.tree.EnumEntity;
 import com.certora.wala.cast.solidity.tree.EventEntity;
 import com.certora.wala.cast.solidity.tree.FunctionEntity;
 import com.certora.wala.cast.solidity.tree.SolidityArrayType;
@@ -998,7 +999,11 @@ public class JSONToCAst {
 			@SuppressWarnings("unused")
 			public CAstNode visitEnumDefinition(JSONObject o, SolidityWalkContext context) {
 				ids.put(o.getInt("id"), o);
-				findOrCreateType(o, context, TranslationVisitor.this::newEnumType);
+				EnumType et = findOrCreateType(o, context, TranslationVisitor.this::newEnumType);
+				
+				EnumEntity enumEntity = new EnumEntity(et, getLocation(o.getString("src")), o.has("nameLocation")? getLocation(o.getString("nameLocation")): null);
+				context.addScopedEntity(null, enumEntity);
+
 				return ast.makeNode(CAstNode.EMPTY);
 			}
 
@@ -1360,18 +1365,18 @@ public class JSONToCAst {
 					public CAstNode visitEnumDefinition(JSONObject ed, Void ignore) {
 						CAstType et = getType(ed, context);
 						return record(
-								ast.makeNode(CAstNode.OBJECT_REF, 
-									ast.makeConstant(et),
-									ast.makeConstant(o.getString("memberName"))),
+								ast.makeConstant(et),
 								getLocation(o.getString("src")), et, context);
 					}
 	
 					public CAstNode visitEnumValue(JSONObject ev, Void ignore) {
+						CAstNode te = TranslationVisitor.this.visit(o.getJSONObject("expression"), context);
+						CAstType et = context.getNodeTypeMap().getNodeType(te);
 						return record(
-								ast.makeNode(CAstNode.OBJECT_REF, 
-									TranslationVisitor.this.visit(o.getJSONObject("expression"), context),
+								ast.makeNode(CAstNode.NEW,
+									ast.makeConstant(et),
 									ast.makeConstant(o.getString("memberName"))),
-								getLocation(o.getString("src")), SolidityCAstType.get("uint256"), context);
+								getLocation(o.getString("src")), et, context);
 					}
 	
 					public CAstNode visitFunctionDefinition(JSONObject fd, Void ignore) {
