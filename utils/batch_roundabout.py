@@ -10,6 +10,7 @@ import subprocess
 import sys
 import threading
 import time
+from collections import defaultdict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from tqdm import tqdm
 
@@ -158,6 +159,14 @@ def _process_conf(conf_abs, root_path, run_roundabout_script, certora_run_comman
     return (repo_url, branch, project_dir, conf_rel, success_html, error, f"{duration:.1f}")
 
 
+def _process_conf_group(confs, root_path, run_roundabout_script, certora_run_command):
+    """Process a group of conf files sequentially. Returns a list of CSV row tuples."""
+    results = []
+    for conf_abs in confs:
+        results.append(_process_conf(conf_abs, root_path, run_roundabout_script, certora_run_command))
+    return results
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Scan a directory for certora/**/*.conf files and run RoundAbout on each."
@@ -190,6 +199,13 @@ def main():
 
     conf_files = find_conf_files(root_path)
 
+    # Group confs by project_dir so same-project confs run sequentially,
+    # avoiding races on .certora_internal/latest/.asts.json
+    groups = defaultdict(list)
+    for conf_abs in conf_files:
+        pd = derive_project_dir(conf_abs, root_path)
+        groups[pd].append(conf_abs)
+
     with open(csv_file, "w", newline="") as f:
         writer = csv.writer(f)
         writer.writerow(["repo_url", "branch", "project_dir", "path_to_conf", "success_html", "error", "runtime_seconds"])
@@ -198,29 +214,34 @@ def main():
         with ThreadPoolExecutor(max_workers=args.parallel) as executor:
             futures = {
                 executor.submit(
-                    _process_conf, conf_abs, root_path,
+                    _process_conf_group, confs, root_path,
                     run_roundabout, args.certora_run_command,
-                ): conf_abs
-                for conf_abs in conf_files
+                ): confs
+                for confs in groups.values()
             }
             with tqdm(total=len(conf_files), desc="Processing confs", unit="conf") as pbar:
                 for future in as_completed(futures):
-                    conf_abs = futures[future]
+                    confs = futures[future]
                     try:
-                        repo_url, branch, project_dir, conf_rel, success_html, error, runtime = future.result()
+                        rows = future.result()
+                        for row in rows:
+                            repo_url, branch, project_dir, conf_rel, success_html, error, runtime = row
+                            status = f"SUCCESS: {success_html}" if success_html else "FAILED"
+                            with output_lock:
+                                pbar.write(f"=== {conf_rel} (project: {project_dir}) === {status}")
+                                writer.writerow(row)
+                                f.flush()
+                            pbar.update(1)
                     except Exception as exc:
-                        project_dir = derive_project_dir(conf_abs, root_path)
-                        conf_rel = os.path.relpath(conf_abs, project_dir)
-                        repo_url, branch = "", ""
-                        success_html = ""
-                        error = str(exc)
-                        runtime = ""
-                    status = f"SUCCESS: {success_html}" if success_html else "FAILED"
-                    with output_lock:
-                        pbar.write(f"=== {conf_rel} (project: {project_dir}) === {status}")
-                        writer.writerow([repo_url, branch, project_dir, conf_rel, success_html, error, runtime])
-                        f.flush()
-                    pbar.update(1)
+                        for conf_abs in confs:
+                            project_dir = derive_project_dir(conf_abs, root_path)
+                            conf_rel = os.path.relpath(conf_abs, project_dir)
+                            row = ("", "", project_dir, conf_rel, "", str(exc), "")
+                            with output_lock:
+                                pbar.write(f"=== {conf_rel} (project: {project_dir}) === FAILED")
+                                writer.writerow(row)
+                                f.flush()
+                            pbar.update(1)
 
     print()
     print(f"Results written to: {csv_file}")
