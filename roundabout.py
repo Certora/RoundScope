@@ -40,6 +40,10 @@ def main():
     output = args.output_json
 
     os.chdir(project_dir)
+    print(f"[roundabout] project_dir: {project_dir}")
+    print(f"[roundabout] input_file:  {input_file}")
+    print(f"[roundabout] output:      {output}")
+    print(f"[roundabout] cwd:         {os.getcwd()}")
 
     # If .sol file, generate temporary conf and spec
     temp_files = []
@@ -67,12 +71,18 @@ def main():
             sys.exit(1)
 
         # Parse conf to decide flags
+        print(f"[roundabout] parsing conf: {conf}")
         try:
             with open(conf) as f:
                 conf_data = json5.load(f)
         except Exception as e:
             print(f"Error: Failed to parse conf file {conf}: {e}", file=sys.stderr)
             sys.exit(1)
+        print(f"[roundabout] conf keys: {list(conf_data.keys())}")
+        print(f"[roundabout] conf 'files': {conf_data.get('files', 'NOT SET')}")
+        print(f"[roundabout] conf 'verify': {conf_data.get('verify', 'NOT SET')}")
+        if "override_base_config" in conf_data:
+            print(f"[roundabout] override_base_config: {conf_data['override_base_config']}")
 
         # Resolve override_base_config inheritance
         if "override_base_config" in conf_data:
@@ -87,6 +97,7 @@ def main():
         extra_flags = ["--disable_local_typechecking", "--ignore_solidity_warnings"]
         if "assert_autofinder_success" not in conf_data:
             extra_flags.append("--disable_internal_function_instrumentation")
+        print(f"[roundabout] extra_flags: {extra_flags}")
 
         # Create dummy spec and temp conf for certoraRun AST dump
         verify = conf_data.get("verify", "")
@@ -103,28 +114,45 @@ def main():
         with os.fdopen(fd_conf, "w") as f:
             json.dump(dump_conf_data, f, indent=4)
         temp_files.append(dump_conf)
+        print(f"[roundabout] contract_name: {contract_name}")
+        print(f"[roundabout] dump_conf: {dump_conf}")
+        print(f"[roundabout] dump_conf contents:")
+        print(json.dumps(dump_conf_data, indent=2))
 
         # Record timestamp before running certoraRun
         fd_ts, timestamp_ref = tempfile.mkstemp()
         os.close(fd_ts)
 
-        print(f"Running {args.certora_run_command} to dump ASTs...")
         cmd = [args.certora_run_command, dump_conf, "--dump_asts", "--build_only"] + extra_flags
-        subprocess.run(cmd)
+        print(f"[roundabout] certoraRun command: {' '.join(cmd)}")
+        print(f"[roundabout] running certoraRun...")
+        result_certora = subprocess.run(cmd, capture_output=True, text=True)
+        print(f"[roundabout] certoraRun exit code: {result_certora.returncode}")
+        if result_certora.stdout:
+            print(f"[roundabout] certoraRun stdout:\n{result_certora.stdout}")
+        if result_certora.stderr:
+            print(f"[roundabout] certoraRun stderr:\n{result_certora.stderr}")
 
         asts_file = ".certora_internal/latest/.asts.json"
+        print(f"[roundabout] checking for asts_file: {os.path.abspath(asts_file)}")
+        print(f"[roundabout] asts_file exists: {os.path.isfile(asts_file)}")
+        if os.path.isfile(asts_file):
+            import stat
+            st = os.stat(asts_file)
+            print(f"[roundabout] asts_file size: {st.st_size} bytes, mtime: {st.st_mtime}")
         if not os.path.isfile(asts_file) or os.path.getmtime(asts_file) < os.path.getmtime(timestamp_ref):
             os.unlink(timestamp_ref)
             print(f"Error: {asts_file} not found or not updated by certoraRun.", file=sys.stderr)
             sys.exit(1)
         os.unlink(timestamp_ref)
 
-        print("Running RoundAbout analysis...")
+        print("[roundabout] running RoundAbout Java analysis...")
         use_docker = args.docker or not shutil.which("java")
+        print(f"[roundabout] use_docker: {use_docker}, java found: {shutil.which('java') is not None}")
         if not use_docker:
-            result = subprocess.run(
-                ["java", "-jar", jar, conf, output, "--combined", asts_file],
-            )
+            java_cmd = ["java", "-jar", jar, conf, output, "--combined", asts_file]
+            print(f"[roundabout] java command: {' '.join(java_cmd)}")
+            result = subprocess.run(java_cmd)
         elif shutil.which("docker"):
             if not shutil.which("java"):
                 print("Java not found, running via Docker...")
@@ -146,9 +174,13 @@ def main():
                 file=sys.stderr,
             )
             sys.exit(1)
+        print(f"[roundabout] Java analysis exit code: {result.returncode}")
         if result.returncode != 0:
             print("Error: RoundAbout analysis failed.", file=sys.stderr)
             sys.exit(result.returncode)
+        print(f"[roundabout] output JSON written to: {output}")
+        if os.path.isfile(output):
+            print(f"[roundabout] output JSON size: {os.path.getsize(output)} bytes")
     finally:
         for f in temp_files:
             if os.path.exists(f):
