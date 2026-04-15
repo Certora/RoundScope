@@ -1,6 +1,6 @@
 {
     "test/data/ForcedRounding/ForcedRounding.sol": {
-        "/Users/shelly/Certora/wala-solidity/test/data/ForcedRounding/ForcedRounding.sol": {
+        "./test/data/ForcedRounding/ForcedRounding.sol": {
             "1": {
                 "certora_contract_name": "ForcedRounding",
                 "id": 1,
@@ -2244,7 +2244,7 @@
                 "usedEvents": []
             },
             "36": {
-                "absolutePath": "/Users/shelly/Certora/wala-solidity/test/data/ForcedRounding/ForcedRounding.sol",
+                "absolutePath": "./test/data/ForcedRounding/ForcedRounding.sol",
                 "exportedSymbols": {
                     "ForcedRounding": [
                         35
