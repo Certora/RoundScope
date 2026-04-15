@@ -58,6 +58,7 @@ import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.ssa.SSAUnaryOpInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.collections.CompoundIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
@@ -465,33 +466,7 @@ public class RoundingAnalysis {
 			this.n = n;
 			this.dug = new DefUseGraph(ir);
 
-			for(int i = 0; i < n.getMethod().getNumberOfParameters(); i++) {
-				final int stupidi = i;
-				ContextItem k = n.getContext().get(ContextKey.PARAMETERS[i]);
-				if (k instanceof SingleInstanceFilter && ((SingleInstanceFilter)k).getInstance() instanceof ConstantKey) {
-					InstanceKey ik = ((SingleInstanceFilter)k).getInstance();
-					du.getUses(i+1).forEachRemaining(use -> { 
-						if (use instanceof SSABinaryOpInstruction && ((SSABinaryOpInstruction)use).getOperator() == CAstBinaryOp.EQ) {
-							int otherV = use.getUse(0) == stupidi+1? use.getUse(1): use.getUse(0);
-							PointerKey otherKey = PA.getHeapModel().getPointerKeyForLocal(n, otherV);
-							OrdinalSet<InstanceKey> otherObjs = PA.getPointsToSet(otherKey);
-							if (otherObjs.contains(ik) && otherObjs.size()==1) {
-								gatherControlDeps(use.getDef(), false);
-							} else {
-								if (Streams.stream(otherObjs)
-										.filter(ok -> ok.getConcreteType().equals(ik.getConcreteType()) &&
-												      (!(ok instanceof ConstantKey<?>) ||
-												       ((ConstantKey<?>)ik).getValue().equals(((ConstantKey<?>)ok).getValue())))
-										.findAny()
-										.isEmpty()) {
-									}
-								gatherControlDeps(use.getDef(), true);
-							}
-						}
-					});
-					System.err.println(deadBlocks);
-				}
-			}
+			computeDeadBlocks(n);
 			
 			class CallOperator extends AbstractOperator<RoundingVariable> {
 				private final SSAInvokeInstruction callInst;
@@ -557,7 +532,9 @@ public class RoundingAnalysis {
 				@Override
 				public AbstractOperator<RoundingVariable> get(SSAInstruction instruction) {
 					result = null;
-					instruction.visit(this);
+					if (! deadBlocks.contains(ir.getControlFlowGraph().getBlockForInstruction(instruction.iIndex()))) {
+						instruction.visit(this);
+					}
 					return result;
 				}
 
@@ -672,6 +649,73 @@ public class RoundingAnalysis {
 			Pair<CGNode, List<Direction>> key = Pair.make(n, parameters);
 			rawResults.put(key, getRoundingResult());
 			directionalCalls.put(key, getResultOrResults());
+		}
+
+		private void computeDeadBlocks(CGNode n) {
+			SSACFG cfg = n.getIR().getControlFlowGraph();
+		
+			for(int i = 0; i < n.getMethod().getNumberOfParameters(); i++) {
+				final int stupidi = i;
+				ContextItem k = n.getContext().get(ContextKey.PARAMETERS[i]);
+				if (k instanceof SingleInstanceFilter && ((SingleInstanceFilter)k).getInstance() instanceof ConstantKey) {
+					InstanceKey ik = ((SingleInstanceFilter)k).getInstance();
+					du.getUses(i+1).forEachRemaining(use -> { 
+						if (use instanceof SSABinaryOpInstruction && ((SSABinaryOpInstruction)use).getOperator() == CAstBinaryOp.EQ) {
+							int otherV = use.getUse(0) == stupidi+1? use.getUse(1): use.getUse(0);
+							PointerKey otherKey = PA.getHeapModel().getPointerKeyForLocal(n, otherV);
+							OrdinalSet<InstanceKey> otherObjs = PA.getPointsToSet(otherKey);
+							if (otherObjs.contains(ik) && otherObjs.size()==1) {
+								gatherControlDeps(use.getDef(), false);
+							} else {
+								if (Streams.stream(otherObjs)
+										.filter(ok -> ok.getConcreteType().equals(ik.getConcreteType()) &&
+												      (!(ok instanceof ConstantKey<?>) ||
+												       ((ConstantKey<?>)ik).getValue().equals(((ConstantKey<?>)ok).getValue())))
+										.findAny()
+										.isEmpty()) {
+									}
+								gatherControlDeps(use.getDef(), true);
+							}
+						}
+					});
+				}
+			}
+			
+			Set<ISSABasicBlock> newDeadBlocks = HashSetFactory.make(deadBlocks);
+			while (! newDeadBlocks.isEmpty()) {
+				Set<ISSABasicBlock> nextDeadBlocks = HashSetFactory.make();
+				newDeadBlocks.stream().forEach(bb -> {
+					cfg.getSuccNodes(bb).forEachRemaining(sb -> {
+						int whichV = Util.whichPred(cfg, bb, sb);
+						sb.iteratePhis().forEachRemaining(phi -> {
+							Set<Object> values = HashSetFactory.make();
+							for(int i = 0; i < phi.getNumberOfUses(); i++) {
+								if (i != whichV && n.getIR().getSymbolTable().isConstant(phi.getUse(i))) {
+									values.add(n.getIR().getSymbolTable().getConstantValue(phi.getUse(i)));
+								}
+							}
+							if (values.size() == 1) {
+								Object v = values.iterator().next();
+								du.getUses(phi.getDef()).forEachRemaining(inst -> { 
+									if (inst instanceof SSAConditionalBranchInstruction) {
+										if (Boolean.FALSE.equals(v)) {
+											nextDeadBlocks.add(Util.getNotTakenSuccessor(cfg, cfg.getBlockForInstruction(inst.iIndex())));
+										} else if (Boolean.TRUE.equals(v)) {
+											nextDeadBlocks.add(Util.getTakenSuccessor(cfg, cfg.getBlockForInstruction(inst.iIndex())));
+										}
+									}
+								});
+							}
+						});
+					});
+				});
+				deadBlocks.addAll(nextDeadBlocks);
+				newDeadBlocks = nextDeadBlocks;
+			}
+			
+			if (! deadBlocks.isEmpty()) {
+				System.err.println(deadBlocks);
+			}
 		}
 
 		@Override

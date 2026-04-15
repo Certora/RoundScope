@@ -7,20 +7,35 @@ import com.jayway.jsonpath.DocumentContext;
 public interface AbstractTestStaker extends CheckResult {
 	
 	default void checkResult(DocumentContext jsonParser) {
-		// at least some mulDivUp should round up. 
-		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function mulDivUp>' && @.return == 'Up') ]");		
+		// withdrawB rounds up. 
+		JSONArray result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function withdrawB>' && @.return == 'Up') ]");		
 		assert !result.isEmpty();
+		System.err.println(result);
 		
-		// no mulDivUp should round down. 
-		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function mulDivUp>' && @.return == 'Down') ]");		
-		assert result.isEmpty();
+		// unstakeB rounds up. 
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function unstakeB>' && @.return == 'Up') ]");		
+		assert !result.isEmpty();
+		System.err.println(result);
 
-		// at least some mulDivDown should round down. 
-		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function mulDivDown>' && @.return == 'Down') ]");		
+		// stakeB rounds up. 
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function stakeB>' && @.return == 'Up') ]");		
 		assert !result.isEmpty();
-		
-		// no mulDivDown should round up. 
-		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function mulDivDown>' && @.return == 'Up') ]");		
-		assert result.isEmpty();
+		System.err.println(result);
+
+		// withdrawA rounds dowm. 
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function withdrawA>' && @.return == 'Down') ]");		
+		assert !result.isEmpty();
+		System.err.println(result);
+
+		// unstakeA rounds down. 
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function unstakeA>' && @.return == 'Down') ]");		
+		assert !result.isEmpty();
+		System.err.println(result);
+
+		// stakeA rounds down. 
+		result = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function stakeA>' && @.return == 'Down') ]");		
+		assert !result.isEmpty();
+		System.err.println(result);
+
 	}
 }
