@@ -137,6 +137,7 @@ More specifically, the format is as follows in terms of JSON structure, followin
 	           "rounding": string('rounding of parameter')
                "position": string('position of parameter as [sl,sc-el,ec]')
                "source": string('source code of parameter declaration')
+               "value": optional, string('constant value, if any')
              }
            ]
           'rounding of expressions in function'
