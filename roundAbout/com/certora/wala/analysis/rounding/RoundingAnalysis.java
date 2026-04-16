@@ -945,6 +945,10 @@ public class RoundingAnalysis {
 								p.put("position", JSONOutput.toLocalPos(pos));
 								p.put("source", new SourceBuffer(pos).toString());
 							}
+							ContextItem a = n.getContext().get(ContextKey.PARAMETERS[i]);
+							if (a instanceof SingleInstanceFilter && ((SingleInstanceFilter)a).getInstance() instanceof ConstantKey ) {
+								p.put("value", String.valueOf(((ConstantKey<?>)((SingleInstanceFilter)a).getInstance()).getValue()));
+							}
 						} catch (IOException e) {
 							assert false : e;
 						}
