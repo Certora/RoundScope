@@ -58,12 +58,10 @@ import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.ssa.SSAUnaryOpInstruction;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.CancelException;
-import com.ibm.wala.util.collections.CompoundIterator;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.NumberedGraph;
-import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
 import com.ibm.wala.util.graph.labeled.SlowSparseNumberedLabeledGraph;
@@ -77,10 +75,11 @@ public class RoundingAnalysis {
 	
 	private final CallGraph CG;
 	private final PointerAnalysis<InstanceKey> PA;
+	private final RoundingSummary S = new RoundingSummary.Default();
+	
 	private final Map<Pair<CGNode, List<Direction>>, RoundingInference.Result> rawResults = HashMapFactory.make();
 	private final Map<Pair<CGNode, List<Direction>>, Map<FieldReference, Direction>> directionalCalls = HashMapFactory
 			.make();
-
 
 	public RoundingAnalysis(CallGraph CG, PointerAnalysis<InstanceKey> PA) {
 		this.CG = CG;
@@ -328,11 +327,25 @@ public class RoundingAnalysis {
 					getDeriving(d2).contains(d1);
 			}
 			
+			private boolean isDivOpResult(int vn) {
+				return (du.getDef(vn) instanceof SSABinaryOpInstruction
+					     && 
+					     ((SSABinaryOpInstruction) du.getDef(vn))
+						   .getOperator() == IBinaryOpInstruction.Operator.DIV)
+					   ||
+					   ((du.getDef(vn) instanceof SSAAbstractInvokeInstruction)
+					    &&
+					    getSummaryIfAny((SSAAbstractInvokeInstruction)du.getDef(vn)) != null
+					    &&
+					    getSummaryIfAny((SSAAbstractInvokeInstruction)du.getDef(vn)).isDivOp);
+			}
+			
 			boolean isDivDown(RoundingVariable v) {
-				return v != null && v.state == Direction.Down && v.wrt != null && v.wrt.getDef() == v.vn
-						&& du.getDef(v.vn) instanceof SSABinaryOpInstruction
-						&& ((SSABinaryOpInstruction) du.getDef(v.vn))
-								.getOperator() == IBinaryOpInstruction.Operator.DIV;
+				return v != null 
+						&& v.state == Direction.Down 
+						&& v.wrt != null 
+						&& v.wrt.getDef() == v.vn
+						&& isDivOpResult(v.vn);
 			}
 
 			@Override
@@ -458,6 +471,15 @@ public class RoundingAnalysis {
 			});
 		}
 		
+		private RoundingSummary.Value getSummaryIfAny(SSAAbstractInvokeInstruction callInst) {
+			List<Direction> args = new ArrayList<>(callInst.getNumberOfUses());
+			for (int i = 0; i < callInst.getNumberOfUses(); i++) {
+				args.add(getVariable(callInst.getUse(i)).state);
+			}
+
+			return S.get(new RoundingSummary.Key(callInst.getCallSite().getDeclaredTarget().getDeclaringClass().getName().toString(), args));
+		}
+
 		public RoundingInference(List<Direction> parameters, Set<Pair<CGNode, List<Direction>>> ongoing, CGNode n)
 				throws CancelException {
 			ir = n.getIR();
@@ -483,20 +505,32 @@ public class RoundingAnalysis {
 					}
 
 					Direction d = Direction.Neither;
-					for (CGNode cgn : CG.getPossibleTargets(n, callInst.getCallSite())) {
-						Pair<CGNode, List<Direction>> key = Pair.make(cgn, args);
-						if (!ongoing.contains(key)) {
-							if (!directionalCalls.containsKey(key)) {
-								Set<Pair<CGNode, List<Direction>>> x = HashSetFactory.make(ongoing);
-								x.add(key);
-								try {
-									RoundingInference child = new RoundingInference(args, x, cgn);
-								} catch (CancelException e) {
-									assert false : e;
-								}
+					RoundingSummary.Value summary = getSummaryIfAny(callInst);
+					if (summary != null) {
+						d = summary.result;
+						if (summary.isDivOp) {
+							if (lhs.wrt != callInst) {
+								lhs.wrt = callInst;
 							}
-							if (directionalCalls.containsKey(key) && directionalCalls.get(key).containsKey(null)) {
-								d = d.meet(directionalCalls.get(key).get(null));
+						}
+						
+					} else {					
+						for (CGNode cgn : CG.getPossibleTargets(n, callInst.getCallSite())) {
+							Pair<CGNode, List<Direction>> key = Pair.make(cgn, args);
+							if (!ongoing.contains(key)) {
+								if (!directionalCalls.containsKey(key)) {
+									Set<Pair<CGNode, List<Direction>>> x = HashSetFactory.make(ongoing);
+									x.add(key);
+									try {
+										@SuppressWarnings("unused")
+										RoundingInference child = new RoundingInference(args, x, cgn);
+									} catch (CancelException e) {
+										assert false : e;
+									}
+								}
+								if (directionalCalls.containsKey(key) && directionalCalls.get(key).containsKey(null)) {
+									d = d.meet(directionalCalls.get(key).get(null));
+								}
 							}
 						}
 					}
