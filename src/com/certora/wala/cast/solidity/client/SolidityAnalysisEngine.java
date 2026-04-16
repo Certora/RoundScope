@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import com.certora.wala.cast.solidity.ipa.callgraph.EnumValueContextSelector;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
 import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
@@ -57,7 +58,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		Util.setNativeSpec(null);
 		Util.addDefaultSelectors(options, cha);
 		Util.addDefaultBypassLogic(options, Util.class.getClassLoader(), cha);
-		
+
 		ContextSelector appSelector = null;
 		SSAContextInterpreter appInterpreter = null;
 		SSAPropagationCallGraphBuilder cgBuilder = new nCFABuilder(2,
@@ -73,6 +74,8 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 
 		cgBuilder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, cgBuilder.getContextInterpreter(), ZeroXInstanceKeys.ALLOCATIONS));
 
+		cgBuilder.setContextSelector(new EnumValueContextSelector(cgBuilder.getContextSelector()));
+		
 		return cgBuilder;
 	}
 
@@ -113,6 +116,9 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 			} 
 			
 		});
+		
+		options.setUseConstantSpecificKeys(true);
+		
 		return options;
 		
 	}

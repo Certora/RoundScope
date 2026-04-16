@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.certora.wala.cast.solidity.loader.EnumType;
 import com.certora.wala.cast.solidity.loader.FunctionType;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
@@ -308,12 +309,12 @@ public class SolidityAstTranslator extends AstTranslator {
 			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, eltType.getName());
 			NewSiteReference ns = NewSiteReference.make(context.cfg().getCurrentInstruction(), t);
 			context.cfg().addInstruction(insts.NewInstruction(ns.getProgramCounter(), result, ns));
-			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
+			FieldReference self = FieldReference.findOrCreate(SolidityTypes.root, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
 			context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, receiver, self));
 		} else {
 			int instNum = context.cfg().getCurrentInstruction();
-			context.cfg().addInstruction(insts.GetInstruction(instNum, result, receiver, FieldReference.findOrCreate(objType, Atom.findOrCreateUnicodeAtom(elt.getValue().toString()), eltType)));
-		
+			String fieldName = elt.getValue().toString();
+			context.cfg().addInstruction(insts.GetInstruction(instNum, result, receiver, FieldReference.findOrCreate("self".equals(fieldName)? SolidityTypes.root: objType, Atom.findOrCreateUnicodeAtom(fieldName), eltType)));		
 			Position[] operandPos = new Position[2];
 			operandPos[0] = context.getSourceMap().getPosition(parent.getChild(0));
 			operandPos[1] = context.getSourceMap().getPosition(elt);
@@ -349,6 +350,13 @@ public class SolidityAstTranslator extends AstTranslator {
 				TypeReference t =SolidityCAstType.getIRType(tt.getElement(i-1));
 				context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, context.getValue(newNode.getChild(i)), FieldReference.findOrCreate(SolidityTypes.tuple, Atom.findOrCreateUnicodeAtom(""+(i-1)), t)));
 			}
+		} else if (newNode.getChildCount() == 2 && newNode.getChild(0).getValue() instanceof EnumType) {
+			TypeReference et = SolidityCAstType.getIRType((EnumType)newNode.getChild(0).getValue());
+			int evn = context.currentScope().getConstantValue(newNode.getChild(1).getValue());
+			context.cfg().addInstruction(insts.NewInstruction(context.cfg().getCurrentInstruction(), result, NewSiteReference.make(context.cfg().getCurrentInstruction(), et), new int[] { evn }));
+
+		} else {
+
 		}
 	}
 

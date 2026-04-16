@@ -50,7 +50,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			int vn = super.makeArgument(m, i);
 			if (i == 0) {
 				int self = selfForType(selfType, m);
-				m.addSetInstance(getCha().resolveField(FieldReference.findOrCreate(method.getDeclaringClass().getReference(), Atom.findOrCreateUnicodeAtom("self"), selfType.getReference())).getReference(), vn, self);
+				m.addSetInstance(getCha().resolveField(FieldReference.findOrCreate(SolidityTypes.root, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root)).getReference(), vn, self);
 			}
 			return vn;
 		} else {
