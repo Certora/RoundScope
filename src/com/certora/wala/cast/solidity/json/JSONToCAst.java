@@ -340,7 +340,7 @@ public class JSONToCAst {
 					}
 
 				} else if (typeId.startsWith("t_enum$_")) {
-					int typeEndIndex = typeId.indexOf('_', 8);
+					int typeEndIndex = typeId.indexOf("_$", 8);
 					int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
 					if (idEndIndex > 0) {
 						CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
@@ -911,6 +911,10 @@ public class JSONToCAst {
 				String op = o.getString("operator");
 				CAstNode expr;
 				CAstNode left = visit(o.getJSONObject("leftExpression"), context);
+				if (left == null) {
+					System.err.println("bad");
+					left = visit(o.getJSONObject("leftExpression"), context);
+				}
 				CAstNode right = visit(o.getJSONObject("rightExpression"), context);
 				if ("&&".equals(op)) {
 					expr = ast.makeNode(CAstNode.IF_EXPR, left, right, ast.makeConstant(false));

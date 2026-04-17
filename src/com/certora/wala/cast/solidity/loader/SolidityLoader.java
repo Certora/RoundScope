@@ -411,6 +411,21 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 			return qualifiers.contains(CAstQualifier.ABSTRACT);
 		}
 
+		@Override
+		public IField getField(Atom name) {
+			if (declaredFields.containsKey(name)) {
+				return declaredFields.get(name);
+			} else {
+				for(IClass sc : allSupers(this)) {
+					if (sc instanceof SolidityClass && ((SolidityClass)sc).declaredFields.containsKey(name)) {
+						return ((SolidityClass)sc).declaredFields.get(name);					
+					}
+				} 
+			}
+			
+			return super.getField(name);
+		}
+
 	}
 
 	private void makeFields(CAstEntity type, IClass newClass, Map<Atom, IField> fields) {
