@@ -174,6 +174,8 @@ public class SolidityTypes {
 
 	public static TypeReference bytes8 = TypeReference.findOrCreate(solidity, "Pbytes8");
 
+	public static TypeReference bytes11 = TypeReference.findOrCreate(solidity, "Pbytes11");
+
 	public static TypeReference bytes16 = TypeReference.findOrCreate(solidity, "Pbytes16");
 
 	public static TypeReference bytes20 = TypeReference.findOrCreate(solidity, "Pbytes20");

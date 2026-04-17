@@ -340,7 +340,7 @@ public class JSONToCAst {
 					}
 
 				} else if (typeId.startsWith("t_enum$_")) {
-					int typeEndIndex = typeId.indexOf('_', 8);
+					int typeEndIndex = typeId.indexOf("_$", 8);
 					int idEndIndex = typeId.indexOf('_', typeEndIndex + 1);
 					if (idEndIndex > 0) {
 						CAstType et = getType(getDeclaration(Integer.valueOf(typeId.substring(typeEndIndex+2, idEndIndex)), null, context), context);
@@ -658,13 +658,12 @@ public class JSONToCAst {
 							return TranslationVisitor.this.visit(decl.getJSONObject("value"), context);
 						} else {
 							CAstNode name = ast.makeConstant(decl.getString("name"));
-							Position position = getLocation(decl.getString("src"));
 							CAstType type = getType(decl.getJSONObject("typeName"), context);
 							if (decl.has("stateVariable") && decl.getBoolean("stateVariable")) {
 								CAstNode self = getSelfPtr(context);
-								return record(ast.makeNode(CAstNode.OBJECT_REF, self, name), position, type, context);
+								return record(ast.makeNode(CAstNode.OBJECT_REF, self, name), location, type, context);
 							} else {
-								return record(ast.makeNode(CAstNode.VAR, name), position, type, context);
+								return record(ast.makeNode(CAstNode.VAR, name), location, type, context);
 							}
 						}
 					}
@@ -912,6 +911,10 @@ public class JSONToCAst {
 				String op = o.getString("operator");
 				CAstNode expr;
 				CAstNode left = visit(o.getJSONObject("leftExpression"), context);
+				if (left == null) {
+					System.err.println("bad");
+					left = visit(o.getJSONObject("leftExpression"), context);
+				}
 				CAstNode right = visit(o.getJSONObject("rightExpression"), context);
 				if ("&&".equals(op)) {
 					expr = ast.makeNode(CAstNode.IF_EXPR, left, right, ast.makeConstant(false));
