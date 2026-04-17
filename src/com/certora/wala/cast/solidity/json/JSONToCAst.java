@@ -658,13 +658,12 @@ public class JSONToCAst {
 							return TranslationVisitor.this.visit(decl.getJSONObject("value"), context);
 						} else {
 							CAstNode name = ast.makeConstant(decl.getString("name"));
-							Position position = getLocation(decl.getString("src"));
 							CAstType type = getType(decl.getJSONObject("typeName"), context);
 							if (decl.has("stateVariable") && decl.getBoolean("stateVariable")) {
 								CAstNode self = getSelfPtr(context);
-								return record(ast.makeNode(CAstNode.OBJECT_REF, self, name), position, type, context);
+								return record(ast.makeNode(CAstNode.OBJECT_REF, self, name), location, type, context);
 							} else {
-								return record(ast.makeNode(CAstNode.VAR, name), position, type, context);
+								return record(ast.makeNode(CAstNode.VAR, name), location, type, context);
 							}
 						}
 					}
