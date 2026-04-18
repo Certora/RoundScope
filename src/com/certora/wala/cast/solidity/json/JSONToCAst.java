@@ -1188,14 +1188,18 @@ public class JSONToCAst {
 							.map(x -> getType((JSONObject)x, context))
 							.toArray(i -> new CAstType[i]));
 
+						CAstNode[] retVals = Streams
+						   .stream(o.getJSONObject("returnParameters").getJSONArray("parameters").iterator())
+						   .map(x -> ast.makeNode(CAstNode.VAR,
+								   ast.makeConstant(((JSONObject) x).getString("name"))))
+						   .toArray(i -> new CAstNode[i]);
+						
 						CAstNode ret = ast.makeNode(CAstNode.RETURN, 
+							(retVals.length == 1)?
+							retVals[0]:
 							ast.makeNode(CAstNode.NEW,
 								ast.makeConstant(tt),
-								Streams
-								   .stream(o.getJSONObject("returnParameters").getJSONArray("parameters").iterator())
-								   .map(x -> ast.makeNode(CAstNode.VAR,
-										   ast.makeConstant(((JSONObject) x).getString("name"))))
-								   .toArray(i -> new CAstNode[i])));
+								retVals));
 							
 						body = ast.makeNode(CAstNode.BLOCK_STMT, body, ret);
 					}
