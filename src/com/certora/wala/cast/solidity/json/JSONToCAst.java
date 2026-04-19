@@ -1184,13 +1184,24 @@ public class JSONToCAst {
 							}).toList());
 
 					if (retDecls.size() > 0) {
-						CAstNode ret = ast.makeNode(CAstNode.RETURN, Streams
-								.stream(o.getJSONObject("returnParameters").getJSONArray("parameters").iterator())
-								.map(x -> ast.makeNode(CAstNode.VAR,
-										ast.makeConstant(((JSONObject) x).getString("name"))))
-								.toList());
+						CAstType tt = SolidityTupleType.get(Streams.stream(o.getJSONObject("returnParameters").getJSONArray("parameters").iterator())
+							.map(x -> getType((JSONObject)x, context))
+							.toArray(i -> new CAstType[i]));
+
+						CAstNode[] retVals = Streams
+						   .stream(o.getJSONObject("returnParameters").getJSONArray("parameters").iterator())
+						   .map(x -> ast.makeNode(CAstNode.VAR,
+								   ast.makeConstant(((JSONObject) x).getString("name"))))
+						   .toArray(i -> new CAstNode[i]);
+						
+						CAstNode ret = ast.makeNode(CAstNode.RETURN, 
+							(retVals.length == 1)?
+							retVals[0]:
+							ast.makeNode(CAstNode.NEW,
+								ast.makeConstant(tt),
+								retVals));
+							
 						body = ast.makeNode(CAstNode.BLOCK_STMT, body, ret);
-						// getLocation(o.getJSONObject("returnParameters").getString("src"))
 					}
 
 					retDecls.add(body);
