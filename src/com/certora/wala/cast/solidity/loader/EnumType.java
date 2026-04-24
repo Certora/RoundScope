@@ -2,6 +2,7 @@ package com.certora.wala.cast.solidity.loader;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
@@ -12,9 +13,9 @@ import com.ibm.wala.types.TypeReference;
 public class EnumType implements CAstType.Class {
 
 	private final String name;
-	private final Collection<String> members;
+	private final List<String> members;
 
-	public EnumType(String name, Collection<String> members) {
+	public EnumType(String name, List<String> members) {
 		this.name = name;
 		this.members = members;
 		
@@ -26,7 +27,7 @@ public class EnumType implements CAstType.Class {
 		return name;
 	}
 
-	public Collection<String> getMembers() {
+	public List<String> getMembers() {
 		return members;
 	}
 

@@ -40,13 +40,13 @@ jobs:
         working-directory: solidity
         run: ./scripts/build.sh
 
-      - name: Checkout WALA fork
+      - name: Checkout WALA head
         uses: actions/checkout@v6
         with:
           repository: wala/WALA
           path: WALA
 
-      - name: Publish WALA fork to local Maven
+      - name: Publish WALA head to local Maven
         working-directory: WALA
         run: ./gradlew --no-daemon installDebug publishToMavenLocal -xtest
 

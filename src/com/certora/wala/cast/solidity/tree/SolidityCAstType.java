@@ -65,6 +65,7 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"bytes8", SolidityTypes.bytes8, 0},
 			{"bytes11", SolidityTypes.bytes11, 0},
 			{"bytes16", SolidityTypes.bytes16, 0},
+			{"bytes19", SolidityTypes.bytes19, 0},
 			{"bytes20", SolidityTypes.bytes20, 0},
 			{"bytes32", SolidityTypes.bytes32, 0},
 			{"error", SolidityTypes.error, null},

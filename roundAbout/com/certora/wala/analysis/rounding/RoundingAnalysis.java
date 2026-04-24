@@ -2,6 +2,7 @@ package com.certora.wala.analysis.rounding;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -10,8 +11,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import org.apache.commons.lang3.stream.IntStreams;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jspecify.annotations.Nullable;
 
 import com.certora.wala.analysis.defuse.DefUseGraph;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
@@ -56,8 +59,10 @@ import com.ibm.wala.ssa.SSAPiInstruction;
 import com.ibm.wala.ssa.SSAPutInstruction;
 import com.ibm.wala.ssa.SSAReturnInstruction;
 import com.ibm.wala.ssa.SSAUnaryOpInstruction;
+import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
@@ -66,6 +71,7 @@ import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
 import com.ibm.wala.util.graph.labeled.SlowSparseNumberedLabeledGraph;
 import com.ibm.wala.util.graph.traverse.DFS;
+import com.ibm.wala.util.intset.IntSet;
 import com.ibm.wala.util.intset.IntSetUtil;
 import com.ibm.wala.util.intset.MutableIntSet;
 import com.ibm.wala.util.intset.OrdinalSet;
@@ -86,7 +92,356 @@ public class RoundingAnalysis {
 		this.PA = PA;
 	}
 
+	private class MaybeBooleanVariable extends AbstractVariable<MaybeBooleanVariable> {
+		private boolean hasValue;
+		private boolean value;
+		
+		@Override
+		public void copyState(MaybeBooleanVariable v) {
+			hasValue = v.hasValue;
+			value = v.value;
+		}
+
+		private void set(boolean v) {
+			value = v;
+			hasValue = true;
+		}
+		
+		@Override
+		public String toString() {
+			return "mbv: " + hasValue + ":" + value;
+		}
+	}
+	
 	public class RoundingInference extends SSAInference<RoundingInference.RoundingVariable> {
+
+		class TrivialBooleanConstantPropagation extends SSAInference<MaybeBooleanVariable> {
+			private final CGNode boolNode;
+			private final SymbolTable S;
+			private final Boolean[] knownParams;
+			private final Set<CGNode> ongoing;
+
+			static Boolean getValue(MaybeBooleanVariable v) {
+				return v.hasValue? v.value: null;
+			}
+
+			Boolean getConstant(int v) {
+				return getValue(getVariable(v));
+			}
+			
+			public TrivialBooleanConstantPropagation(CGNode n, Boolean[] knownParams, Set<CGNode> ongoing) {
+				this.knownParams = knownParams;
+				this.boolNode = n;
+				this.ongoing = ongoing;
+				this.S = n.getIR().getSymbolTable();
+			    init(n.getIR(), this.new BooleanVarFactory(), this.new BooleanOperatorFactory());
+			    try {
+					solve(new NullProgressMonitor());
+				} catch (CancelException e) {
+					assert false : e;
+				}
+			}
+
+			public class BooleanOperatorFactory extends SSAInstruction.Visitor implements OperatorFactory<MaybeBooleanVariable> {
+				AbstractOperator<MaybeBooleanVariable> op;
+							
+				@Override
+				public void visitBinaryOp(SSABinaryOpInstruction inst) {
+					if (inst.getOperator() == CAstBinaryOp.EQ || inst.getOperator() == CAstBinaryOp.NE) {
+						op = new AbstractOperator<MaybeBooleanVariable>() {
+
+							@Override
+							public byte evaluate(MaybeBooleanVariable lhs, MaybeBooleanVariable[] rhs) {
+								Boolean left = getValue(rhs[0]);
+								Boolean right = getValue(rhs[1]);
+								if (left == null || right == null) {
+									return NOT_CHANGED;
+								} else {
+									boolean eq = left.equals(right);
+									Boolean lhv = getValue(lhs);
+									if (lhv == null || lhv.booleanValue() != eq) {
+										lhs.set(inst.getOperator() == CAstBinaryOp.EQ? eq: !eq);
+										return CHANGED;
+									} else {
+										return NOT_CHANGED;
+									}
+								}
+							}
+
+							@Override
+							public int hashCode() {
+								return inst.iIndex();
+							}
+
+							@Override
+							public boolean equals(Object o) {
+								return getClass()==o.getClass() && hashCode() == o.hashCode();
+							}
+
+							@Override
+							public String toString() {
+								return inst.getUse(0) + " " + inst.getOperator() + " " + inst.getUse(1);
+							}
+						};
+					}
+				}
+
+				@Override
+				public void visitUnaryOp(SSAUnaryOpInstruction instruction) {
+					if (instruction.getOpcode() == IUnaryOpInstruction.Operator.NEG) {
+						op = new AbstractOperator<MaybeBooleanVariable>() {
+
+							@Override
+							public byte evaluate(@Nullable MaybeBooleanVariable lhs, MaybeBooleanVariable[] rhs) {
+								Boolean rv = getValue(rhs[0]);
+								Boolean oldLv = getValue(lhs);
+								if (rv == null) {
+									return NOT_CHANGED;
+								} else if (oldLv == null || !rv.equals(!oldLv.booleanValue())) {						
+									lhs.set(! rv.booleanValue());
+									return CHANGED;
+								} else {
+									return NOT_CHANGED;								
+								}
+							}
+
+							@Override
+							public int hashCode() {
+								return instruction.iIndex();
+							}
+
+							@Override
+							public boolean equals(Object o) {
+								return getClass()==o.getClass() && hashCode() == o.hashCode();
+							}
+
+							@Override
+							public String toString() {
+								return "!" + instruction.getUse(0);
+							}
+						};
+					}
+				}
+
+				@Override
+				public void visitInvoke(SSAInvokeInstruction instruction) {
+					Boolean[] params = new Boolean[instruction.getNumberOfUses()];
+
+					op = new AbstractOperator<MaybeBooleanVariable>() {
+						@Override
+						public byte evaluate(MaybeBooleanVariable lhs, MaybeBooleanVariable[] rhs) {
+							for(int i = 0; i < instruction.getNumberOfUses(); i++) {
+								params[i] = getValue(getVariable(instruction.getUse(i)));
+							}
+
+							Boolean r = null;
+							for (CGNode callee : CG.getPossibleTargets(boolNode, instruction.getCallSite())) {
+								if (callee.getMethod().toString().contains("toUint>")) {
+									System.err.println("me");
+								}
+								if (ongoing.contains(callee)) {
+									return NOT_CHANGED;
+								}
+								Set<CGNode> x = HashSetFactory.make(ongoing);
+								x.add(callee);
+								Boolean b = new TrivialBooleanConstantPropagation(callee, params, x).getReturnIfAny();
+								if (b == null) {
+									return NOT_CHANGED;
+								} else {
+									if (r == null) {
+										r = b;
+									} else {
+										if (!r.equals(b)) {
+											return NOT_CHANGED;
+										}
+									}
+								}
+							}
+							if (r != null) {
+								Boolean lv = getValue(lhs);
+								if (lv == null) {
+									lhs.set(r);
+									return CHANGED;
+								} else {
+									assert lv.equals(r);
+									return NOT_CHANGED;
+								}
+							} else {
+								return NOT_CHANGED;
+							}
+						}
+						
+						@Override
+						public int hashCode() {
+							return instruction.iIndex();
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return getClass()==o.getClass() && hashCode() == o.hashCode();
+						}
+
+						@Override
+						public String toString() {
+							return "call: " + instruction;
+						}
+					};
+				}
+
+				@Override
+				public void visitPhi(SSAPhiInstruction instruction) {
+					op = new AbstractOperator<MaybeBooleanVariable>() {
+
+						@Override
+						public byte evaluate(MaybeBooleanVariable lhs, MaybeBooleanVariable[] rhs) {	
+							Set<Boolean> bs = HashSetFactory.make();
+							for(int i = 0; i < instruction.getNumberOfUses(); i++) {
+								if (!deadPhiRvals.containsKey(instruction) || !deadPhiRvals.get(instruction).contains(instruction.getUse(i))) {
+									bs.add(rhs[i].hasValue? rhs[i].value: null);
+								} else {
+									System.err.println("skipping dead " + instruction.getUse(i) + " " + rhs[i]);
+								}
+							}
+							if (bs.size() != 1 || bs.contains(null)) {
+								return NOT_CHANGED;
+							} else {
+								Boolean lv = getValue(lhs);
+								Boolean rv = bs.iterator().next();
+								if (rv.equals(lv)) {
+									return NOT_CHANGED; 
+								} else {
+									assert lv == null;
+									lhs.set(rv);
+									return CHANGED;
+								}
+							}
+						}
+
+						@Override
+						public int hashCode() {
+							return instruction.iIndex();
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return getClass()==o.getClass() && hashCode() == o.hashCode();
+						}
+
+						@Override
+						public String toString() {
+							return "phi: " + instruction;
+						}
+					};
+				}
+				
+				@Override
+				public void visitPi(SSAPiInstruction instruction) {
+					op = new AbstractOperator<MaybeBooleanVariable>() {
+
+						@Override
+						public byte evaluate(@Nullable MaybeBooleanVariable lhs, MaybeBooleanVariable[] rhs) {
+							Boolean rv = getValue(rhs[0]);
+							Boolean oldLv = getValue(lhs);
+							if (rv == null) {
+								return NOT_CHANGED;
+							} else if (oldLv == null || !rv.equals(oldLv.booleanValue())) {						
+								lhs.set(rv.booleanValue());
+								return CHANGED;
+							} else {
+								return NOT_CHANGED;								
+							}
+						}
+
+						@Override
+						public int hashCode() {
+							return instruction.iIndex();
+						}
+
+						@Override
+						public boolean equals(Object o) {
+							return getClass()==o.getClass() && hashCode() == o.hashCode();
+						}
+
+						@Override
+						public String toString() {
+							return "" + instruction.getUse(0);
+						}
+					};
+				}
+
+				@Override
+				public AbstractOperator<MaybeBooleanVariable> get(SSAInstruction inst) {
+					if (!boolNode.equals(n) || !deadBlocks.contains(boolNode.getIR().getBasicBlockForInstruction(inst))) {
+						op = null;
+						inst.visit(this);
+						return op;
+					} else {
+						return null;
+					}
+				}			
+			}
+			
+			public class BooleanVarFactory implements VariableFactory<MaybeBooleanVariable> {
+				private final IntSet params = IntSetUtil.make(S.getParameterValueNumbers());
+
+				@Override
+				public IVariable<MaybeBooleanVariable> makeVariable(int valueNumber) {
+					MaybeBooleanVariable v = new MaybeBooleanVariable();
+					
+					if (S.isBooleanConstant(valueNumber)) {
+						v.set((Boolean)S.getConstantValue(valueNumber));
+					} else if (S.isNumberConstant(valueNumber)) {
+						v.set(0 != ((Number)S.getConstantValue(valueNumber)).intValue());
+					} else if (knownParams != null && params.contains(valueNumber)) {
+						if (knownParams[valueNumber-1] != null) {
+							v.set(knownParams[valueNumber-1]);
+						}
+					} else if (boolNode.getContext() != null && params.contains(valueNumber)) {
+						ContextItem val = boolNode.getContext().get(ContextKey.PARAMETERS[valueNumber-1]);
+						if (val instanceof SingleInstanceFilter && ((SingleInstanceFilter)val).getInstance() instanceof ConstantKey ) {
+							Object c = ((ConstantKey<?>)((SingleInstanceFilter)val).getInstance()).getValue();
+							if (c instanceof Boolean) {
+								v.set((Boolean)c);
+							} else if (c instanceof Number) {
+								v.set(0 != ((Number)c).intValue());
+							}
+						}
+					}
+					
+					return v;
+				}
+			}
+			
+			@Override
+			protected MaybeBooleanVariable[] makeStmtRHS(int size) {
+				return new MaybeBooleanVariable[size];
+			}
+
+			@Override
+			protected void initializeVariables() {
+				// handled by init()
+			}
+
+			@Override
+			protected void initializeWorkList() {
+				addAllStatementsToWorkList();
+			}
+			
+			private Boolean getReturnIfAny() {
+				Set<SSAInstruction> rets = Streams.stream(boolNode.getIR().iterateAllInstructions()).filter(inst -> inst instanceof SSAReturnInstruction).collect(Collectors.toSet());
+				if (rets.stream().anyMatch(inst -> inst.getNumberOfUses() < 1)) {
+					return null;
+				} else {
+					Set<Boolean> rs = rets.stream().map(inst -> TrivialBooleanConstantPropagation.getValue(getVariable(inst.getUse(0)))).collect(Collectors.toSet());
+					if (rs.size() != 1 || rs.contains(null)) {
+						return null;
+					} else {
+						return rs.iterator().next();
+					}
+				}
+			}
+		}
+
 		private final Set<RoundingInference.RoundingVariable> result = HashSetFactory.make();
 
 		private class RoundingVariable extends AbstractVariable<RoundingVariable> {
@@ -327,6 +682,19 @@ public class RoundingAnalysis {
 					getDeriving(d2).contains(d1);
 			}
 			
+			private boolean isDivArgRoundedDownResult(int vn) {
+				if (isDivOpResult(vn)) {
+					SSAInstruction inst = du.getDef(vn);
+					for(int i = 0; i < inst.getNumberOfUses(); i++) {
+						if (getVariable(inst.getUse(i)).state == Direction.Down) {
+							return true;
+						}
+					}
+				}
+				
+				return false;
+			}
+			
 			private boolean isDivOpResult(int vn) {
 				return (du.getDef(vn) instanceof SSABinaryOpInstruction
 					     && 
@@ -348,20 +716,27 @@ public class RoundingAnalysis {
 						&& isDivOpResult(v.vn);
 			}
 
+			private boolean mightBeNonZero(RoundingVariable v) {
+				Boolean x = booleanConstants.getConstant(v.vn);
+				return (x == null || x.booleanValue()) || (ir.getSymbolTable().isConstant(v.vn) && Integer.valueOf(0).equals(ir.getSymbolTable().getConstantValue(v.vn)));
+			}
+			
 			@Override
 			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
-				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither && !inCycle(lhs.vn, rhs[1].vn)) {
-					if (lhs.state != Direction.Up) {
-						lhs.state = Direction.Up;
+				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither && mightBeNonZero(rhs[1]) && !inCycle(lhs.vn, rhs[1].vn)) {
+					Direction d = isDivArgRoundedDownResult(rhs[0].vn)? Direction.Inconsistent: Direction.Up;
+					if (lhs.state != d) {
+						lhs.state = d;
 						lhs.wrt = rhs[0].wrt;
 						return CHANGED;
 					}
-				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither && !inCycle(lhs.vn, rhs[0].vn)) { 
-					if (lhs.state != Direction.Up) {
-						lhs.state = Direction.Up;
+				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither && mightBeNonZero(rhs[0]) && !inCycle(lhs.vn, rhs[0].vn)) { 
+					Direction d = isDivArgRoundedDownResult(rhs[1].vn)? Direction.Inconsistent: Direction.Up;
+					if (lhs.state != d) {
+						lhs.state = d;
 						lhs.wrt = rhs[1].wrt;
 						return CHANGED;
-					}
+					}					
 				} else {
 					return super.evaluate(lhs, rhs);
 				}
@@ -450,6 +825,9 @@ public class RoundingAnalysis {
 		private ControlDependenceGraph<ISSABasicBlock> cdg = null;
 		
 		private Set<ISSABasicBlock> deadBlocks = HashSetFactory.make();
+		private Map<SSAPhiInstruction,MutableIntSet> deadPhiRvals = HashMapFactory.make();
+		
+		private TrivialBooleanConstantPropagation booleanConstants;
 		
 		private void gatherControlDeps(int vn, boolean trueBranch) {
 			du.getUses(vn).forEachRemaining(inst -> { 
@@ -489,7 +867,9 @@ public class RoundingAnalysis {
 			this.dug = new DefUseGraph(ir);
 
 			computeDeadBlocks(n);
-			
+
+			this.booleanConstants = new TrivialBooleanConstantPropagation(n, null, Collections.emptySet());
+
 			class CallOperator extends AbstractOperator<RoundingVariable> {
 				private final SSAInvokeInstruction callInst;
 
@@ -685,9 +1065,25 @@ public class RoundingAnalysis {
 			directionalCalls.put(key, getResultOrResults());
 		}
 
+		private Object returnsConstant(CGNode n) {
+			SymbolTable s = n.getIR().getSymbolTable();
+			Set<Object> cs = Streams.stream(n.getIR().iterateAllInstructions())
+				.filter(inst -> inst instanceof SSAReturnInstruction)
+				.map(inst -> inst.getNumberOfUses() > 0? inst.getUse(0): -1)
+				.map(v -> v==-1 || !s.isConstant(v)? null: s.getConstantValue(v))
+				.collect(Collectors.toSet());
+			if (cs.size() == 1) {
+				return cs.iterator().next();
+			} else {
+				return null;
+			}
+		}
+		
 		private void computeDeadBlocks(CGNode n) {
+			boolean more = false;
 			SSACFG cfg = n.getIR().getControlFlowGraph();
 		
+			int old = deadBlocks.size();
 			for(int i = 0; i < n.getMethod().getNumberOfParameters(); i++) {
 				final int stupidi = i;
 				ContextItem k = n.getContext().get(ContextKey.PARAMETERS[i]);
@@ -701,7 +1097,8 @@ public class RoundingAnalysis {
 							if (otherObjs.contains(ik) && otherObjs.size()==1) {
 								gatherControlDeps(use.getDef(), false);
 							} else {
-								if (Streams.stream(otherObjs)
+								if (!otherObjs.isEmpty() &&
+									Streams.stream(otherObjs)
 										.filter(ok -> ok.getConcreteType().equals(ik.getConcreteType()) &&
 												      (!(ok instanceof ConstantKey<?>) ||
 												       ((ConstantKey<?>)ik).getValue().equals(((ConstantKey<?>)ok).getValue())))
@@ -714,6 +1111,21 @@ public class RoundingAnalysis {
 					});
 				}
 			}
+			
+			ir.iterateAllInstructions().forEachRemaining(inst -> { 
+				if (inst instanceof SSAAbstractInvokeInstruction) {
+					Set<Object> constants = CG.getPossibleTargets(n, ((SSAAbstractInvokeInstruction)inst).getCallSite()).stream().map(callee -> returnsConstant(callee)).collect(Collectors.toSet());
+					if (constants.size() == 1) {
+						Object v = constants.iterator().next();
+						if (Boolean.TRUE.equals(v)) {
+							gatherControlDeps(inst.getDef(), false);							
+						} else if (Boolean.FALSE.equals(v)) {
+							gatherControlDeps(inst.getDef(), true);							
+						} 
+					}
+				}
+			});
+			more |= deadBlocks.size() != old;
 			
 			Set<ISSABasicBlock> newDeadBlocks = HashSetFactory.make(deadBlocks);
 			while (! newDeadBlocks.isEmpty()) {
@@ -743,15 +1155,33 @@ public class RoundingAnalysis {
 						});
 					});
 				});
-				deadBlocks.addAll(nextDeadBlocks);
+				more |= deadBlocks.addAll(nextDeadBlocks);
 				newDeadBlocks = nextDeadBlocks;
 			}
+			
+			deadBlocks.forEach(db -> {
+				cfg.getSuccNodes(db).forEachRemaining(sb -> {
+					int deadBack = Util.whichPred(cfg, db, sb);
+					sb.iteratePhis().forEachRemaining(phi -> { 
+						int rv = phi.getUse(deadBack);
+						if (! deadPhiRvals.containsKey(phi)) {
+							deadPhiRvals.put(phi, IntSetUtil.make());
+						}
+						deadPhiRvals.get(phi).add(rv);
+					});
+				});
+			});
+
+			if (more) {
+				booleanConstants = new TrivialBooleanConstantPropagation(n, null, Collections.emptySet());
+			}
+
 			
 			if (! deadBlocks.isEmpty()) {
 				System.err.println(deadBlocks);
 			}
 		}
-
+		
 		@Override
 		protected RoundingVariable[] makeStmtRHS(int size) {
 			return new RoundingVariable[size];
@@ -759,7 +1189,7 @@ public class RoundingAnalysis {
 
 		@Override
 		protected void initializeVariables() {
-			// TODO Auto-generated method stub
+			// handled in init(...)
 
 		}
 
