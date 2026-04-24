@@ -308,6 +308,8 @@ public class JSONToCAst {
 								remaining = remaining.substring(14);
 							} else if (remaining.startsWith("memory_ptr")) {
 								remaining = remaining.substring(10);
+							} else if (remaining.startsWith("dyn_storage_ptr")) {
+								remaining = remaining.substring(15);
 							} else 	if (remaining.startsWith("dyn_calldata_ptr")) {
 								remaining = remaining.substring(16);
 							}
@@ -416,6 +418,10 @@ public class JSONToCAst {
 							remaining = remaining.substring(11);
 						} else if (remaining.startsWith("_payable")) {
 							remaining = remaining.substring(8);
+						} else if (remaining.startsWith("_storage")) {
+							remaining = remaining.substring(8);
+						} else if (remaining.startsWith("_calldata_ptr")) {
+							remaining = remaining.substring(13);
 						}
 						return Pair.make(SolidityCAstType.get(type), remaining);
 					} else {

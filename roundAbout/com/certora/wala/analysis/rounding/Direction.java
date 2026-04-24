@@ -3,23 +3,23 @@ package com.certora.wala.analysis.rounding;
 public enum Direction {
 	Inconsistent {
 		@Override
-		Direction meet(Direction d) {
+		public Direction meet(Direction d) {
 			return Inconsistent;
 		}
 
 		@Override
-		Direction flip() {
+		public Direction flip() {
 			return Inconsistent;
 		}
 
 		@Override
-		Direction combine(Direction d) {
+		public Direction combine(Direction d) {
 			return Inconsistent;
 		}
 	},
 	Either {
 		@Override
-		Direction meet(Direction d) {
+		public Direction meet(Direction d) {
 			if (d == Inconsistent) {
 				return Inconsistent;
 			} else {
@@ -28,12 +28,12 @@ public enum Direction {
 		}
 
 		@Override
-		Direction flip() {
+		public Direction flip() {
 			return Either;
 		}
 
 		@Override
-		Direction combine(Direction d) {
+		public Direction combine(Direction d) {
 			switch (d) {
 			case Neither:
 				return Either;
@@ -44,7 +44,7 @@ public enum Direction {
 	},
 	Neither {
 		@Override
-		Direction meet(Direction d) {
+		public Direction meet(Direction d) {
 			switch (d) {
 			case Neither:
 				return Neither;
@@ -62,18 +62,18 @@ public enum Direction {
 		}
 
 		@Override
-		Direction flip() {
+		public Direction flip() {
 			return Neither;
 		}
 
 		@Override
-		Direction combine(Direction d) {
+		public Direction combine(Direction d) {
 			return d;
 		}
 	},
 	Up {
 		@Override
-		Direction meet(Direction d) {
+		public Direction meet(Direction d) {
 			switch (d) {
 			case Neither:
 				return Up;
@@ -91,12 +91,12 @@ public enum Direction {
 		}
 
 		@Override
-		Direction flip() {
+		public Direction flip() {
 			return Down;
 		}
 
 		@Override
-		Direction combine(Direction d) {
+		public Direction combine(Direction d) {
 			if (d == Up || d == Neither) {
 				return Up;
 			} else {
@@ -106,7 +106,7 @@ public enum Direction {
 	},
 	Down {
 		@Override
-		Direction meet(Direction d) {
+		public Direction meet(Direction d) {
 			switch (d) {
 			case Neither:
 				return Down;
@@ -125,12 +125,12 @@ public enum Direction {
 
 		
 		@Override
-		Direction flip() {
+		public Direction flip() {
 			return Up;
 		}
 
 		@Override
-		Direction combine(Direction d) {
+		public Direction combine(Direction d) {
 			if (d == Down || d == Neither) {
 				return Down
 						;
@@ -140,9 +140,9 @@ public enum Direction {
 		}
 	};
 
-	abstract Direction combine(Direction d);
+	public abstract Direction combine(Direction d);
 
-	abstract Direction meet(Direction d);
+	public abstract Direction meet(Direction d);
 
-	abstract Direction flip();
+	public abstract Direction flip();
 };

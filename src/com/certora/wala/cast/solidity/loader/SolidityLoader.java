@@ -1036,5 +1036,17 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 		}
 	}
 	
+	private Map<TypeName, IClass> savedTypes; 
 	
+	public void startRetranslating() {
+		savedTypes = HashMapFactory.make(types);
+	}
+	
+	public Map<TypeName, IClass> doneRetranslating() {
+		Map<TypeName, IClass> x = HashMapFactory.make(types);
+		types.clear();
+		types.putAll(savedTypes);
+		savedTypes = null;
+		return x;
+	}
 }
