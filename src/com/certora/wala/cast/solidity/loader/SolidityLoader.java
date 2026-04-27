@@ -97,7 +97,52 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 			null);
 
 	private final IClass function = new CoreClass(SolidityTypes.function.getName(), codeBody.getName(), this,
-			null);
+			null) {
+				private final AstField self = new AstField(FieldReference.findOrCreate(
+						SolidityTypes.function,
+						Atom.findOrCreateUnicodeAtom("self"), 
+						SolidityTypes.root), 
+					Collections.emptySet(), 
+					this,
+					cha, 
+					Collections.emptySet()) {
+				@Override
+				public IClass getDeclaringClass() {
+					return function;
+				}};
+		
+				@Override
+				public Collection<IField> getDeclaredInstanceFields() {
+					return Collections.singleton(self);
+				}
+
+				@Override
+				public Collection<IField> getDeclaredStaticFields() {
+					return Collections.emptySet();
+				}
+
+				@Override
+				public Collection<IField> getAllInstanceFields() {
+					return Collections.singleton(self);
+				}
+
+				@Override
+				public Collection<IField> getAllStaticFields() {
+					return Collections.emptySet();
+				}
+
+				@Override
+				public Collection<IField> getAllFields() {
+					return super.getAllInstanceFields();
+				}
+
+				@Override
+				public IField getField(Atom name) {
+					// TODO Auto-generated method stub
+					return super.getField(name);
+				}
+		
+	};
 
 	private final IClass event = new CoreClass(SolidityTypes.event.getName(), codeBody.getName(), this,
 			null);
@@ -499,19 +544,12 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 	}
 	
 	private abstract class TypedFunctionBody extends DynamicCodeBody implements TypedCodeBody {
-		private final IField self;
 		boolean isPure;
 		
 		public TypedFunctionBody(TypeReference codeName, TypeReference parent, IClassLoader loader, Position sourcePosition,
 				CAstEntity entity, WalkContext context, TypeReference selfType) {
 			super(codeName, parent, loader, sourcePosition, entity, context);
 			isPure = entity.getQualifiers().contains(CAstQualifier.PURE);
-			this.self = selfType != null? new AstField(FieldReference.findOrCreate(getReference(), Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root), Collections.emptySet(), types.get(selfType.getName()), cha, Collections.emptySet()) {
-				@Override
-				public IClass getDeclaringClass() {
-					return TypedFunctionBody.this;
-				}
-			}: null;
 		}
 
 		public boolean isPure() {
@@ -520,39 +558,22 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public IField getField(Atom name) {
-			if (self != null && self.getName().equals(name)) {
-				return self;
-			} else {
-				return super.getField(name);
-			}
+			return getSuperclass().getField(name);
 		}
 
 		@Override
 		public IField getField(Atom name, TypeName type) {
-			if (self != null && self.getName().equals(name)) {
-				return self;
-			} else {
-				return super.getField(name);
-			}
+			return getSuperclass().getField(name, type);
 		}
 
 		@Override
 		public Collection<IField> getAllInstanceFields() {
-			Collection<IField> x = super.getAllInstanceFields();
-			if (x.isEmpty() && self != null) {
-				return Collections.singleton(self);
-			} else {
-				Set<IField> y = HashSetFactory.make(x);
-				if (self != null) {
-					y.add(self);
-				}
-				return y;
-			}
+			return getSuperclass().getAllInstanceFields();
 		}
 
 		@Override
 		public Collection<IField> getAllFields() {
-			return super.getAllInstanceFields();
+			return getSuperclass().getAllFields();
 		}
 	}
 	
