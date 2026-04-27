@@ -172,15 +172,59 @@ public class SolidityTypes {
 
 	public static TypeReference bytes4 = TypeReference.findOrCreate(solidity, "Pbytes4");
 
+	public static TypeReference bytes5 = TypeReference.findOrCreate(solidity, "Pbytes5");
+
+	public static TypeReference bytes6 = TypeReference.findOrCreate(solidity, "Pbytes6");
+
+	public static TypeReference bytes7 = TypeReference.findOrCreate(solidity, "Pbytes7");
+
 	public static TypeReference bytes8 = TypeReference.findOrCreate(solidity, "Pbytes8");
+
+	public static TypeReference bytes9 = TypeReference.findOrCreate(solidity, "Pbytes9");
+
+	public static TypeReference bytes10 = TypeReference.findOrCreate(solidity, "Pbytes10");
 
 	public static TypeReference bytes11 = TypeReference.findOrCreate(solidity, "Pbytes11");
 
+	public static TypeReference bytes12 = TypeReference.findOrCreate(solidity, "Pbytes12");
+
+	public static TypeReference bytes13 = TypeReference.findOrCreate(solidity, "Pbytes13");
+
+	public static TypeReference bytes14 = TypeReference.findOrCreate(solidity, "Pbytes14");
+
+	public static TypeReference bytes15 = TypeReference.findOrCreate(solidity, "Pbytes15");
+
 	public static TypeReference bytes16 = TypeReference.findOrCreate(solidity, "Pbytes16");
+
+	public static TypeReference bytes17 = TypeReference.findOrCreate(solidity, "Pbytes17");
+
+	public static TypeReference bytes18 = TypeReference.findOrCreate(solidity, "Pbytes18");
 
 	public static TypeReference bytes19 = TypeReference.findOrCreate(solidity, "Pbytes19");
 
 	public static TypeReference bytes20 = TypeReference.findOrCreate(solidity, "Pbytes20");
+
+	public static TypeReference bytes21 = TypeReference.findOrCreate(solidity, "Pbytes21");
+
+	public static TypeReference bytes22 = TypeReference.findOrCreate(solidity, "Pbytes22");
+
+	public static TypeReference bytes23 = TypeReference.findOrCreate(solidity, "Pbytes23");
+
+	public static TypeReference bytes24 = TypeReference.findOrCreate(solidity, "Pbytes24");
+
+	public static TypeReference bytes25 = TypeReference.findOrCreate(solidity, "Pbytes25");
+
+	public static TypeReference bytes26 = TypeReference.findOrCreate(solidity, "Pbytes26");
+
+	public static TypeReference bytes27 = TypeReference.findOrCreate(solidity, "Pbytes27");
+
+	public static TypeReference bytes28 = TypeReference.findOrCreate(solidity, "Pbytes28");
+
+	public static TypeReference bytes29 = TypeReference.findOrCreate(solidity, "Pbytes29");
+
+	public static TypeReference bytes30 = TypeReference.findOrCreate(solidity, "Pbytes30");
+
+	public static TypeReference bytes31 = TypeReference.findOrCreate(solidity, "Pbytes31");
 
 	public static TypeReference bytes32 = TypeReference.findOrCreate(solidity, "Pbytes32");
 

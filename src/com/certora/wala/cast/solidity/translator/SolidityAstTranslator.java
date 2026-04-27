@@ -252,17 +252,17 @@ public class SolidityAstTranslator extends AstTranslator {
 			}
 			
 			boolean superCall = false;
-			 try {
-				 Position p = context.top().getSourceMap().getPosition(call.getChild(0));
-				 if (p != null) {
-				 String selfSrc = new SourceBuffer(p).toString();
-				 if (selfSrc.startsWith("super.")) {
-					 superCall = true;
-				 }
-				 }
-			 } catch (IOException e) {
-				 assert false : e;
-			 }
+			try {
+				Position p = context.top().getSourceMap().getPosition(call.getChild(0));
+				if (p != null) {
+					String selfSrc = new SourceBuffer(p).toString();
+					if (selfSrc.startsWith("super.")) {
+						superCall = true;
+					}
+				}
+			} catch (IOException e) {
+				assert false : e;
+			}
 			
 			int instNum = context.cfg().getCurrentInstruction();
 			CallSiteReference csr = CallSiteReference.make(instNum, m, superCall? Dispatch.SPECIAL: Dispatch.VIRTUAL);
@@ -309,12 +309,12 @@ public class SolidityAstTranslator extends AstTranslator {
 			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, eltType.getName());
 			NewSiteReference ns = NewSiteReference.make(context.cfg().getCurrentInstruction(), t);
 			context.cfg().addInstruction(insts.NewInstruction(ns.getProgramCounter(), result, ns));
-			FieldReference self = FieldReference.findOrCreate(SolidityTypes.root, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
+			FieldReference self = FieldReference.findOrCreate(SolidityTypes.function, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
 			context.cfg().addInstruction(insts.PutInstruction(context.cfg().getCurrentInstruction(), result, receiver, self));
 		} else {
 			int instNum = context.cfg().getCurrentInstruction();
 			String fieldName = elt.getValue().toString();
-			context.cfg().addInstruction(insts.GetInstruction(instNum, result, receiver, FieldReference.findOrCreate("self".equals(fieldName)? SolidityTypes.root: objType, Atom.findOrCreateUnicodeAtom(fieldName), eltType)));		
+			context.cfg().addInstruction(insts.GetInstruction(instNum, result, receiver, FieldReference.findOrCreate("self".equals(fieldName)? SolidityTypes.function: objType, Atom.findOrCreateUnicodeAtom(fieldName), eltType)));		
 			Position[] operandPos = new Position[2];
 			operandPos[0] = context.getSourceMap().getPosition(parent.getChild(0));
 			operandPos[1] = context.getSourceMap().getPosition(elt);
@@ -368,9 +368,7 @@ public class SolidityAstTranslator extends AstTranslator {
 					insts.AssignInstruction(context.cfg().getCurrentInstruction(), 
 						resultVal, context.currentScope().getConstantValue(null)));
 		} else if ("this".equals(name) || "super".equals(name)) {		
-			FunctionType funType = (FunctionType) context.top().getType();
-			TypeReference t = TypeReference.findOrCreate(SolidityTypes.solidity, funType.getName());
-			FieldReference self = FieldReference.findOrCreate(t, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
+			FieldReference self = FieldReference.findOrCreate(SolidityTypes.function, Atom.findOrCreateUnicodeAtom("self"), SolidityTypes.root);
 
 			context.cfg().addInstruction(
 				insts.GetInstruction(context.cfg().getCurrentInstruction(), resultVal, 1, self));
