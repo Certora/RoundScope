@@ -231,7 +231,12 @@ public class SolidityAstTranslator extends AstTranslator {
 				"revert".equals(call.getChild(0).getChild(0).getValue())) {
 			context.cfg().addInstruction(insts.ThrowInstruction(context.cfg().getCurrentInstruction(), arguments.length>0? arguments[0]: context.currentScope().getConstantValue(null)));
 			context.cfg().addPreEdgeToExit(context.cfg().getCurrentBlock(), true);
-			
+		} else if (call.getChild(0).getKind() == CAstNode.OBJECT_REF &&
+				   call.getChild(0).getChild(0).getKind() == CAstNode.TYPE_LITERAL_EXPR &&
+				   "uint256".equals(call.getChild(0).getChild(0).getChild(0).getValue()) &&
+				   ("wrap".equals(call.getChild(0).getChild(1).getValue()) || 
+					"unwrap".equals(call.getChild(0).getChild(1).getValue()))) {
+			context.cfg().addInstruction(insts.AssignInstruction(context.cfg().getCurrentInstruction(), result, arguments[0]));			
 		} else {
 			int argsAndSelf[] = new int[ arguments.length + 1 ];
 			argsAndSelf[0] = receiver;
