@@ -58,16 +58,6 @@ public class SolidityCAstType implements CAstType.Primitive {
 			{"bool", SolidityTypes.bool, false},
 			{"function", SolidityTypes.function, null},
 			{"struct", SolidityTypes.struct, null},
-			{"bytes1", SolidityTypes.bytes1, 0},
-			{"bytes2", SolidityTypes.bytes2, 0},
-			{"bytes3", SolidityTypes.bytes3, 0},
-			{"bytes4", SolidityTypes.bytes4, 0},
-			{"bytes8", SolidityTypes.bytes8, 0},
-			{"bytes11", SolidityTypes.bytes11, 0},
-			{"bytes16", SolidityTypes.bytes16, 0},
-			{"bytes19", SolidityTypes.bytes19, 0},
-			{"bytes20", SolidityTypes.bytes20, 0},
-			{"bytes32", SolidityTypes.bytes32, 0},
 			{"error", SolidityTypes.error, null},
 			{"msg", SolidityTypes.msg, null},
 			{"void", TypeReference.Void, null}}) {
@@ -85,6 +75,13 @@ public class SolidityCAstType implements CAstType.Primitive {
 				TypeReference it = (TypeReference) SolidityTypes.class.getField("int" + i).get(null);
 				SolidityCAstType ti = new SolidityCAstType("int" + i, 0);
 				types.put("int" + i, ti);
+				irTypes.put(ti, it);
+			}
+
+			for(int i = 1; i <= 32; i++) {
+				TypeReference it = (TypeReference) SolidityTypes.class.getField("bytes" + i).get(null);
+				SolidityCAstType ti = new SolidityCAstType("bytes" + i, 0);
+				types.put("bytes" + i, ti);
 				irTypes.put(ti, it);
 			}
 			
