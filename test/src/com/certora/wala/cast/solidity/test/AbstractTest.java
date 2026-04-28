@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
@@ -46,6 +47,31 @@ public abstract class AbstractTest implements CheckResult {
 			result.write(w, 3, 0);
 		}
 		testAnalysis(result);
+	}
+
+	protected void checkFloorCeilingFunction(DocumentContext jsonParser, String function) {
+		JSONArray mulDiv = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function " + function + ">' && @.return != 'Neither')]");
+		System.err.println(mulDiv);
+		assert !mulDiv.isEmpty();
+		
+		int upCount = 0, downCount = 0;
+		for(Object o : mulDiv) {
+			DocumentContext methods = parse(o);	
+			JSONArray specifiedUp = methods.read("$.parameters[?(@.value == 'Ceil')]");
+			if (! specifiedUp.isEmpty()) {
+				String s = ((JSONObject)o).getString("return");
+				assert "Up".equals(s) || "Inconsistent".equals(s) : s;
+				upCount++;
+			}
+			JSONArray specifiedDown = methods.read("$.parameters[?(@.value == 'Floor')]");
+			if (! specifiedDown.isEmpty()) {
+				String s = ((JSONObject)o).getString("return");
+				assert "Down".equals(s) || "Inconsistent".equals(s) : s;
+				downCount++;
+			}
+		}
+		System.err.println(upCount + " " + downCount);
+		assert upCount > 0 && downCount > 0;
 	}
 
 }
