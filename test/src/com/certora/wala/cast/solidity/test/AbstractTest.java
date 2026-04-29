@@ -50,6 +50,14 @@ public abstract class AbstractTest implements CheckResult {
 	}
 
 	protected void checkFloorCeilingFunction(DocumentContext jsonParser, String function) {
+		checkXYFunction(jsonParser, function, "Ceil", "Floor");
+	}
+	
+	protected void checkUpDownFunction(DocumentContext jsonParser, String function) {
+		checkXYFunction(jsonParser, function, "Up", "Down");
+	}
+	
+	protected void checkXYFunction(DocumentContext jsonParser, String function, String X, String Y) {
 		JSONArray mulDiv = jsonParser.read("$.graphs[*].nodes[*].metadata[?(@.method == '<Code body of function " + function + ">' && @.return != 'Neither')]");
 		System.err.println(mulDiv);
 		assert !mulDiv.isEmpty();
@@ -57,13 +65,13 @@ public abstract class AbstractTest implements CheckResult {
 		int upCount = 0, downCount = 0;
 		for(Object o : mulDiv) {
 			DocumentContext methods = parse(o);	
-			JSONArray specifiedUp = methods.read("$.parameters[?(@.value == 'Ceil')]");
+			JSONArray specifiedUp = methods.read("$.parameters[?(@.value == '" + X + "')]");
 			if (! specifiedUp.isEmpty()) {
 				String s = ((JSONObject)o).getString("return");
 				assert "Up".equals(s) || "Inconsistent".equals(s) : s;
 				upCount++;
 			}
-			JSONArray specifiedDown = methods.read("$.parameters[?(@.value == 'Floor')]");
+			JSONArray specifiedDown = methods.read("$.parameters[?(@.value == '" + Y + "')]");
 			if (! specifiedDown.isEmpty()) {
 				String s = ((JSONObject)o).getString("return");
 				assert "Down".equals(s) || "Inconsistent".equals(s) : s;
