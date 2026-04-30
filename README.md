@@ -213,3 +213,7 @@ mvn -Pwith-jni-tests -DargLine="-Djava.library.path=$(pwd)/jni" test
 ## Contact
 
 For questions about the tool, contact Julian Dolby (`julian@certora.com`) or Chandrakana Nandi (`chandra@certora.com`).
+
+## Donate
+
+If you'd like to support the development of RoundAbout, consider [donating through our Giveth project page](https://giveth.io/project/roundabout:-static-analysis-for-solidity).
