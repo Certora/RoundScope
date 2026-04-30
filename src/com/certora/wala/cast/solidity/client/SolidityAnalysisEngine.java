@@ -64,11 +64,16 @@ import com.ibm.wala.ssa.SSAOptions.DefaultValues;
 import com.ibm.wala.ssa.SymbolTable;
 import com.ibm.wala.types.TypeName;
 import com.ibm.wala.types.TypeReference;
+import com.ibm.wala.util.CancelException;
+import com.ibm.wala.util.MonitorUtil.IProgressMonitor;
 import com.ibm.wala.util.WalaRuntimeException;
+import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.Pair;
 
 public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<InstanceKey, CallGraphBuilder<InstanceKey>, A> {
 
+	public final Map<String, Long> statistics = HashMapFactory.make();
+	
 	protected final File confFile;
 	protected final Conf conf;
 	protected SingleClassLoaderFactory loaders;
@@ -132,6 +137,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 
 	@Override
 	public IClassHierarchy buildClassHierarchy() {
+		long start = System.nanoTime();
 		IClassHierarchy cha;
 		try {
 			cha = ClassHierarchyFactory.make(scope, loaders);
@@ -154,6 +160,8 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		} catch (ClassHierarchyException e) {
 			assert false : e;
 			throw new WalaRuntimeException("failed to create class hierarchy", e);
+		} finally {
+			statistics.put("build_cha", System.nanoTime() - start);
 		}
 	}
 
@@ -343,6 +351,17 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		AnalysisOptions options = makeOptions();
 		options.setEntrypoints(entrypoints);
 		return options;
+	}
+
+	@Override
+	protected CallGraphBuilder<InstanceKey> buildCallGraph(IClassHierarchy cha, AnalysisOptions options,
+			boolean savePointerAnalysis, IProgressMonitor monitor) throws IllegalArgumentException, CancelException {
+		long start = System.nanoTime();
+		try {
+			return super.buildCallGraph(cha, options, savePointerAnalysis, monitor);
+		} finally {
+			statistics.put("build_cg", System.nanoTime() - start);			
+		}
 	}
 
 	@Override

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,6 +13,7 @@ import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.JSONOutput;
+import com.google.common.collect.Streams;
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.classLoader.IMethod;
@@ -39,6 +41,7 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 
 	@Override
 	public JSONObject performAnalysis(PropagationCallGraphBuilder builder) throws CancelException {
+		long start = System.nanoTime();
 		JSONArray graphs = new JSONArray();
 		CallGraph cg = builder.getCallGraph();
 
@@ -71,6 +74,7 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 		
 		JSONObject G = new JSONObject();
 		G.put("graphs", graphs);
+		statistics.put("rounding_analysis", System.nanoTime() - start);
 		return G;
 	}
 	
@@ -120,11 +124,23 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 	}
 	
 	public JSONObject analyze() throws IOException, IllegalArgumentException, CancelException {
-		buildAnalysisScope();
-		buildClassHierarchy();
-		PropagationCallGraphBuilder builder = defaultCallGraphBuilder();
-		builder.makeCallGraph(builder.getOptions(), null);
-		return performAnalysis(builder);
+		CallGraph CG = null;
+		long start = System.nanoTime();
+		try {
+			buildAnalysisScope();
+			buildClassHierarchy();
+			PropagationCallGraphBuilder builder = defaultCallGraphBuilder();
+			CG = builder.makeCallGraph(builder.getOptions(), null);
+			return performAnalysis(builder);
+		} finally {
+			statistics.put("total_time", System.nanoTime() - start);
+			if (CG != null) {
+				long codeSizeChars = Streams.stream(CG).map(n -> n.getMethod()).filter(m -> m instanceof AstMethod).map(x -> (AstMethod)x).collect(Collectors.toSet()).stream().map(m -> m.debugInfo().getCodeBodyPosition().getLastOffset() - m.debugInfo().getCodeBodyPosition().getFirstOffset() + 1).reduce((x, y) -> x.intValue() + y.intValue()).get();
+				statistics.put("code_size_chars", codeSizeChars);
+				long codeSizeLines = Streams.stream(CG).map(n -> n.getMethod()).filter(m -> m instanceof AstMethod).map(x -> (AstMethod)x).collect(Collectors.toSet()).stream().map(m -> m.debugInfo().getCodeBodyPosition().getLastLine() - m.debugInfo().getCodeBodyPosition().getFirstLine() + 1).reduce((x, y) -> x.intValue() + y.intValue()).get();
+				statistics.put("code_size_lines", codeSizeLines);
+			}
+		}
 	}
 
 }

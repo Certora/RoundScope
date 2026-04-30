@@ -25,7 +25,23 @@ public abstract class AbstractJsonTest extends AbstractTest {
 
 	protected JSONObject runAnalysis() throws IllegalArgumentException, IOException, CancelException {
 		SolidityRoundingAnalysisEngineJSON E = new SolidityRoundingAnalysisEngineJSON(confFile(), astsFile.getAbsolutePath());
-		return E.analyze();
+		try {
+			return E.analyze();
+		} finally {
+			synchronized (System.err) {
+				System.err.println("timing: stats for " + getClass().getSimpleName());
+				System.err.println("timing: " + E.statistics);
+				E.statistics.forEach((x, y) -> { 
+					if (x.contains("code_size")) {
+						E.statistics.forEach((a, b) -> { 
+							if (!a.contains("code_size")) {	
+								System.err.println("timing: " + a + "/" + x + " = " + (b.doubleValue()/1_000_000_000) / y.doubleValue());
+							}
+						});
+					}
+				});
+			}
+		}
 	}
 
 }

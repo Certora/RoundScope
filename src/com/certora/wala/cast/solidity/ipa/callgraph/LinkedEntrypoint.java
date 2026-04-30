@@ -2,7 +2,6 @@ package com.certora.wala.cast.solidity.ipa.callgraph;
 
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
