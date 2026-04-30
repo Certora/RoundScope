@@ -156,6 +156,11 @@ def _process_conf(conf_abs, root_path, run_roundabout_script, certora_run_comman
         if not error:
             error = result.stdout + result.stderr
 
+    # Clean up .asts.json to save disk space
+    asts_file = os.path.join(project_dir, ".certora_internal", "latest", ".asts.json")
+    if os.path.isfile(asts_file):
+        os.remove(asts_file)
+
     return (repo_url, branch, project_dir, conf_rel, success_html, error, f"{duration:.1f}")
 
 

@@ -152,12 +152,16 @@ def main():
         if not use_docker:
             java_cmd = ["java", "-jar", jar, conf, output, "--combined", asts_file]
             print(f"[roundabout] java command: {' '.join(java_cmd)}")
+            sys.stdout.flush()
+            sys.stderr.flush()
             result = subprocess.run(java_cmd)
         elif shutil.which("docker"):
             if not shutil.which("java"):
                 print("Java not found, running via Docker...")
             else:
                 print("Running via Docker...")
+            sys.stdout.flush()
+            sys.stderr.flush()
             result = subprocess.run([
                 "docker", "run", "--rm",
                 "-v", f"{project_dir}:{project_dir}",
