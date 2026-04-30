@@ -2,7 +2,6 @@ package com.certora.wala.analysis.rounding;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import org.apache.commons.lang3.stream.IntStreams;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.jspecify.annotations.Nullable;
@@ -48,11 +46,15 @@ import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.ISSABasicBlock;
 import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
+import com.ibm.wala.ssa.SSAArrayLoadInstruction;
+import com.ibm.wala.ssa.SSAArrayStoreInstruction;
 import com.ibm.wala.ssa.SSABinaryOpInstruction;
 import com.ibm.wala.ssa.SSACFG;
+import com.ibm.wala.ssa.SSACFG.BasicBlock;
 import com.ibm.wala.ssa.SSACheckCastInstruction;
 import com.ibm.wala.ssa.SSAConditionalBranchInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
+import com.ibm.wala.ssa.SSAInstruction.Visitor;
 import com.ibm.wala.ssa.SSAInvokeInstruction;
 import com.ibm.wala.ssa.SSAPhiInstruction;
 import com.ibm.wala.ssa.SSAPiInstruction;
@@ -67,6 +69,7 @@ import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.NumberedGraph;
+import com.ibm.wala.util.graph.dominators.Dominators;
 import com.ibm.wala.util.graph.impl.GraphInverter;
 import com.ibm.wala.util.graph.labeled.NumberedLabeledGraph;
 import com.ibm.wala.util.graph.labeled.SlowSparseNumberedLabeledGraph;
@@ -134,7 +137,7 @@ public class RoundingAnalysis {
 				this.boolNode = n;
 				this.ongoing = ongoing;
 				this.S = n.getIR().getSymbolTable();
-			    init(n.getIR(), this.new BooleanVarFactory(), this.new BooleanOperatorFactory());
+			    init(n.getIR(), this.new MaybeBooleanVarFactory(), this.new MaybeBooleanOperatorFactory());
 			    try {
 					solve(new NullProgressMonitor());
 				} catch (CancelException e) {
@@ -142,7 +145,7 @@ public class RoundingAnalysis {
 				}
 			}
 
-			public class BooleanOperatorFactory extends SSAInstruction.Visitor implements OperatorFactory<MaybeBooleanVariable> {
+			public class MaybeBooleanOperatorFactory extends SSAInstruction.Visitor implements OperatorFactory<MaybeBooleanVariable> {
 				AbstractOperator<MaybeBooleanVariable> op;
 							
 				@Override
@@ -381,7 +384,7 @@ public class RoundingAnalysis {
 				}			
 			}
 			
-			public class BooleanVarFactory implements VariableFactory<MaybeBooleanVariable> {
+			public class MaybeBooleanVarFactory implements VariableFactory<MaybeBooleanVariable> {
 				private final IntSet params = IntSetUtil.make(S.getParameterValueNumbers());
 
 				@Override
@@ -1022,6 +1025,114 @@ public class RoundingAnalysis {
 			}
 
 			class RoundingVariableFactory implements VariableFactory<RoundingVariable> {
+				
+				class TrivialAliasing {
+					int[] mapping = new int[ ir.getSymbolTable().getMaxValueNumber()+1 ];
+					int[] reverseMapping = new int[ ir.getSymbolTable().getMaxValueNumber()+1 ];
+					Dominators<ISSABasicBlock> d = Dominators.make(ir.getControlFlowGraph(), ir.getControlFlowGraph().entry());
+					
+					private boolean escapes(int n) {
+						return new Visitor() {
+							boolean escapes = false;
+							
+							{
+								if (du.getUses(n) != null) {
+									du.getUses(n).forEachRemaining(s -> s.visit(this));
+								}
+							}
+							
+							@Override
+							public void visitArrayStore(SSAArrayStoreInstruction instruction) {
+								if (instruction.getValue() == n) {
+									escapes = true;
+								}
+							}
+
+							@Override
+							public void visitPut(SSAPutInstruction instruction) {
+								if (instruction.getVal() == n) {
+									escapes = true;
+								}
+							}
+
+							@Override
+							public void visitInvoke(SSAInvokeInstruction instruction) {
+								escapes = true;
+							}
+						}.escapes;
+					}
+										
+					private boolean dominates(SSAInstruction before, SSAInstruction after) {
+						BasicBlock bbb = ir.getControlFlowGraph().getBlockForInstruction(before.iIndex());
+						BasicBlock bba = ir.getControlFlowGraph().getBlockForInstruction(after.iIndex());
+						if (bba == bbb) {
+							return before.iIndex() < after.iIndex();
+						} else {
+							return d.isDominatedBy(bbb, bba);
+						}
+					}
+					
+					private SSAInstruction getDefIfAny(SSAInstruction use) {
+						return new Visitor() {
+							SSAInstruction def = null;
+							boolean ok = true;
+							
+							{
+								use.visit(this);
+							}
+
+							@Override
+							public void visitArrayLoad(SSAArrayLoadInstruction instruction) {
+								int arrayVn = instruction.getArrayRef();
+								int indexVn = instruction.getIndex();
+								du.getUses(arrayVn).forEachRemaining(useInst -> { 
+									if (useInst instanceof SSAArrayStoreInstruction) {
+										if (((SSAArrayStoreInstruction)useInst).getArrayRef() == arrayVn &&
+											((SSAArrayStoreInstruction)useInst).getIndex() == indexVn) {
+											if (dominates(useInst, instruction)) {
+												if (ok) {
+													if (def==null) {
+														def = useInst;
+													} else {
+														def = null;
+														ok = false;
+													}
+												}
+											}
+										}
+									}
+								});
+							}
+						}.def;
+					}
+					
+					{
+						MutableIntSet escapees = IntSetUtil.make();
+						for(int i = 1; i < mapping.length; i++) {
+							mapping[i] = i;
+							reverseMapping[i] = i;
+							if (escapes(i)) {
+								escapees.add(i);
+							}
+						}
+						
+						ir.iterateNormalInstructions().forEachRemaining(inst -> { 
+							SSAInstruction def = getDefIfAny(inst);
+							if (def != null) {
+								def.visit(new Visitor() {
+									@Override
+									public void visitArrayStore(SSAArrayStoreInstruction instruction) {
+										mapping[inst.getDef()] = instruction.getValue();
+										reverseMapping[instruction.getValue()] = inst.getDef();
+									}
+								});
+							}
+						});
+					}
+				}
+				
+				TrivialAliasing aliasAnalysis = new TrivialAliasing();
+
 				private boolean hasReturn(int vn) {
 					Iterator<SSAInstruction> is = du.getUses(vn);
 					while (is.hasNext()) {
@@ -1035,6 +1146,13 @@ public class RoundingAnalysis {
 				@Override
 				public IVariable<RoundingVariable> makeVariable(int valueNumber) {
 					RoundingVariable v;
+					
+					if (aliasAnalysis.mapping[valueNumber] < valueNumber) {
+						return getVariable(aliasAnalysis.mapping[valueNumber]);
+					} else if (aliasAnalysis.reverseMapping[valueNumber] < valueNumber) {
+						return getVariable(aliasAnalysis.reverseMapping[valueNumber]);
+					} 
+					
 					if (ir.getSymbolTable().isConstant(valueNumber)) {
 						v = new RoundingVariable(valueNumber, Direction.Neither, null);
 
