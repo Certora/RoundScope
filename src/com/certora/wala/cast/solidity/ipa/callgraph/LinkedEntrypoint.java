@@ -2,8 +2,12 @@ package com.certora.wala.cast.solidity.ipa.callgraph;
 
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.ibm.wala.cast.loader.AstFunctionClass;
@@ -27,16 +31,16 @@ import com.ibm.wala.util.collections.Pair;
 
 public class LinkedEntrypoint extends DefaultEntrypoint {
 
-	private final Map<Pair<Atom, TypeReference>, TypeReference> linkage;
+	private final Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> linkage;
 	private final IClass selfType;
 	
-	public LinkedEntrypoint(IMethod method, IClassHierarchy cha, IClass selfType, Map<Pair<Atom,TypeReference>,TypeReference> linkage) {
+	public LinkedEntrypoint(IMethod method, IClassHierarchy cha, IClass selfType, Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> map) {
 		super(method, cha);
-		this.linkage = linkage;
+		this.linkage = map;
 		this.selfType = selfType;
 	}
 
-	public LinkedEntrypoint(MethodReference method, IClassHierarchy cha,IClass selfType,  Map<Pair<Atom,TypeReference>,TypeReference> linkage) {
+	public LinkedEntrypoint(MethodReference method, IClassHierarchy cha,IClass selfType,  Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> linkage) {
 		super(method, cha);
 		this.linkage = linkage;
 		this.selfType = selfType;
@@ -72,9 +76,23 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			}
 			linkage.forEach((x, y) -> { 
 				if (selfType.getReference().equals(x.snd)) {
-					FieldReference fr = getCha().resolveField(FieldReference.findOrCreate(x.snd, x.fst, y)).getReference();
-					SSANewInstruction alloc = m.addAllocation(y);
-					m.addSetInstance(fr, objSelf, alloc.getDef());
+					int o = objSelf;
+					Iterator<Either<Atom, Integer>> path = x.fst.iterator();
+					while (path.hasNext()) {
+						Either<Atom, Integer> elt = path.next();
+						boolean last = !path.hasNext();
+						if (elt.isLeft()) {
+							FieldReference fr = getCha().resolveField(FieldReference.findOrCreate(x.snd, elt.getLeft(), y)).getReference();							
+							if (last) {
+								SSANewInstruction alloc = m.addAllocation(y);
+								m.addSetInstance(fr, o, alloc.getDef());
+							} else {
+								
+							}
+						} else {
+							
+						}
+					}
 				}
 			});
 			selfMap.put(selfType.getReference(), objSelf);
@@ -87,7 +105,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 		return new TypeReference[] { method.getParameterType(i) };
 	}
 
-	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<Atom,TypeReference>,TypeReference> linkage, IClassHierarchy cha) {
+	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> map, IClassHierarchy cha) {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
 		cha.forEach(cls -> { 
@@ -98,7 +116,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 					if (fieldClass != null && !m.getDeclaringClass().isInterface() && cha.isSubclassOf(fieldClass, cha.lookupClass(SolidityTypes.function))) {
 						AstFunctionClass afc = (AstFunctionClass) fieldClass;
 						if (afc.isPublic() && !afc.isAbstract() && afc.getCodeBody() != null) {
-							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, cls, linkage));
+							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, cls, map));
 						}
 					}
 				})

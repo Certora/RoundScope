@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.certora.wala.cast.solidity.ipa.callgraph.EnumValueContextSelector;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
@@ -51,9 +52,11 @@ import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DelegatingSSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
+import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ipa.cha.SolidityClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRView;
@@ -140,7 +143,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		long start = System.nanoTime();
 		IClassHierarchy cha;
 		try {
-			cha = ClassHierarchyFactory.make(scope, loaders);
+			cha = new SolidityClassHierarchy(scope, loaders, null, new ConcurrentHashMap<>(), ClassHierarchy.MissingSuperClassHandling.NONE);
 			setClassHierarchy(cha);
 			
 			SolidityLoader solidityLoader = (SolidityLoader) cha.getLoader(SolidityTypes.solidity);
