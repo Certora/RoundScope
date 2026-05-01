@@ -1,6 +1,6 @@
 {
     "EngineUp.sol": {
-        "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol": {
+        "test/data/SpecLinkTrivial/Engine.sol": {
             "38": {
                 "certora_contract_name": "Engine",
                 "id": 38,
@@ -375,7 +375,7 @@
                 "usedEvents": []
             },
             "46": {
-                "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol",
+                "absolutePath": "test/data/SpecLinkTrivial/Engine.sol",
                 "exportedSymbols": {
                     "Engine": [
                         45
@@ -504,9 +504,9 @@
                 "src": "37:80:0"
             }
         },
-        "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/EngineUp.sol": {
+        "test/data/SpecLinkTrivial/EngineUp.sol": {
             "1": {
-                "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol",
+                "absolutePath": "test/data/SpecLinkTrivial/Engine.sol",
                 "file": "./Engine.sol",
                 "id": 1,
                 "nameLocation": "-1:-1:-1",
@@ -2995,7 +2995,7 @@
                 "usedEvents": []
             },
             "37": {
-                "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/EngineUp.sol",
+                "absolutePath": "test/data/SpecLinkTrivial/EngineUp.sol",
                 "exportedSymbols": {
                     "Engine": [
                         45
@@ -3009,7 +3009,7 @@
                 "nodeType": "SourceUnit",
                 "nodes": [
                     {
-                        "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol",
+                        "absolutePath": "test/data/SpecLinkTrivial/Engine.sol",
                         "file": "./Engine.sol",
                         "id": 1,
                         "nameLocation": "-1:-1:-1",
@@ -3537,7 +3537,7 @@
         }
     },
     "SpecLink.sol": {
-        "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol": {
+        "test/data/SpecLinkTrivial/Engine.sol": {
             "23": {
                 "certora_contract_name": "Engine",
                 "id": 23,
@@ -3912,7 +3912,7 @@
                 "usedEvents": []
             },
             "31": {
-                "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol",
+                "absolutePath": "test/data/SpecLinkTrivial/Engine.sol",
                 "exportedSymbols": {
                     "Engine": [
                         30
@@ -4041,9 +4041,9 @@
                 "src": "37:80:0"
             }
         },
-        "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/SpecLink.sol": {
+        "test/data/SpecLinkTrivial/SpecLink.sol": {
             "1": {
-                "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol",
+                "absolutePath": "test/data/SpecLinkTrivial/Engine.sol",
                 "file": "./Engine.sol",
                 "id": 1,
                 "nameLocation": "-1:-1:-1",
@@ -5354,7 +5354,7 @@
                 "usedEvents": []
             },
             "22": {
-                "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/SpecLink.sol",
+                "absolutePath": "test/data/SpecLinkTrivial/SpecLink.sol",
                 "exportedSymbols": {
                     "Engine": [
                         30
@@ -5368,7 +5368,7 @@
                 "nodeType": "SourceUnit",
                 "nodes": [
                     {
-                        "absolutePath": "/Users/julian/git/wala-solidity/test/data/SpecLinkTrivial/Engine.sol",
+                        "absolutePath": "test/data/SpecLinkTrivial/Engine.sol",
                         "file": "./Engine.sol",
                         "id": 1,
                         "nameLocation": "-1:-1:-1",
