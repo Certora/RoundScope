@@ -46,11 +46,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 	
 	@Override
 	public IMethod getCalleeTarget(CGNode caller, CallSiteReference site, IClass receiver) {
-		boolean stop = site.getDeclaredTarget().toString().contains("_onSwapGivenIn");
-		if (stop) {
-			System.err.println("this one");
-		}
-
 		class IndirectOp extends UnaryOperator<PointsToSetVariable> {
 			private final MutableIntSet oldValue = IntSetUtil.make();
 			
@@ -60,9 +55,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 					
 			@Override
 			public byte evaluate(@Nullable PointsToSetVariable lhs, PointsToSetVariable rhs) {
-				if (stop) {
-					System.err.println("this one");
-				}
 				if (rhs.getValue() != null &&  !oldValue.equals(rhs.getValue())) {
 					oldValue.addAll(rhs.getValue());
 					cgBuilder.markChanged(target());
@@ -97,9 +89,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 				PointerKey self = cgBuilder.getPointerKeyFactory().getPointerKeyForLocal(caller, call.getReceiver());
 				OrdinalSet<InstanceKey> selfTypes = cgBuilder.getPointerAnalysis().getPointsToSet(self);
 				selfTypes.forEach(selfKey -> { 
-					if (stop) {
-						System.err.println("this one");
-					}
 					if (selfKey.getConcreteType() instanceof TypedCodeBody) {
 						PointerKey selfField = cgBuilder.getPointerKeyFactory().getPointerKeyForInstanceField(selfKey, selfKey.getConcreteType().getField(Atom.findOrCreateUnicodeAtom("self")));	
 						cgBuilder.getPropagationSystem().newSideEffect(new IndirectOp(), selfField);
@@ -107,9 +96,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 						funTypes.forEach(new Consumer<InstanceKey>() {
 
 							boolean getFunctionType(IClass sc) {
-								if (stop) {
-									System.err.println("this one");
-								}
 								String nm = sc.getName() + "." + ((TypedCodeBody)selfKey.getConcreteType()).functionName();
 								IClass f = caller.getClassHierarchy().lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, TypeName.string2TypeName(nm)));
 								if (f instanceof DynamicCodeBody && ((DynamicCodeBody)f).getCodeBody() != null) {
@@ -122,9 +108,6 @@ public class VirtualTargetSelector implements MethodTargetSelector {
 
 							@Override
 							public void accept(InstanceKey fk) {
-								if (stop) {
-									System.err.println("this one");
-								}
 								if (site.getInvocationCode() == Dispatch.SPECIAL) {
 									allSupers(fk.getConcreteType()).forEach(x -> getFunctionType(x));										
 								} else {

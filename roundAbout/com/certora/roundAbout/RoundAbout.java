@@ -11,6 +11,7 @@ import org.json.JSONObject;
 
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngine;
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngineJSON;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.ibm.wala.util.CancelException;
 
 public class RoundAbout extends AnalysisRunner {
@@ -19,8 +20,11 @@ public class RoundAbout extends AnalysisRunner {
 		String conf = args[0];
 
 		SolidityRoundingAnalysisEngine E;
-		if ("--combined".equalsIgnoreCase(args[2])) {
-			E = new SolidityRoundingAnalysisEngineJSON(new File(conf), args[3]);
+		if ("--combined-spec".equalsIgnoreCase(args[2])) {
+			E = new SolidityRoundingAnalysisEngineJSON(new File(conf), new SpecFileJSON(args[3]), args[4]);
+
+		} else if ("--combined".equalsIgnoreCase(args[2])) {
+				E = new SolidityRoundingAnalysisEngineJSON(new File(conf), args[3]);
 
 		} else {
 			List<String> jsonFiles = new ArrayList<>(Arrays.asList(args));

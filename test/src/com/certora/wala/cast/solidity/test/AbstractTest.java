@@ -29,6 +29,10 @@ public abstract class AbstractTest implements CheckResult {
 		return new File(testDir(), "run.conf");
 	}
 	
+	protected File specFile() {
+		return null;
+	}
+	
 	protected DocumentContext parse(Object o) {
 		return JsonPath.using(configuration).parse(o);
 	}

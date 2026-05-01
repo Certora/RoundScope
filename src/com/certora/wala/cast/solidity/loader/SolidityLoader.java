@@ -432,15 +432,28 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 
 		@Override
 		public Collection<IClass> getDirectInterfaces() {
-			return supers.stream().map(t -> {
+			Set<IClass> si = supers.stream().map(t -> {
 				IClass s = types.get(t);
 				if (s == null && t.toString().startsWith("Lcontract ")) {
 					s = types.get(TypeName.findOrCreate("Linterface " + t.toString().substring(10)));
 				}
 				return s;
-			}).filter(x -> x != null).collect(Collectors.toList());
+			}).filter(x -> x != null).collect(Collectors.toSet());
+			if (!si.contains(getSuperclass()) && getSuperclass().isInterface()) {
+				si.add(getSuperclass());
+			}
+			return si;
 		}
 
+		@Override
+		public Set<IClass> getAllImplementedInterfaces() {
+			Set<IClass> result = HashSetFactory.make(getDirectInterfaces());
+			allSupers(this).forEach(c -> {
+				result.addAll(c.getDirectInterfaces());
+			});
+			return result;
+		}
+		
 		@Override
 		public IClass getSuperclass() {
 			return lookupClass(superClass);
@@ -1037,15 +1050,22 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 	}
 		
 	public static Set<IClass> allSupers(IClass cls) {
+		return allSupers(cls, HashSetFactory.make());
+	}
+	
+	public static Set<IClass> allSupers(IClass cls, Set<IClass> seen) {
 		if (cls == null) {
 			return Collections.emptySet();
 		} else {
-			Set<IClass> directSupers = HashSetFactory.make(cls.getAllImplementedInterfaces());
+			Set<IClass> directSupers = HashSetFactory.make(cls.isArrayClass()? Collections.emptySet(): cls.getDirectInterfaces());
 			if (cls.getSuperclass() != null) {
 				directSupers.add(cls.getSuperclass());
 			}
 			
-			Collection<IClass> otherSupers = directSupers.stream().filter(x -> x != null).map(sc -> allSupersIncludingSelf(sc)).reduce((a, b) -> { 
+			Set<IClass> newSeen = HashSetFactory.make(seen);
+			newSeen.addAll(directSupers);
+			directSupers.removeAll(seen);
+			Collection<IClass> otherSupers = directSupers.stream().filter(x -> x != null).map(sc -> allSupers(sc, newSeen)).reduce((a, b) -> { 
 				Set<IClass> all = HashSetFactory.make(a);
 				all.addAll(b);
 				return all;

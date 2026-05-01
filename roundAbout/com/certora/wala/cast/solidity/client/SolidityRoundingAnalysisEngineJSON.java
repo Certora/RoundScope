@@ -23,6 +23,7 @@ import com.certora.wala.cast.solidity.json.JsonNodeTypeOnlyVisitor;
 import com.certora.wala.cast.solidity.loader.SolidityJSONLoaderFactory;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.loader.SolidityLoaderFactory;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.certora.wala.classLoader.SourceJSONModule;
 import com.google.common.collect.Streams;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
@@ -37,11 +38,15 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 	private JSONObject originalTree;
 	private final Module[] jsons;
 	
-	public SolidityRoundingAnalysisEngineJSON(File confFile, String[] jsonFileNames) throws FileNotFoundException {
-		super(confFile);
+	public SolidityRoundingAnalysisEngineJSON(File confFile, SpecFileJSON spec, String[] jsonFileNames) throws FileNotFoundException {
+		super(confFile, spec);
 		jsons = Arrays.stream(jsonFileNames).map(f -> new SourceFileModule(new File(f), f, null)).toArray(i -> new Module[i]);
 	}
 
+	public SolidityRoundingAnalysisEngineJSON(File confFile, String[] jsonFileNames) throws FileNotFoundException {
+		this(confFile, null, jsonFileNames);
+	}
+	
 	public static class JsonSourceUnits implements JsonNodeTypeOnlyVisitor<Void> {
 		private final Set<JSONObject> sources = HashSetFactory.make();
 		
@@ -75,7 +80,11 @@ public class SolidityRoundingAnalysisEngineJSON extends SolidityRoundingAnalysis
 	}
 	
 	public SolidityRoundingAnalysisEngineJSON(File confFile, String solidityJsonFileName) throws IOException {
-		super(confFile);
+		this(confFile, null, solidityJsonFileName);
+	}
+	
+	public SolidityRoundingAnalysisEngineJSON(File confFile, SpecFileJSON spec, String solidityJsonFileName) throws IOException {
+		super(confFile, spec);
 		try (Reader is = 
 				solidityJsonFileName.endsWith(".bz2")?
 					new InputStreamReader(new BZip2CompressorInputStream(new FileInputStream(solidityJsonFileName))):

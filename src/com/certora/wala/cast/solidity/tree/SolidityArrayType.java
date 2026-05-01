@@ -25,6 +25,10 @@ public class SolidityArrayType implements CAstType {
 		return Collections.singleton(SolidityCAstType.get("array"));
 	}
 
+	public CAstType getElementType() {
+		return eltType;
+	}
+	
 	private static Map<CAstType, SolidityArrayType> types = HashMapFactory.make();
 	
 	public static CAstType get(CAstType elt) {

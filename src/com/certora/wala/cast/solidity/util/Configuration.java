@@ -5,8 +5,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -29,10 +31,10 @@ import spec.VMConfig;
 
 public class Configuration {
 
-	public interface Conf {
+	public interface Conf extends CVLLinkageSpec {
 		Ast getRules();
 		Collection<Module> getFiles();
-		public Map<Pair<Atom,TypeReference>,TypeReference> getLink();
+		public Map<Pair<List<Either<Atom,Integer>>,TypeReference>,TypeReference>  getLink();
 		Map<String, File> getIncludePath();
 	}
 	
@@ -87,17 +89,18 @@ public class Configuration {
 			}
 
 			@Override
-			public Map<Pair<Atom,TypeReference>,TypeReference> getLink() {
+			public Map<Pair<List<Either<Atom,Integer>>,TypeReference>,TypeReference>  getLink() {
 				if (cf.has("link")) {
-					Map<Pair<Atom,TypeReference>,TypeReference> result = HashMapFactory.make();
+					Map<Pair<List<Either<Atom,Integer>>,TypeReference>,TypeReference>  result = HashMapFactory.make();
 					JSONArray map = cf.getJSONArray("link");
 					for(int i =  0; i < map.length(); i++) {
 						String elt = map.getString(i);
 						String[] elts = elt.split("[:=]");
 						result.put(
-								Pair.make(Atom.findOrCreateUnicodeAtom(elts[1]),
-										TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[0])),
-								TypeReference.findOrCreate(SolidityTypes.solidity, 'L' + elts[2]));
+							Pair.make(
+									Collections.singletonList(Either.forLeft(Atom.findOrCreateUnicodeAtom(elts[1]))),
+									TypeReference.findOrCreate(SolidityTypes.solidity, "Lcontract " + elts[0])),
+								TypeReference.findOrCreate(SolidityTypes.solidity, "Lcontract " + elts[2]));
 					}
 					return result;
 				} else {

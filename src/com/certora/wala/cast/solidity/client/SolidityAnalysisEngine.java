@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.certora.wala.cast.solidity.ipa.callgraph.EnumValueContextSelector;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
@@ -17,6 +18,7 @@ import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
@@ -51,9 +53,10 @@ import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.DelegatingSSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
+import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
-import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
+import com.ibm.wala.ipa.cha.SolidityClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRView;
@@ -77,10 +80,16 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 	protected final File confFile;
 	protected final Conf conf;
 	protected SingleClassLoaderFactory loaders;
+	protected final SpecFileJSON spec;
 	
-	protected SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
+	protected SolidityAnalysisEngine(File confFile, SpecFileJSON spec) throws FileNotFoundException {
 		this.confFile = confFile;
+		this.spec = spec;
 		this.conf = Configuration.getConf(confFile);
+	}
+
+	protected SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
+		this(confFile, null);	
 	}
 	
 	@Override
@@ -140,7 +149,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 		long start = System.nanoTime();
 		IClassHierarchy cha;
 		try {
-			cha = ClassHierarchyFactory.make(scope, loaders);
+			cha = new SolidityClassHierarchy(scope, loaders, null, new ConcurrentHashMap<>(), ClassHierarchy.MissingSuperClassHandling.NONE);
 			setClassHierarchy(cha);
 			
 			SolidityLoader solidityLoader = (SolidityLoader) cha.getLoader(SolidityTypes.solidity);
@@ -343,7 +352,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 
 	@Override
 	protected Iterable<Entrypoint> makeDefaultEntrypoints(IClassHierarchy cha) {
-		return LinkedEntrypoint.getContractEntrypoints(conf.getLink(), cha);
+		return LinkedEntrypoint.getContractEntrypoints(spec==null? conf: spec, cha);
 	}
 
 	@Override
