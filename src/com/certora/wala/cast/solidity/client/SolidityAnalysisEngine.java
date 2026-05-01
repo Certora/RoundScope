@@ -18,6 +18,7 @@ import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.Configuration;
 import com.certora.wala.cast.solidity.util.Configuration.Conf;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.ibm.wala.analysis.reflection.FactoryBypassInterpreter;
 import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterpreter;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
@@ -54,7 +55,6 @@ import com.ibm.wala.ipa.callgraph.propagation.cfa.ZeroXInstanceKeys;
 import com.ibm.wala.ipa.callgraph.propagation.cfa.nCFABuilder;
 import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
-import com.ibm.wala.ipa.cha.ClassHierarchyFactory;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SolidityClassHierarchy;
 import com.ibm.wala.ssa.DefUse;
@@ -80,10 +80,16 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 	protected final File confFile;
 	protected final Conf conf;
 	protected SingleClassLoaderFactory loaders;
+	protected final SpecFileJSON spec;
 	
-	protected SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
+	protected SolidityAnalysisEngine(File confFile, SpecFileJSON spec) throws FileNotFoundException {
 		this.confFile = confFile;
+		this.spec = spec;
 		this.conf = Configuration.getConf(confFile);
+	}
+
+	protected SolidityAnalysisEngine(File confFile) throws FileNotFoundException {
+		this(confFile, null);	
 	}
 	
 	@Override
@@ -346,7 +352,7 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 
 	@Override
 	protected Iterable<Entrypoint> makeDefaultEntrypoints(IClassHierarchy cha) {
-		return LinkedEntrypoint.getContractEntrypoints(conf.getLink(), cha);
+		return LinkedEntrypoint.getContractEntrypoints(spec==null? conf: spec, cha);
 	}
 
 	@Override

@@ -10,6 +10,7 @@ import java.util.Set;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
 import com.certora.wala.cast.solidity.types.SolidityTypes;
+import com.certora.wala.cast.solidity.util.CVLLinkageSpec;
 import com.ibm.wala.cast.loader.AstFunctionClass;
 import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
@@ -105,6 +106,10 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 		return new TypeReference[] { method.getParameterType(i) };
 	}
 
+	public static Set<Entrypoint> getContractEntrypoints(CVLLinkageSpec spec, IClassHierarchy cha) {
+		return getContractEntrypoints(spec.getLink(), cha);
+	}
+	
 	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> map, IClassHierarchy cha) {
 		Set<Entrypoint> es = HashSetFactory.make();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);

@@ -8,6 +8,7 @@ import java.util.Collections;
 import com.certora.wala.cast.solidity.loader.SolidityJNILoaderFactory;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.loader.SolidityLoaderFactory;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.ibm.wala.cast.ipa.callgraph.CAstAnalysisScope;
 import com.ibm.wala.classLoader.Module;
 import com.ibm.wala.util.config.StringFilter;
@@ -16,6 +17,10 @@ public class SolidityRoundingAnalysisEngineJNI extends SolidityRoundingAnalysisE
 
 	public SolidityRoundingAnalysisEngineJNI(File confFile) throws FileNotFoundException {
 		super(confFile);
+	}
+
+	public SolidityRoundingAnalysisEngineJNI(File confFile, SpecFileJSON spec) throws FileNotFoundException {
+		super(confFile, spec);
 	}
 
 	@Override

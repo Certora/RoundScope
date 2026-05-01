@@ -13,6 +13,7 @@ import com.certora.wala.analysis.rounding.RoundingAnalysis;
 import com.certora.wala.analysis.rounding.RoundingAnalysis.RoundingInference.Result;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
 import com.certora.wala.cast.solidity.util.JSONOutput;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.google.common.collect.Streams;
 import com.ibm.wala.cast.ipa.callgraph.CAstCallGraphUtil;
 import com.ibm.wala.cast.loader.AstMethod;
@@ -37,6 +38,10 @@ public abstract class SolidityRoundingAnalysisEngine extends SolidityAnalysisEng
 
 	public SolidityRoundingAnalysisEngine(File confFile) throws FileNotFoundException {
 		super(confFile);
+	}
+
+	public SolidityRoundingAnalysisEngine(File confFile, SpecFileJSON spec) throws FileNotFoundException {
+		super(confFile, spec);
 	}
 
 	@Override
