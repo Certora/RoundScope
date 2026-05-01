@@ -7,6 +7,7 @@ import org.json.JSONObject;
 
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngineJSON;
 import com.certora.wala.cast.solidity.test.AbstractTest;
+import com.certora.wala.cast.solidity.util.SpecFileJSON;
 import com.ibm.wala.util.CancelException;
 
 public abstract class AbstractJsonTest extends AbstractTest {
@@ -24,7 +25,10 @@ public abstract class AbstractJsonTest extends AbstractTest {
 	}
 
 	protected JSONObject runAnalysis() throws IllegalArgumentException, IOException, CancelException {
-		SolidityRoundingAnalysisEngineJSON E = new SolidityRoundingAnalysisEngineJSON(confFile(), astsFile.getAbsolutePath());
+		SolidityRoundingAnalysisEngineJSON E = 
+				specFile() == null?
+				new SolidityRoundingAnalysisEngineJSON(confFile(), astsFile.getAbsolutePath()):
+				new SolidityRoundingAnalysisEngineJSON(confFile(), new SpecFileJSON(specFile()), astsFile.getAbsolutePath());
 		try {
 			return E.analyze();
 		} finally {

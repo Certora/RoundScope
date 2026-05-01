@@ -24,9 +24,9 @@ public class TestSpecFileJSON {
 		SpecFileJSON s = new SpecFileJSON(bl);
 		Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> l = s.getLink();
 		System.err.println(l);
-		Pair<List<Either<@NonNull Atom, Object>>, TypeReference> key = Pair.make(Collections.singletonList(Either.forLeft(Atom.findOrCreateUnicodeAtom("primaryToken"))), TypeReference.findOrCreate(SolidityTypes.solidity, "BasicVault"));
+		Pair<List<Either<@NonNull Atom, Object>>, TypeReference> key = Pair.make(Collections.singletonList(Either.forLeft(Atom.findOrCreateUnicodeAtom("primaryToken"))), TypeReference.findOrCreate(SolidityTypes.solidity, "Lcontract BasicVault"));
 		assert l.containsKey(key);
-		assert l.get(key).equals(TypeReference.findOrCreate(SolidityTypes.solidity, "TokenA"));
+		assert l.get(key).equals(TypeReference.findOrCreate(SolidityTypes.solidity, "Lcontract TokenA"));
 	}
 	
 }

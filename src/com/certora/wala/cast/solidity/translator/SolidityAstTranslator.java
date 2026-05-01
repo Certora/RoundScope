@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import com.certora.wala.cast.solidity.loader.EnumType;
 import com.certora.wala.cast.solidity.loader.FunctionType;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
+import com.certora.wala.cast.solidity.tree.SolidityArrayType;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
 import com.certora.wala.cast.solidity.tree.SolidityMappingType;
 import com.certora.wala.cast.solidity.tree.SolidityTupleType;
@@ -176,6 +177,9 @@ public class SolidityAstTranslator extends AstTranslator {
 		if (t instanceof SolidityMappingType) {
 			CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
 			eltType =  SolidityCAstType.getIRType(eltCAstType);
+		} else if (t instanceof SolidityArrayType) {
+			CAstType eltCAstType = ((SolidityArrayType)t).getElementType();
+			eltType =  SolidityCAstType.getIRType(eltCAstType);			
 		} else {
 			eltType = SolidityTypes.bytes;
 		}
@@ -197,6 +201,9 @@ public class SolidityAstTranslator extends AstTranslator {
 		if (t instanceof SolidityMappingType) {
 			CAstType eltCAstType = ((SolidityMappingType)t).getReturnType();
 			eltType =  SolidityCAstType.getIRType(eltCAstType);
+		} else if (t instanceof SolidityArrayType) {
+			CAstType eltCAstType = ((SolidityArrayType)t).getElementType();
+			eltType =  SolidityCAstType.getIRType(eltCAstType);			
 		} else {
 			eltType = SolidityTypes.bytes;
 		}

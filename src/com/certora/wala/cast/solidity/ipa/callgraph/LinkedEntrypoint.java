@@ -78,20 +78,30 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 			linkage.forEach((x, y) -> { 
 				if (selfType.getReference().equals(x.snd)) {
 					int o = objSelf;
+					TypeReference t = selfType.getReference();
 					Iterator<Either<Atom, Integer>> path = x.fst.iterator();
 					while (path.hasNext()) {
 						Either<Atom, Integer> elt = path.next();
 						boolean last = !path.hasNext();
 						if (elt.isLeft()) {
-							FieldReference fr = getCha().resolveField(FieldReference.findOrCreate(x.snd, elt.getLeft(), y)).getReference();							
+							IField f = getCha().lookupClass(t).getField(elt.getLeft());					
 							if (last) {
 								SSANewInstruction alloc = m.addAllocation(y);
-								m.addSetInstance(fr, o, alloc.getDef());
+								m.addSetInstance(f.getReference(), o, alloc.getDef());
 							} else {
-								
+								o = m.addGetInstance(f.getReference(), o);
+								t = f.getFieldTypeReference();
 							}
 						} else {
-							
+							TypeReference eltType = getCha().lookupClass(t).getReference().getArrayElementType();
+							int index = elt.getRight();
+							if (last) {
+								SSANewInstruction alloc = m.addAllocation(y);
+								m.addSetArrayField(y, o, m.getValueNumberForIntConstant(index), alloc.getDef());
+							} else {
+								m.addGetArrayField(eltType, o, index);
+								t = eltType;
+							}	
 						}
 					}
 				}

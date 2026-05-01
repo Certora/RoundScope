@@ -48,7 +48,7 @@ public class SpecFileJSON implements CVLLinkageSpec {
 			}			
 			
 			Streams.stream(ast.getJSONArray("linkEntries").iterator()).map(x -> (JSONObject)x).forEach(entry -> { 
-				TypeReference container = TypeReference.findOrCreate(SolidityTypes.solidity, nameAliases.get(entry.getString("sourceContractAlias")));
+				TypeReference container = TypeReference.findOrCreate(SolidityTypes.solidity, "Lcontract " + nameAliases.get(entry.getString("sourceContractAlias")));
 				
 				List<Either<Atom,Integer>> fields = Streams.stream(entry.getJSONArray("fieldPath").iterator()).map(x -> (JSONObject)x).map(f -> {
 					switch (f.getString("type")) {
@@ -63,7 +63,7 @@ public class SpecFileJSON implements CVLLinkageSpec {
 				}).collect(Collectors.toList());
 				
 				List<TypeReference> targets = Streams.stream(entry.getJSONArray("targets").iterator()).map(x -> (String)x).map(target -> 
-					TypeReference.findOrCreate(SolidityTypes.solidity, nameAliases.get(target))
+					TypeReference.findOrCreate(SolidityTypes.solidity, "Lcontract " + nameAliases.get(target))
 				).collect(Collectors.toList());
 				
 				targets.forEach(t -> { 
