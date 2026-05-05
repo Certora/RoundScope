@@ -46,7 +46,7 @@ public abstract class AbstractTest implements CheckResult {
 	public void test() throws IllegalArgumentException, IOException, CancelException {
 		JSONObject result = runAnalysis();
 		File outFile = File.createTempFile("roundAbout", ".json");
-		System.err.println(outFile);
+		System.err.println(getClass().getSimpleName() + ": " + outFile);
 		try (FileWriter w = new FileWriter(outFile)) {
 			result.write(w, 3, 0);
 		}
