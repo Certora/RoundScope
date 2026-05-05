@@ -1548,8 +1548,11 @@ public class RoundingAnalysis {
 								for (CGNode callee : CG.getPossibleTargets(n,
 										((SSAInvokeInstruction) inst).getCallSite())) {
 									Pair<CGNode, List<Direction>> key = Pair.make(callee, args);
-									if (rawResults.containsKey(key) && !startedSoFar.containsKey(key)) {
-									  g.addEdge(thisOne, rawResults.get(key).makeGraph(g, startedSoFar), dbg.getInstructionPosition(inst.iIndex()));
+									if (rawResults.containsKey(key))
+										if (!startedSoFar.containsKey(key)) {
+											g.addEdge(thisOne, rawResults.get(key).makeGraph(g, startedSoFar), dbg.getInstructionPosition(inst.iIndex()));
+										} else {
+											g.addEdge(thisOne, startedSoFar.get(key), dbg.getInstructionPosition(inst.iIndex()));
 									}
 								}
 							}
