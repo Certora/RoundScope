@@ -1795,14 +1795,17 @@ public class JSONToCAst {
 									    	new CAstSymbolImpl(((JSONObject)v).getString("name"), CAstType.DYNAMIC))))
 							.toList();
 					
-						CAstNode val = new YulExpressionVisitor().visit(o.getJSONObject("value"), null);
-					
+						CAstNode val = o.has("value")? new YulExpressionVisitor().visit(o.getJSONObject("value"), null): null;
+						
 						if (decls.size() == 1) {
 							return ast.makeNode(CAstNode.BLOCK_STMT, 
 								ast.makeNode(CAstNode.BLOCK_STMT, decls),
+								(val != null)?
 								ast.makeNode(CAstNode.ASSIGN,
 									ast.makeNode(CAstNode.VAR, ast.makeConstant(o.getJSONArray("variables").getJSONObject(0).getString("name"))),
-									val));
+									val):
+								ast.makeNode(CAstNode.EMPTY));
+									
 						} else {
 							return ast.makeNode(CAstNode.EMPTY);
 						}
