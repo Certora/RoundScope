@@ -1196,6 +1196,7 @@ public class JSONToCAst {
 
 						CAstNode[] retVals = Streams
 						   .stream(o.getJSONObject("returnParameters").getJSONArray("parameters").iterator())
+						   .filter(x -> ((JSONObject) x).has("name") && !"".equals(((JSONObject)x).getString("name")))
 						   .map(x -> ast.makeNode(CAstNode.VAR,
 								   ast.makeConstant(((JSONObject) x).getString("name"))))
 						   .toArray(i -> new CAstNode[i]);
