@@ -20,15 +20,5 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Checkout WALA head
-        uses: actions/checkout@v6
-        with:
-          repository: wala/WALA
-          path: WALA
-
-      - name: Publish WALA head to local Maven
-        working-directory: WALA
-        run: ./gradlew --no-daemon installDebug publishToMavenLocal -xtest
-
-      - name: Run RoundAbout tests and package build
+       - name: Run RoundAbout tests and package build
         run: mvn verify
