@@ -67,6 +67,7 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.NullProgressMonitor;
 import com.ibm.wala.util.collections.HashMapFactory;
 import com.ibm.wala.util.collections.HashSetFactory;
+import com.ibm.wala.util.collections.IteratorUtil;
 import com.ibm.wala.util.collections.Pair;
 import com.ibm.wala.util.graph.NumberedGraph;
 import com.ibm.wala.util.graph.dominators.Dominators;
@@ -84,17 +85,22 @@ public class RoundingAnalysis {
 	
 	private final CallGraph CG;
 	private final PointerAnalysis<InstanceKey> PA;
-	private final RoundingSummary S = new RoundingSummary.Default();
+	private final RoundingSummary S;
 	
 	private final Map<Pair<CGNode, List<Direction>>, RoundingInference.Result> rawResults = HashMapFactory.make();
 	private final Map<Pair<CGNode, List<Direction>>, Map<FieldReference, Direction>> directionalCalls = HashMapFactory
 			.make();
 
-	public RoundingAnalysis(CallGraph CG, PointerAnalysis<InstanceKey> PA) {
+	public RoundingAnalysis(CallGraph CG, PointerAnalysis<InstanceKey> PA, RoundingSummary S) {
 		this.CG = CG;
 		this.PA = PA;
+		this.S = S;
 	}
 
+	public RoundingAnalysis(CallGraph CG, PointerAnalysis<InstanceKey> PA) {
+		this(CG, PA,  new RoundingSummary.Default());
+	}
+	
 	private class MaybeBooleanVariable extends AbstractVariable<MaybeBooleanVariable> {
 		private boolean hasValue;
 		private boolean value;
@@ -239,9 +245,6 @@ public class RoundingAnalysis {
 
 							Boolean r = null;
 							for (CGNode callee : CG.getPossibleTargets(boolNode, instruction.getCallSite())) {
-								if (callee.getMethod().toString().contains("toUint>")) {
-									System.err.println("me");
-								}
 								if (ongoing.contains(callee)) {
 									return NOT_CHANGED;
 								}
@@ -301,8 +304,6 @@ public class RoundingAnalysis {
 							for(int i = 0; i < instruction.getNumberOfUses(); i++) {
 								if (!deadPhiRvals.containsKey(instruction) || !deadPhiRvals.get(instruction).contains(instruction.getUse(i))) {
 									bs.add(rhs[i].hasValue? rhs[i].value: null);
-								} else {
-									System.err.println("skipping dead " + instruction.getUse(i) + " " + rhs[i]);
 								}
 							}
 							if (bs.size() != 1 || bs.contains(null)) {
@@ -724,16 +725,22 @@ public class RoundingAnalysis {
 				return (x == null || x.booleanValue()) || (ir.getSymbolTable().isConstant(v.vn) && Integer.valueOf(0).equals(ir.getSymbolTable().getConstantValue(v.vn)));
 			}
 			
+			private boolean isNotAddChain(int vn) {
+				return IteratorUtil.count(du.getUses(vn)) != 1 ||
+					   !(du.getUses(vn).next() instanceof SSABinaryOpInstruction  &&
+					     ((SSABinaryOpInstruction)du.getUses(vn).next()).getOperator() == IBinaryOpInstruction.Operator.ADD);		   
+			}
+			
 			@Override
 			public byte evaluate(RoundingVariable lhs, RoundingVariable[] rhs) {
-				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither && mightBeNonZero(rhs[1]) && !inCycle(lhs.vn, rhs[1].vn)) {
+				if (isDivDown(rhs[0]) && rhs[1].state == Direction.Neither && mightBeNonZero(rhs[1]) && !inCycle(lhs.vn, rhs[1].vn) && isNotAddChain(lhs.vn)) {
 					Direction d = isDivArgRoundedDownResult(rhs[0].vn)? Direction.Inconsistent: Direction.Up;
 					if (lhs.state != d) {
 						lhs.state = d;
 						lhs.wrt = rhs[0].wrt;
 						return CHANGED;
 					}
-				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither && mightBeNonZero(rhs[0]) && !inCycle(lhs.vn, rhs[0].vn)) { 
+				} else if (isDivDown(rhs[1]) && rhs[0].state == Direction.Neither && mightBeNonZero(rhs[0]) && !inCycle(lhs.vn, rhs[0].vn) && isNotAddChain(lhs.vn)) { 
 					Direction d = isDivArgRoundedDownResult(rhs[1].vn)? Direction.Inconsistent: Direction.Up;
 					if (lhs.state != d) {
 						lhs.state = d;
@@ -844,7 +851,6 @@ public class RoundingAnalysis {
 					ISSABasicBlock db = trueBranch? Util.getNotTakenSuccessor(cfg, pb): Util.getTakenSuccessor(cfg, pb);
 					cfg.getSuccNodes(pb).forEachRemaining(sb -> {
 						if (cdg.getEdgeLabels(pb, sb).contains(db)) {
-							System.err.println("dead block " + sb);
 							deadBlocks.addAll(DFS.getReachableNodes(cdg, Collections.singleton(sb)));
 						}
 					});
@@ -1292,11 +1298,6 @@ public class RoundingAnalysis {
 
 			if (more) {
 				booleanConstants = new TrivialBooleanConstantPropagation(n, null, Collections.emptySet());
-			}
-
-			
-			if (! deadBlocks.isEmpty()) {
-				System.err.println(deadBlocks);
 			}
 		}
 		

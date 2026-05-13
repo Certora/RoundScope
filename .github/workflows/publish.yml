@@ -24,14 +24,13 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-      - name: Checkout WALA fork
+      - name: Checkout WALA head
         uses: actions/checkout@v6
         with:
           repository: julian-certora/WALA
-          ref: fixesToNativeBridge
           path: WALA
 
-      - name: Publish WALA fork to local Maven
+      - name: Publish WALA head to local Maven
         working-directory: WALA
         run: ./gradlew --no-daemon publishToMavenLocal -xtest
 

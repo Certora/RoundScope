@@ -4,8 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -18,7 +18,6 @@ import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngine;
 import com.certora.wala.cast.solidity.client.SolidityRoundingAnalysisEngineJNI;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
-import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
 import com.certora.wala.cast.solidity.loader.SolidityJNILoaderFactory;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
 import com.certora.wala.cast.solidity.types.SolidityTypes;
@@ -105,7 +104,7 @@ public class AnalysisRunnerJNI extends AnalysisRunner {
 
 			System.out.println(cha);
 
-			Set<Entrypoint> es = LinkedEntrypoint.getContractEntrypoints(conf.getLink(), cha);
+			List<Entrypoint> es = LinkedEntrypoint.getContractEntrypoints(conf.getLink(), cha);
 
 			System.out.println("Entrypoints:");
 			es.forEach(e -> System.out.println(e));
@@ -137,8 +136,6 @@ public class AnalysisRunnerJNI extends AnalysisRunner {
 					SolidityLoader.solidity.getFakeRootMethod(cha, options, analysisCache), options, analysisCache,
 					appSelector, appInterpreter);
 		
-			options.setSelector(new VirtualTargetSelector(cgBuilder, options));
-
 			cgBuilder.setContextInterpreter(
 				new DelegatingSSAContextInterpreter(
 		              new FactoryBypassInterpreter(options, analysisCache), 

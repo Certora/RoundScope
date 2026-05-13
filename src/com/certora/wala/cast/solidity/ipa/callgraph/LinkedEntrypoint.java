@@ -2,10 +2,10 @@ package com.certora.wala.cast.solidity.ipa.callgraph;
 
 import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupersIncludingSelf;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 
@@ -27,7 +27,6 @@ import com.ibm.wala.types.FieldReference;
 import com.ibm.wala.types.MethodReference;
 import com.ibm.wala.types.TypeReference;
 import com.ibm.wala.util.collections.HashMapFactory;
-import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
 
 public class LinkedEntrypoint extends DefaultEntrypoint {
@@ -116,12 +115,12 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 		return new TypeReference[] { method.getParameterType(i) };
 	}
 
-	public static Set<Entrypoint> getContractEntrypoints(CVLLinkageSpec spec, IClassHierarchy cha) {
+	public static List<Entrypoint> getContractEntrypoints(CVLLinkageSpec spec, IClassHierarchy cha) {
 		return getContractEntrypoints(spec.getLink(), cha);
 	}
 	
-	public static Set<Entrypoint> getContractEntrypoints(Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> map, IClassHierarchy cha) {
-		Set<Entrypoint> es = HashSetFactory.make();
+	public static List<Entrypoint> getContractEntrypoints(Map<Pair<List<Either<Atom, Integer>>, TypeReference>, TypeReference> map, IClassHierarchy cha) {
+		List<Entrypoint> es = new ArrayList<>();
 		IClass contractClass = cha.lookupClass(SolidityTypes.contract);
 		cha.forEach(cls -> { 
 			if (cls != contractClass && cha.isAssignableFrom(contractClass, cls) && !cls.isInterface() && !cls.isAbstract()) {
@@ -134,8 +133,7 @@ public class LinkedEntrypoint extends DefaultEntrypoint {
 							es.add(new LinkedEntrypoint(afc.getCodeBody(), cha, cls, map));
 						}
 					}
-				})
-			);
+				}));
 			}
 		});
 		return es;
