@@ -20,5 +20,5 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v6
 
-       - name: Run RoundAbout tests and package build
+      - name: Run RoundAbout tests and package build
         run: mvn verify
