@@ -8,3 +8,6 @@ dependencies = [
     "pygments",
     "tqdm",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "viewer/tests", "utils/tests"]

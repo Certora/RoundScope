@@ -1,0 +1,48 @@
+name: Integration Tests
+
+on: [push, pull_request]
+
+jobs:
+  # Fast tests that don't need certoraRun or Java
+  # Uses pre-generated roundabout JSON → viewer HTML generation
+  viewer-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install json5 packaging pygments pytest
+
+      - name: Run viewer-only integration tests
+        run: pytest tests/integration/ -v -k "from_json"
+
+  # Full pipeline tests (certoraRun + Java + built jar)
+  full-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Install Python dependencies
+        run: pip install json5 packaging pygments pytest certora-cli
+
+      - name: Build RoundAbout jar
+        run: mvn package -DskipTests
+
+      - name: Run all integration tests (including fault injection)
+        run: pytest tests/integration/ -v
