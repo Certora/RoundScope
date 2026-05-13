@@ -39,7 +39,7 @@ pip install .
    ```
    pip install .
    ```
-   This installs the required Python packages (`json5`, `pygments`) declared in `pyproject.toml`.
+   This installs the required Python packages (`json5`, `pygments`) declared in `pyproject.toml`.  (Please note that `pip install mvn` will install something, but it is _not_ Maven)
 
 ## <img src="viewer/roundabout-icon.svg" width="28" height="28" alt="RoundAbout icon" style="vertical-align:middle"> RoundAbout Usage
 
