@@ -1,17 +1,24 @@
 package com.certora.wala.cast.solidity.client;
 
+import static com.certora.wala.cast.solidity.loader.SolidityLoader.allSupers;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import com.certora.wala.cast.solidity.ipa.callgraph.EnumValueContextSelector;
 import com.certora.wala.cast.solidity.ipa.callgraph.LinkedEntrypoint;
 import com.certora.wala.cast.solidity.ipa.callgraph.SolidityAddressInstantiator;
-import com.certora.wala.cast.solidity.ipa.callgraph.VirtualTargetSelector;
 import com.certora.wala.cast.solidity.loader.EnumType;
+import com.certora.wala.cast.solidity.loader.InterfaceType;
 import com.certora.wala.cast.solidity.loader.SolidityLoader;
+import com.certora.wala.cast.solidity.loader.SolidityLoader.TypedCodeBody;
 import com.certora.wala.cast.solidity.translator.InterproceduralConstantFoldingRewriter;
 import com.certora.wala.cast.solidity.translator.SolidityAstTranslator;
 import com.certora.wala.cast.solidity.tree.SolidityCAstType;
@@ -24,7 +31,9 @@ import com.ibm.wala.cast.ipa.callgraph.AstContextInsensitiveSSAContextInterprete
 import com.ibm.wala.cast.ir.ssa.AstIRFactory;
 import com.ibm.wala.cast.ir.ssa.AstIRFactory.AstDefaultIRFactory;
 import com.ibm.wala.cast.ir.translator.AstTranslator;
+import com.ibm.wala.cast.loader.AstMethod;
 import com.ibm.wala.cast.loader.AstMethod.Retranslatable;
+import com.ibm.wala.cast.loader.CAstAbstractModuleLoader.DynamicCodeBody;
 import com.ibm.wala.cast.loader.SingleClassLoaderFactory;
 import com.ibm.wala.cast.tree.CAst;
 import com.ibm.wala.cast.tree.CAstControlFlowMap;
@@ -34,9 +43,11 @@ import com.ibm.wala.cast.tree.CAstType;
 import com.ibm.wala.cast.tree.impl.CAstImpl;
 import com.ibm.wala.cast.tree.impl.CAstOperator;
 import com.ibm.wala.cfg.ControlFlowGraph;
+import com.ibm.wala.classLoader.CallSiteReference;
 import com.ibm.wala.classLoader.IClass;
 import com.ibm.wala.classLoader.IMethod;
 import com.ibm.wala.client.AbstractAnalysisEngine;
+import com.ibm.wala.core.util.strings.Atom;
 import com.ibm.wala.ipa.callgraph.AnalysisCacheImpl;
 import com.ibm.wala.ipa.callgraph.AnalysisOptions;
 import com.ibm.wala.ipa.callgraph.CGNode;
@@ -47,6 +58,7 @@ import com.ibm.wala.ipa.callgraph.Entrypoint;
 import com.ibm.wala.ipa.callgraph.IAnalysisCacheView;
 import com.ibm.wala.ipa.callgraph.impl.Util;
 import com.ibm.wala.ipa.callgraph.propagation.InstanceKey;
+import com.ibm.wala.ipa.callgraph.propagation.PointerKey;
 import com.ibm.wala.ipa.callgraph.propagation.PropagationCallGraphBuilder;
 import com.ibm.wala.ipa.callgraph.propagation.SSAContextInterpreter;
 import com.ibm.wala.ipa.callgraph.propagation.SSAPropagationCallGraphBuilder;
@@ -57,10 +69,12 @@ import com.ibm.wala.ipa.cha.ClassHierarchy;
 import com.ibm.wala.ipa.cha.ClassHierarchyException;
 import com.ibm.wala.ipa.cha.IClassHierarchy;
 import com.ibm.wala.ipa.cha.SolidityClassHierarchy;
+import com.ibm.wala.shrike.shrikeBT.IInvokeInstruction.Dispatch;
 import com.ibm.wala.ssa.DefUse;
 import com.ibm.wala.ssa.IR;
 import com.ibm.wala.ssa.IRView;
 import com.ibm.wala.ssa.ISSABasicBlock;
+import com.ibm.wala.ssa.SSAAbstractInvokeInstruction;
 import com.ibm.wala.ssa.SSAInstruction;
 import com.ibm.wala.ssa.SSAOptions;
 import com.ibm.wala.ssa.SSAOptions.DefaultValues;
@@ -71,7 +85,9 @@ import com.ibm.wala.util.CancelException;
 import com.ibm.wala.util.MonitorUtil.IProgressMonitor;
 import com.ibm.wala.util.WalaRuntimeException;
 import com.ibm.wala.util.collections.HashMapFactory;
+import com.ibm.wala.util.collections.HashSetFactory;
 import com.ibm.wala.util.collections.Pair;
+import com.ibm.wala.util.intset.OrdinalSet;
 
 public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<InstanceKey, CallGraphBuilder<InstanceKey>, A> {
 
@@ -104,43 +120,140 @@ public abstract class SolidityAnalysisEngine<A> extends AbstractAnalysisEngine<I
 
 		ContextSelector appSelector = null;
 		SSAContextInterpreter appInterpreter = null;
-		SSAPropagationCallGraphBuilder cgBuilder = new nCFABuilder(2,
-				SolidityLoader.solidity.getFakeRootMethod(cha, options, analysisCache), options, analysisCache,
-				appSelector, appInterpreter);
-	
-		options.setSelector(new VirtualTargetSelector(cgBuilder, options));
+		SSAPropagationCallGraphBuilder cgBuilder = 
+		  new nCFABuilder(2, SolidityLoader.solidity.getFakeRootMethod(cha, options, analysisCache), options, analysisCache, appSelector, appInterpreter) {		
+			
+			@Override
+			protected boolean handleCall(CGNode node, IClass recv, SSAAbstractInvokeInstruction instruction,
+					InstanceKey[][] invs, PointerKey uniqueCatch, InstanceKey[] v) {
+				final CallSiteReference site = instruction.getCallSite();
+				
+				IClass targetClass = v.length>0? v[0].getConcreteType(): cha.lookupClass(site.getDeclaredTarget().getDeclaringClass());
+				if (targetClass != null && cha.isSubclassOf(targetClass, cha.lookupClass(SolidityTypes.codeBody))) {
+					final Set<CGNode> targets = HashSetFactory.make();
+					final Set<IMethod> targetMethods = HashSetFactory.make();
+
+					if ((recv = v[0].getConcreteType()) != null &&
+							recv instanceof TypedCodeBody && 
+							(((TypedCodeBody)recv).isVirtual() || 
+									site.getInvocationCode() == Dispatch.SPECIAL ||
+									((TypedCodeBody)recv).getSelfType() instanceof InterfaceType)) {
+
+						InstanceKey selfKey = v[0];
+						PointerKey selfField = getPointerKeyFactory().getPointerKeyForInstanceField(selfKey, selfKey.getConcreteType().getField(Atom.findOrCreateUnicodeAtom("self")));	
+						OrdinalSet<InstanceKey> selfKeys = getPointerAnalysis().getPointsToSet(selfField);
+						selfKeys.forEach(new Consumer<InstanceKey>() {
+							private IClass getFunctionType(IClass sc) {
+								String nm = sc.getName() + "." + ((TypedCodeBody)selfKey.getConcreteType()).functionName();
+								IClass ff = getClassHierarchy().lookupClass(TypeReference.findOrCreate(SolidityTypes.solidity, TypeName.string2TypeName(nm)));
+								return ff;
+							}
+
+							List<AstMethod> getSuperCalls(InstanceKey fk) {
+								Set<IClass> allSupers = allSupers(fk.getConcreteType()).stream().map(x -> getFunctionType(x)).collect(Collectors.toSet());			
+								List<AstMethod> ms = allSupers.stream().filter(m -> m instanceof DynamicCodeBody).map(m -> ((DynamicCodeBody)m).getCodeBody()).collect(Collectors.toList());
+								IClassHierarchy cha = node.getClassHierarchy();
+								ms.remove(null);
+								if (ms.size() == 1) {
+									return ms;
+								} else {
+									return ms.stream().filter(m -> m != null)
+											.filter(m -> {
+												IClass mc = cha.lookupClass(((TypedCodeBody)m.getDeclaringClass()).getSelf());
+												return ms.stream().filter(o -> o != null).anyMatch(o -> {
+													IClass oc = cha.lookupClass(((TypedCodeBody)o.getDeclaringClass()).getSelf());										
+													return o!=m && !(oc.getAllImplementedInterfaces().contains(mc) || cha.isAssignableFrom(mc, oc));
+												});
+											}).toList();
+								}
+							}
+						
+							private void addSuperCalls(InstanceKey sk) {
+								List<AstMethod> supers = getSuperCalls(sk);
+								if (! supers.isEmpty()) {
+									targetMethods.add(supers.get(0));
+								}								
+							}
+							
+							@Override
+							public void accept(InstanceKey sk) {
+								if (site.getInvocationCode() == Dispatch.SPECIAL) {
+									addSuperCalls(sk);
+								} else {
+									IClass sc = sk.getConcreteType();
+									IClass ff = getFunctionType(sc);
+									if (ff instanceof DynamicCodeBody && ((DynamicCodeBody)ff).getCodeBody() != null) {
+										targetMethods.add(((DynamicCodeBody)ff).getCodeBody());
+									} else {
+										// inherited methods
+										addSuperCalls(sk);
+									}
+								}
+							}
+						});
+ 
+					} else {
+						if (recv instanceof DynamicCodeBody) {
+							targetMethods.add(((DynamicCodeBody)recv).getCodeBody());
+						}
+					}
+
+					for(IMethod targetMethod : targetMethods) {
+						Context targetContext = contextSelector.getCalleeTarget(node, site, targetMethod, v);
+						try {
+							targets.add(getCallGraph().findOrCreateNode(targetMethod, targetContext));
+						} catch (CancelException e) {
+							assert false : e;
+						}
+					}
+
+					if (! targets.isEmpty()) {
+						targets.forEach(target -> {
+							processResolvedCall(node, instruction, target, invs, uniqueCatch);
+							if (!haveAlreadyVisited(target)) {
+								markDiscovered(target);
+							}
+						});
+					}
+
+					return true;
+				} else {
+					return super.handleCall(node, recv, instruction, invs, uniqueCatch, v);
+				}
+			}
+		};
 
 		cgBuilder.setContextInterpreter(
-			new DelegatingSSAContextInterpreter(
-	              new FactoryBypassInterpreter(options, analysisCache), 
-	              new AstContextInsensitiveSSAContextInterpreter(options, analysisCache) {
+				new DelegatingSSAContextInterpreter(
+						new FactoryBypassInterpreter(options, analysisCache), 
+						new AstContextInsensitiveSSAContextInterpreter(options, analysisCache) {
 
-					@Override
-					public IR getIR(CGNode node) {
-					    return getAnalysisCache().getIR(node.getMethod(), node.getContext());
-					}
+							@Override
+							public IR getIR(CGNode node) {
+								return getAnalysisCache().getIR(node.getMethod(), node.getContext());
+							}
 
-					@Override
-					public IRView getIRView(CGNode node) {
-						return getIR(node);
-					}
+							@Override
+							public IRView getIRView(CGNode node) {
+								return getIR(node);
+							}
 
-					@Override
-					public ControlFlowGraph<SSAInstruction, ISSABasicBlock> getCFG(CGNode N) {
-						return getIR(N).getControlFlowGraph();
-					}
+							@Override
+							public ControlFlowGraph<SSAInstruction, ISSABasicBlock> getCFG(CGNode N) {
+								return getIR(N).getControlFlowGraph();
+							}
 
-					@Override
-					public DefUse getDU(CGNode node) {
-						return new DefUse(getIR(node));
-					}
-	            	  
-	              }));
+							@Override
+							public DefUse getDU(CGNode node) {
+								return new DefUse(getIR(node));
+							}
+
+						}));
 
 		cgBuilder.setInstanceKeys(new ZeroXInstanceKeys(options, cha, cgBuilder.getContextInterpreter(), ZeroXInstanceKeys.ALLOCATIONS));
 
 		cgBuilder.setContextSelector(new EnumValueContextSelector(cgBuilder.getContextSelector()));
-		
+
 		return cgBuilder;
 	}
 

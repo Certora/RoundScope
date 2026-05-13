@@ -942,6 +942,9 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 										return false;
 									}
 									
+									public String toString() {
+										return "[" + cls.getName() + " " + selector.toString() + "]";
+									}
 								};
 							}
 							return abs;
@@ -1028,9 +1031,6 @@ public abstract class SolidityLoader extends CAstAbstractModuleLoader {
 					ss.forEach(sc -> { 
 						if (m.containsKey(sc)) {
 							x.addEdge(c, m.get(sc)); 
-						} else {
-							System.err.println("cannot find " + sc);
-							System.err.println(x);
 						}
 					});
 				}
