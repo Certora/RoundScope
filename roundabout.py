@@ -33,6 +33,9 @@ def main():
     args = parser.parse_args()
 
     script_dir = os.path.dirname(os.path.abspath(__file__))
+    # Ensure utils/ under script_dir is importable (CWD changes to project_dir later)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
     jar = os.path.join(script_dir, "target", "roundabout-0.0.1-SNAPSHOT.jar")
 
     project_dir = os.path.abspath(args.project_root)
@@ -132,6 +135,19 @@ def main():
             print(f"[roundabout] certoraRun stdout:\n{result_certora.stdout}")
         if result_certora.stderr:
             print(f"[roundabout] certoraRun stderr:\n{result_certora.stderr}")
+
+        # If compilation failed, try the compilation fixer
+        if result_certora.returncode != 0:
+            from utils.compilation_fixer import fix_compilation
+
+            print("[roundabout] compilation failed, trying compilation fixer...")
+            fix_success, dump_conf_data = fix_compilation(dump_conf, dump_conf_data, cmd, project_dir)
+            if fix_success:
+                print("[roundabout] compilation fixer succeeded")
+                # Update result_certora to reflect success (asts should now exist)
+                result_certora = subprocess.CompletedProcess(
+                    args=result_certora.args, returncode=0, stdout="", stderr=""
+                )
 
         asts_file = ".certora_internal/latest/.asts.json"
         print(f"[roundabout] checking for asts_file: {os.path.abspath(asts_file)}")
