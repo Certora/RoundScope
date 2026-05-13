@@ -918,7 +918,6 @@ public class JSONToCAst {
 				CAstNode expr;
 				CAstNode left = visit(o.getJSONObject("leftExpression"), context);
 				if (left == null) {
-					System.err.println("bad");
 					left = visit(o.getJSONObject("leftExpression"), context);
 				}
 				CAstNode right = visit(o.getJSONObject("rightExpression"), context);
@@ -1420,9 +1419,10 @@ public class JSONToCAst {
 					}
 					
 					private CAstNode makeRef(JSONObject obj, CAstType type) {
+						CAstNode self = TranslationVisitor.this.visit(obj.getJSONObject("expression"), context);
 						return record(
 							ast.makeNode(CAstNode.OBJECT_REF, 
-								TranslationVisitor.this.visit(obj.getJSONObject("expression"), context),
+								self==null? ast.makeNode(CAstNode.EMPTY): self,
 								ast.makeConstant(o.getString("memberName"))),
 							getLocation(o.getString("src")), type, context);
 					}
@@ -1795,14 +1795,17 @@ public class JSONToCAst {
 									    	new CAstSymbolImpl(((JSONObject)v).getString("name"), CAstType.DYNAMIC))))
 							.toList();
 					
-						CAstNode val = new YulExpressionVisitor().visit(o.getJSONObject("value"), null);
-					
+						CAstNode val = o.has("value")? new YulExpressionVisitor().visit(o.getJSONObject("value"), null): null;
+						
 						if (decls.size() == 1) {
 							return ast.makeNode(CAstNode.BLOCK_STMT, 
 								ast.makeNode(CAstNode.BLOCK_STMT, decls),
+								(val != null)?
 								ast.makeNode(CAstNode.ASSIGN,
 									ast.makeNode(CAstNode.VAR, ast.makeConstant(o.getJSONArray("variables").getJSONObject(0).getString("name"))),
-									val));
+									val):
+								ast.makeNode(CAstNode.EMPTY));
+									
 						} else {
 							return ast.makeNode(CAstNode.EMPTY);
 						}
@@ -2099,6 +2102,14 @@ public class JSONToCAst {
 			return check(o);
 		}
 
+		public Void visitImportDirective(JSONObject o, Void context) {
+			if (name != null && name.equals(o.get("unitAlias"))) {
+				return new DeclarationFinder(id, null).visit(loader.getSource(o.getInt("sourceUnit")), null);
+			} else {
+				return visitNode(o, null);
+			}
+		}
+
 		public Void visitVariableDeclaration(JSONObject o, Void context) {
 			if (isContractField(o)) {
 				return check(o);
@@ -2151,11 +2162,20 @@ public class JSONToCAst {
 						while (sus.hasNext()) {
 							int importedID = sus.next();
 							JSONObject importedSU = loader.getSource(importedID);
-							df.visit(importedSU, null);
-							if (df.decl != null) {
-								ids.put(decl, df.decl);
-								return df.decl;
-							}					
+							if (imports.aliased.contains(importedID) && name != null) {
+								DeclarationFinder adf = new DeclarationFinder(decl, null);
+								adf.visit(importedSU, null);
+								if (adf.decl != null) {
+									ids.put(decl, adf.decl);
+									return adf.decl;
+								}													
+							} else {
+								df.visit(importedSU, null);
+								if (df.decl != null) {
+									ids.put(decl, df.decl);
+									return df.decl;
+								}				
+							}
 							imports.visit(importedSU, null);
 							next.addAll(imports.imports);
 						}
