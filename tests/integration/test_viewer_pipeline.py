@@ -16,6 +16,8 @@ import tempfile
 import json5
 import pytest
 
+import glob
+
 from tests.integration.conftest import (
     REPO_ROOT,
     VIEWER_SCRIPT,
@@ -26,6 +28,32 @@ from tests.integration.conftest import (
     requires_full_pipeline,
     validate_viewer_html,
 )
+
+
+def _collect_logs(project_root):
+    """Read any roundabout.log files under project_root for error diagnostics."""
+    logs = []
+    for log_path in glob.glob(os.path.join(project_root, "**", "roundabout.log"), recursive=True):
+        try:
+            with open(log_path) as f:
+                content = f.read()
+            if content.strip():
+                logs.append(f"--- {log_path} ---\n{content[-2000:]}")
+        except Exception:
+            pass
+    return "\n".join(logs) if logs else "(no roundabout.log found)"
+
+
+def _assert_pipeline_ok(result, name, project_root):
+    """Assert pipeline succeeded, including log content on failure."""
+    if result.returncode != 0:
+        logs = _collect_logs(project_root)
+        pytest.fail(
+            f"Pipeline failed for {name}:\n"
+            f"stdout: {result.stdout}\n"
+            f"stderr: {result.stderr}\n"
+            f"roundabout logs:\n{logs}"
+        )
 
 # =========================================================================
 # Parametrize IDs
@@ -62,9 +90,7 @@ def test_viewer_from_generated_json(tmp_path):
             "--conf-file", conf_path,
         ]
         result = subprocess.run(cmd, capture_output=True, text=True)
-        assert result.returncode == 0, (
-            f"generate_viewer.py failed for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-        )
+        _assert_pipeline_ok(result, f"{name}/json_viewer", project_root)
 
         data = validate_viewer_html(output_html)
         print(f"  {name}: {len(data['contexts'])} contexts, validated OK")
@@ -89,9 +115,7 @@ def test_viewer_from_conf(name, conf_path, tmp_path):
         "--output", output_html,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    assert result.returncode == 0, (
-        f"Full pipeline failed for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-    )
+    _assert_pipeline_ok(result, name, project_root)
 
     data = validate_viewer_html(output_html)
     print(f"  {name}: {len(data['contexts'])} contexts, validated OK")
@@ -113,9 +137,7 @@ def test_viewer_from_sol(name, sol_path, tmp_path):
         "--output", output_html,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    assert result.returncode == 0, (
-        f"Full pipeline failed for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-    )
+    _assert_pipeline_ok(result, name, project_root)
 
     # Relaxed validation for single-file mode — may have fewer annotations
     data = validate_viewer_html(output_html, min_size=3000, require_non_neither=False)
@@ -185,9 +207,7 @@ def test_fault_nonexistent_solc(name, conf_path, tmp_path):
         "--output", output_html,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    assert result.returncode == 0, (
-        f"Pipeline failed with faulted solc for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-    )
+    _assert_pipeline_ok(result, f"{name}/fault_solc", project_root)
 
     data = validate_viewer_html(output_html)
     print(f"  {name}: fixer recovered from nonexistent solc, {len(data['contexts'])} contexts")
@@ -253,9 +273,7 @@ def test_fault_version_mismatch(name, conf_path, tmp_path):
         "--output", output_html,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    assert result.returncode == 0, (
-        f"Pipeline failed with version mismatch for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-    )
+    _assert_pipeline_ok(result, f"{name}/fault_version", sol_dir)
 
     data = validate_viewer_html(output_html, require_non_neither=False)
     print(f"  {name}: fixer recovered from version mismatch, {len(data['contexts'])} contexts")
@@ -283,9 +301,7 @@ def test_fault_ignore_warnings(name, conf_path, tmp_path):
         "--output", output_html,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    assert result.returncode == 0, (
-        f"Pipeline failed with warnings fault for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-    )
+    _assert_pipeline_ok(result, f"{name}/fault_warnings", project_root)
 
     data = validate_viewer_html(output_html, require_non_neither=False)
     print(f"  {name}: pipeline succeeded, {len(data['contexts'])} contexts")

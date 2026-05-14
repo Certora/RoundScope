@@ -27,5 +27,11 @@ jobs:
       - name: Build RoundAbout jar
         run: mvn package -DskipTests
 
+      - name: Verify certoraRun works
+        run: certoraRun --help | head -5
+
+      - name: Verify solc available
+        run: which solc || echo "solc not found on PATH (certoraRun bundles its own)"
+
       - name: Run integration tests
-        run: pytest tests/integration/ -v
+        run: pytest tests/integration/ -v -s
