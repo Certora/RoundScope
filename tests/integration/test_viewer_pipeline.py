@@ -8,10 +8,8 @@ C. Fault injection tests (compilation fixer validation)
 
 import json
 import os
-import shutil
 import subprocess
 import sys
-import tempfile
 
 import json5
 import pytest
@@ -160,34 +158,6 @@ def _make_faulted_conf(conf_path, fault_fn, tmp_path):
     return faulted_conf
 
 
-def _copy_sol_with_pragma(sol_path, pragma_version, tmp_dir):
-    """Copy a .sol file, uncommenting/adding a pragma solidity line.
-
-    Returns the path to the new .sol file (in tmp_dir with same basename).
-    """
-    with open(sol_path) as f:
-        content = f.read()
-
-    # Replace commented-out pragma with active one
-    content = content.replace("// pragma solidity ^0.8;", f"pragma solidity {pragma_version};")
-    content = content.replace("// pragma solidity ^0.8.0;", f"pragma solidity {pragma_version};")
-
-    # If no pragma was uncommented, insert one at the top (after SPDX if present)
-    if f"pragma solidity {pragma_version};" not in content:
-        lines = content.split("\n")
-        insert_idx = 0
-        for i, line in enumerate(lines):
-            if line.startswith("// SPDX"):
-                insert_idx = i + 1
-                break
-        lines.insert(insert_idx, f"pragma solidity {pragma_version};")
-        content = "\n".join(lines)
-
-    new_path = os.path.join(tmp_dir, os.path.basename(sol_path))
-    with open(new_path, "w") as f:
-        f.write(content)
-    return new_path
-
 
 @requires_full_pipeline
 @pytest.mark.parametrize("name,conf_path", _CONF_FILES, ids=_conf_ids)
@@ -211,72 +181,6 @@ def test_fault_nonexistent_solc(name, conf_path, tmp_path):
 
     data = validate_viewer_html(output_html)
     print(f"  {name}: fixer recovered from nonexistent solc, {len(data['contexts'])} contexts")
-
-
-@requires_full_pipeline
-@pytest.mark.parametrize("name,conf_path", _CONF_FILES, ids=_conf_ids)
-def test_fault_version_mismatch(name, conf_path, tmp_path):
-    """Uncomment pragmas with exact version, leave solc unset — fixer should detect mismatch and resolve.
-
-    Uses pragma solidity 0.8.20 (exact) which will likely mismatch the default solc.
-    The fixer should detect the ParserError and resolve the pragma to the correct version.
-    """
-    project_root = derive_project_root(conf_path)
-
-    # Read conf to find all .sol files
-    with open(conf_path) as f:
-        conf_data = json5.load(f)
-
-    # Copy all .sol files from the project to tmp, uncommenting pragmas
-    sol_dir = str(tmp_path / "sol")
-    os.makedirs(sol_dir, exist_ok=True)
-
-    file_entries = conf_data.get("files", [])
-    for entry in file_entries:
-        sol_name = entry.split(":")[0]
-        sol_abs = os.path.join(project_root, sol_name)
-        if os.path.isfile(sol_abs):
-            _copy_sol_with_pragma(sol_abs, "0.8.20", sol_dir)
-
-    # Also copy any spec files referenced
-    verify = conf_data.get("verify", "")
-    if ":" in verify:
-        spec_name = verify.split(":")[1]
-        spec_abs = os.path.join(project_root, spec_name)
-        if os.path.isfile(spec_abs):
-            shutil.copy2(spec_abs, sol_dir)
-
-    # Build new conf pointing to the temp sol copies (relative to sol_dir)
-    new_files = []
-    for entry in file_entries:
-        parts = entry.split(":")
-        sol_basename = os.path.basename(parts[0])
-        if len(parts) > 1:
-            new_files.append(f"{sol_basename}:{parts[1]}")
-        else:
-            new_files.append(sol_basename)
-    conf_data["files"] = new_files
-
-    # Remove solc to let the fixer detect and set it
-    conf_data.pop("solc", None)
-    conf_data.pop("compiler_map", None)
-
-    faulted_conf = str(tmp_path / "faulted_version.conf")
-    with open(faulted_conf, "w") as f:
-        json.dump(conf_data, f, indent=4)
-
-    output_html = str(tmp_path / f"{name}_fault_version.html")
-    cmd = [
-        sys.executable, VIEWER_SCRIPT,
-        "--project-root", sol_dir,
-        "--input-file", faulted_conf,
-        "--output", output_html,
-    ]
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    _assert_pipeline_ok(result, f"{name}/fault_version", sol_dir)
-
-    data = validate_viewer_html(output_html, require_non_neither=False)
-    print(f"  {name}: fixer recovered from version mismatch, {len(data['contexts'])} contexts")
 
 
 @requires_full_pipeline

@@ -46,8 +46,15 @@ def discover_conf_files():
     return confs
 
 
+# .sol files that are abstract/interface-only and can't compile standalone
+_ABSTRACT_SOL_FILES = {"ERC20ish.sol", "Engine.sol", "EngineDown.sol"}
+
+
 def discover_sol_files():
-    """Find all unique .sol files in test/data/ (deduplicate shared files like ERC20ish.sol)."""
+    """Find all unique .sol files in test/data/ that can compile standalone.
+
+    Skips abstract/interface-only files that have no concrete contract.
+    """
     seen = set()
     sols = []
     for entry in sorted(os.listdir(TEST_DATA_DIR)):
@@ -55,7 +62,7 @@ def discover_sol_files():
         if not os.path.isdir(subdir):
             continue
         for fname in sorted(os.listdir(subdir)):
-            if fname.endswith(".sol") and fname not in seen:
+            if fname.endswith(".sol") and fname not in seen and fname not in _ABSTRACT_SOL_FILES:
                 seen.add(fname)
                 sols.append((fname, os.path.join(subdir, fname)))
     return sols
