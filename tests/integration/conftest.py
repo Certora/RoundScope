@@ -4,6 +4,9 @@ import json
 import os
 import re
 import shutil
+import subprocess
+import sys
+import tempfile
 
 import json5
 import pytest
@@ -24,8 +27,6 @@ def _has_java_and_jar():
     return shutil.which("java") is not None and os.path.isfile(JAR_PATH)
 
 
-requires_certorarun = pytest.mark.skipif(not _has_certorarun(), reason="certoraRun not found on PATH")
-requires_java = pytest.mark.skipif(not _has_java_and_jar(), reason="java not found or jar not built")
 requires_full_pipeline = pytest.mark.skipif(
     not (_has_certorarun() and _has_java_and_jar()),
     reason="Full pipeline requires certoraRun + java + built jar",
@@ -60,25 +61,6 @@ def discover_sol_files():
     return sols
 
 
-def discover_json_files():
-    """Find all pre-generated run_roundabout.json files in test/data/."""
-    jsons = []
-    for entry in sorted(os.listdir(TEST_DATA_DIR)):
-        subdir = os.path.join(TEST_DATA_DIR, entry)
-        if not os.path.isdir(subdir):
-            continue
-        json_path = os.path.join(subdir, "run_roundabout.json")
-        if os.path.isfile(json_path):
-            # Find the corresponding conf file
-            conf_path = None
-            for fname in os.listdir(subdir):
-                if fname.endswith(".conf"):
-                    conf_path = os.path.join(subdir, fname)
-                    break
-            jsons.append((entry, json_path, conf_path))
-    return jsons
-
-
 def derive_project_root(conf_path):
     """Derive the project root for a conf file by checking where its file paths resolve."""
     try:
@@ -102,6 +84,53 @@ def derive_project_root(conf_path):
 
     # Fallback: whichever resolves more
     return max(candidates, key=lambda c: sum(1 for p in file_paths if os.path.isfile(os.path.join(c, p))))
+
+
+def _generate_roundabout_json(conf_name, conf_path, output_dir):
+    """Run roundabout.py on a conf file, producing a JSON in output_dir.
+
+    Returns (name, json_path, conf_path) or None if generation fails.
+    """
+    project_root = derive_project_root(conf_path)
+    # conf path relative to project_root (roundabout.py chdir's to project_root)
+    conf_rel = os.path.relpath(conf_path, project_root)
+    json_path = os.path.join(output_dir, f"{conf_name}.json")
+
+    cmd = [sys.executable, ROUNDABOUT_SCRIPT, project_root, conf_rel, json_path]
+    result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
+    if result.returncode == 0 and os.path.isfile(json_path):
+        return (conf_name, json_path, conf_path)
+    return None
+
+
+# Session-scoped fixture: generate roundabout JSONs for all conf files once per test session
+_generated_jsons_cache = None
+
+
+def generate_all_roundabout_jsons():
+    """Generate roundabout JSONs for all conf files. Returns list of (name, json_path, conf_path).
+
+    Results are cached for the session. Requires certoraRun + java + jar.
+    """
+    global _generated_jsons_cache
+    if _generated_jsons_cache is not None:
+        return _generated_jsons_cache
+
+    if not (_has_certorarun() and _has_java_and_jar()):
+        _generated_jsons_cache = []
+        return []
+
+    # Use a persistent temp dir (cleaned up at process exit)
+    output_dir = tempfile.mkdtemp(prefix="roundabout_jsons_")
+    confs = discover_conf_files()
+    results = []
+    for name, conf_path in confs:
+        entry = _generate_roundabout_json(name, conf_path, output_dir)
+        if entry:
+            results.append(entry)
+
+    _generated_jsons_cache = results
+    return results
 
 
 def validate_viewer_html(html_path, min_size=5000, require_non_neither=True):

@@ -1,8 +1,8 @@
 """Integration tests: run the viewer pipeline on all test/data examples.
 
 Test categories:
-A. Pre-generated JSON tests (fast, no certoraRun/Java needed)
-B. Clean pipeline tests (full pipeline, needs certoraRun + Java + jar)
+A. Generated JSON → viewer tests (roundabout generates JSON, viewer renders HTML)
+B. Clean pipeline tests (full pipeline via generate_viewer.py, needs certoraRun + Java + jar)
 C. Fault injection tests (compilation fixer validation)
 """
 
@@ -21,8 +21,8 @@ from tests.integration.conftest import (
     VIEWER_SCRIPT,
     derive_project_root,
     discover_conf_files,
-    discover_json_files,
     discover_sol_files,
+    generate_all_roundabout_jsons,
     requires_full_pipeline,
     validate_viewer_html,
 )
@@ -33,42 +33,41 @@ from tests.integration.conftest import (
 
 _CONF_FILES = discover_conf_files()
 _SOL_FILES = discover_sol_files()
-_JSON_FILES = discover_json_files()
 
 _conf_ids = [name for name, _ in _CONF_FILES]
 _sol_ids = [name for name, _ in _SOL_FILES]
-_json_ids = [name for name, _, _ in _JSON_FILES]
 
 
 # =========================================================================
-# A. Pre-generated JSON tests (no certoraRun needed)
+# A. Generated JSON → viewer tests
+#    Runs roundabout.py to generate JSONs, then validates the viewer on each.
 # =========================================================================
 
 
-@pytest.mark.parametrize("name,json_path,conf_path", _JSON_FILES, ids=_json_ids)
-def test_viewer_from_json(name, json_path, conf_path, tmp_path):
-    """Test viewer HTML generation from pre-generated roundabout JSON.
+@requires_full_pipeline
+def test_viewer_from_generated_json(tmp_path):
+    """Generate roundabout JSONs for all conf files, then validate viewer HTML for each."""
+    generated = generate_all_roundabout_jsons()
+    assert len(generated) > 0, "No roundabout JSONs were generated — check certoraRun + java + jar"
 
-    These tests validate the viewer itself (extraction + HTML generation)
-    without needing certoraRun or Java.
-    """
-    project_root = derive_project_root(conf_path) if conf_path else REPO_ROOT
-    output_html = str(tmp_path / f"{name}_viewer.html")
+    for name, json_path, conf_path in generated:
+        project_root = derive_project_root(conf_path)
+        output_html = str(tmp_path / f"{name}_viewer.html")
 
-    cmd = [
-        sys.executable, VIEWER_SCRIPT,
-        "--project-root", project_root,
-        "--json-input", json_path,
-        "--output", output_html,
-    ]
-    if conf_path:
-        cmd.extend(["--conf-file", conf_path])
+        cmd = [
+            sys.executable, VIEWER_SCRIPT,
+            "--project-root", project_root,
+            "--json-input", json_path,
+            "--output", output_html,
+            "--conf-file", conf_path,
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        assert result.returncode == 0, (
+            f"generate_viewer.py failed for {name}:\nstdout: {result.stdout}\nstderr: {result.stderr}"
+        )
 
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    assert result.returncode == 0, f"generate_viewer.py failed:\nstdout: {result.stdout}\nstderr: {result.stderr}"
-
-    data = validate_viewer_html(output_html)
-    print(f"  {name}: {len(data['contexts'])} contexts, validated OK")
+        data = validate_viewer_html(output_html)
+        print(f"  {name}: {len(data['contexts'])} contexts, validated OK")
 
 
 # =========================================================================
