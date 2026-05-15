@@ -4,9 +4,7 @@ Lean compilation fixer for RoundAbout.
 Iteratively applies workarounds (solc version, packages, via-ir, EVM version, etc.)
 to a certoraRun conf until compilation succeeds. Self-contained — no dependency on
 certora-autosetup.
-
-Ported from certora-autosetup's fixconf / CompilationWorkaroundManager, simplified
-for the single-file-at-a-time roundabout use case (flat config keys, no per-contract maps).
+Customized for the single-file-at-a-time roundabout use case (flat config keys, no per-contract maps).
 """
 
 import json
