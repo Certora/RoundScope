@@ -6,6 +6,7 @@ B. Clean pipeline tests (full pipeline via generate_viewer.py, needs certoraRun 
 C. Fault injection tests (compilation fixer validation)
 """
 
+import glob
 import json
 import os
 import subprocess
@@ -13,8 +14,6 @@ import sys
 
 import json5
 import pytest
-
-import glob
 
 from tests.integration.conftest import (
     REPO_ROOT,
@@ -183,29 +182,41 @@ def test_fault_nonexistent_solc(name, conf_path, tmp_path):
     print(f"  {name}: fixer recovered from nonexistent solc, {len(data['contexts'])} contexts")
 
 
+_UNNAMED_RETURN_SOL = """\
+// SPDX-License-Identifier: MIT
+contract UnnamedReturn {
+    // This function declares returns (uint256) but never assigns it,
+    // triggering "Unnamed return variable can remain unassigned" warning.
+    function leaky(uint256 x) public pure returns (uint256) {
+        if (x > 10) {
+            return x * 2;
+        }
+        // Missing return on this path — unnamed return variable warning
+    }
+
+    function divDown(uint256 a, uint256 b) public pure returns (uint256) {
+        return a / b;
+    }
+}
+"""
+
+
 @requires_full_pipeline
-@pytest.mark.parametrize("name,conf_path", _CONF_FILES, ids=_conf_ids)
-def test_fault_ignore_warnings(name, conf_path, tmp_path):
-    """Inject ignore_solidity_warnings=false — if compilation produces warnings, fixer should re-enable."""
-    def inject(conf_data):
-        # Force solidity warnings to NOT be ignored — if the compilation produces
-        # unnamed return warnings, the fixer should re-enable this
-        conf_data.pop("ignore_solidity_warnings", None)
+def test_fault_ignore_warnings(tmp_path):
+    """Create a .sol with unnamed return variable — fixer should add ignore_solidity_warnings."""
+    # Write the synthetic .sol file
+    sol_path = tmp_path / "UnnamedReturn.sol"
+    sol_path.write_text(_UNNAMED_RETURN_SOL)
 
-    # This test just verifies the pipeline succeeds regardless
-    # (the default extra_flags include --ignore_solidity_warnings so roundabout may handle it)
-    faulted_conf = _make_faulted_conf(conf_path, inject, tmp_path)
-    project_root = derive_project_root(conf_path)
-    output_html = str(tmp_path / f"{name}_fault_warnings.html")
-
+    output_html = str(tmp_path / "unnamed_return_viewer.html")
     cmd = [
         sys.executable, VIEWER_SCRIPT,
-        "--project-root", project_root,
-        "--input-file", faulted_conf,
+        "--project-root", str(tmp_path),
+        "--input-file", str(sol_path),
         "--output", output_html,
     ]
     result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
-    _assert_pipeline_ok(result, f"{name}/fault_warnings", project_root)
+    _assert_pipeline_ok(result, "UnnamedReturn/fault_warnings", str(tmp_path))
 
-    data = validate_viewer_html(output_html, require_non_neither=False)
-    print(f"  {name}: pipeline succeeded, {len(data['contexts'])} contexts")
+    data = validate_viewer_html(output_html, min_size=3000, require_non_neither=False)
+    print(f"  UnnamedReturn: pipeline succeeded with warning-producing sol, {len(data['contexts'])} contexts")
