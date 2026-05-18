@@ -81,9 +81,14 @@ If you need the raw [JGF](https://jsongraphformat.info/) JSON output (for exampl
 1. Run `certoraRun` as you usually would given a `.conf` file, but add `--dump_asts --compilation_steps_only`. This will create `.certora_internal/latest/.asts.json`.
 2. _In the same directory_, run `RoundAbout`:
 
-   With Java:
+   With Java, with either no linkage specification, or linkage in the .conf file:
    ```
    java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <output.json> --combined .certora_internal/latest/.asts.json
+   ```
+
+   With Java, with linkage specified in a .spec file:
+   ```
+   java -jar /path/to/roundabout-0.0.1-SNAPSHOT.jar <a .conf file> <output.json> --combined-spec <a .spec file> .certora_internal/latest/.asts.json
    ```
 
    With Docker:
