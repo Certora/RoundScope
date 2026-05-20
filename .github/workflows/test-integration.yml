@@ -1,0 +1,43 @@
+name: Integration Tests
+
+on: pull_request
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    env:
+      CERTORAKEY: dummy
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Install solc
+        run: |
+          sudo add-apt-repository -y ppa:ethereum/ethereum
+          sudo apt-get update
+          sudo apt-get install -y solc
+
+      - name: Install Python dependencies
+        run: pip install json5 packaging pygments pytest certora-cli
+
+      - name: Build RoundAbout jar
+        run: mvn package -DskipTests
+
+      - name: Verify certoraRun works
+        run: certoraRun --help | head -5
+
+      - name: Verify solc available
+        run: which solc || echo "solc not found on PATH (certoraRun bundles its own)"
+
+      - name: Run integration tests
+        run: pytest tests/integration/ -v -s
